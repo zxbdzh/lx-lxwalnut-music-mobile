@@ -25,6 +25,7 @@ const defaultSetting: LX.AppSetting = {
     nav_my_playlist: true,
     nav_followed_artists: true,
     nav_subscribed_albums: true,
+    nav_onedrive: true,
   },
 
   'player.startupAutoPlay': false,
