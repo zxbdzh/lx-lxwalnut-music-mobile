@@ -29,7 +29,7 @@ const MiniProgressBar = () => {
   }
 
   return (
-    <View style={{ ...styles.track, backgroundColor: theme['c-primary-alpha-800'] }}>
+    <View style={{ ...styles.track, backgroundColor: 'transparent' }}>
       <Animated.View style={[styles.progress, progressStyle]} />
     </View>
   )

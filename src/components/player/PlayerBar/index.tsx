@@ -187,7 +187,6 @@ const styles = createStyle({
     borderTopRightRadius: 6,
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 10,
   },
   left: {
     flexGrow: 1,
