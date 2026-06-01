@@ -651,13 +651,6 @@ export default memo(() => {
           >
             <Text color={theme['c-button-font']}>选择当前目录</Text>
           </Button>
-          <Button
-            style={{ ...styles.button, backgroundColor: theme['c-button-background'] }}
-            disabled={!hasConfig || loading}
-            onPress={handleScan}
-          >
-            <Text color={theme['c-button-font']}>扫描已选目录</Text>
-          </Button>
         </View>
 
         {folderLoading ? (
