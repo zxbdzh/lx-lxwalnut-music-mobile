@@ -1,5 +1,5 @@
 import { memo, useRef, useState, useEffect } from 'react'
-import { View } from 'react-native'
+import { View, Clipboard } from 'react-native'
 import { getLogs, clearLogs } from '@/utils/log'
 // import { gzip, ungzip } from 'pako'
 
@@ -21,6 +21,19 @@ export default memo(() => {
   const [isEnableSyncErrorLog, setIsEnableSyncErrorLog] = useState(global.lx.isEnableSyncLog)
   const [isEnableUserApiLog, setIsEnableUserApiLog] = useState(global.lx.isEnableUserApiLog)
   const [isEnableWebDAVLog, setIsEnableWebDAVLog] = useState(settingState.setting['common.isEnableWebDAVLog'])
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await Clipboard.setString(text)
+      toast(t('setting_other_log_tip_copy_success'))
+    } catch {
+      toast(t('setting_other_log_tip_copy_failed'))
+    }
+  }
+
+  const handleCopyAll = () => {
+    copyToClipboard(logText)
+  }
 
   const getErrorLog = () => {
     void getLogs().then((log) => {
@@ -97,8 +110,11 @@ export default memo(() => {
         onConfirm={handleCleanLog}
         showConfirm={!!logText}
         reverseBtn={true}
+        middleText={t('setting_other_log_btn_copy_all')}
+        onMiddle={handleCopyAll}
+        showMiddle={!!logText}
       >
-        <View onStartShouldSetResponder={() => true}>
+        <View>
           {logText ? (
             <Text selectable size={13}>
               {logText}

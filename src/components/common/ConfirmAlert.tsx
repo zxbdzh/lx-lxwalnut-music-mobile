@@ -66,6 +66,9 @@ export interface ConfirmAlertProps {
   disabledConfirm?: boolean
   reverseBtn?: boolean
   children?: React.ReactNode | React.ReactNode[]
+  middleText?: string
+  onMiddle?: () => void
+  showMiddle?: boolean
 }
 
 export interface ConfirmAlertType {
@@ -89,6 +92,9 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(
       disabledConfirm = false,
       children,
       reverseBtn = false,
+      middleText = '',
+      onMiddle = () => {},
+      showMiddle = false,
     }: ConfirmAlertProps,
     ref
   ) => {
@@ -138,6 +144,18 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(
           >
             <Text color={theme['c-button-font']}>{cancelText || t('cancel')}</Text>
           </Button>
+          {showMiddle ? (
+            <Button
+              style={{
+                ...styles.btn,
+                ...(reverseBtn ? styles.btnReversedDirection : styles.btnDirection),
+                backgroundColor: theme['c-button-background'],
+              }}
+              onPress={onMiddle}
+            >
+              <Text color={theme['c-button-font']}>{middleText}</Text>
+            </Button>
+          ) : null}
           {showConfirm ? (
             <Button
               style={{
