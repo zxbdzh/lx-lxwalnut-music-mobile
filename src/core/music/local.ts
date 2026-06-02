@@ -15,6 +15,8 @@ import { getLocalFilePath } from '@/utils/music'
 import { readLyric, readPic } from '@/utils/localMediaMetadata'
 import { stat, existsFile, mkdir, writeFile, readDir } from '@/utils/fs'
 import { requestStoragePermission } from '@/utils/tools'
+import { searchMusic } from '@/utils/musicSdk'
+import { toNewMusicInfo } from '@/utils'
 import settingState from '@/store/setting/state'
 import { btoa } from 'react-native-quick-base64'
 import playerState from '@/store/player/state'
@@ -41,11 +43,20 @@ const getOtherSourceByLocal = async <T>(
   handler: (infos: LX.Music.MusicInfoOnline[]) => Promise<T>
 ) => {
   let result: LX.Music.MusicInfoOnline[] = []
+  
+  const tryHandler = async (sources: LX.Music.MusicInfoOnline[]) => {
+    if (sources.length) {
+      try {
+        return await handler(sources)
+      } catch {}
+    }
+    return null
+  }
+
   result = await getOtherSource(musicInfo)
-  if (result.length)
-    try {
-      return await handler(result)
-    } catch {}
+  const handlerResult = await tryHandler(result)
+  if (handlerResult !== null) return handlerResult
+
   if (musicInfo.name.includes('-')) {
     const [name, singer] = musicInfo.name.split('-').map((val) => val.trim())
     result = await getOtherSource(
@@ -56,10 +67,9 @@ const getOtherSourceByLocal = async <T>(
       },
       true
     )
-    if (result.length)
-      try {
-        return await handler(result)
-      } catch {}
+    const handlerResult1 = await tryHandler(result)
+    if (handlerResult1 !== null) return handlerResult1
+    
     result = await getOtherSource(
       {
         ...musicInfo,
@@ -68,11 +78,10 @@ const getOtherSourceByLocal = async <T>(
       },
       true
     )
-    if (result.length)
-      try {
-        return await handler(result)
-      } catch {}
+    const handlerResult2 = await tryHandler(result)
+    if (handlerResult2 !== null) return handlerResult2
   }
+
   let fileName =
     (await stat(musicInfo.meta.filePath).catch(() => ({ name: null }))).name ??
     musicInfo.meta.filePath.split(/\/|\\/).at(-1)
@@ -89,10 +98,9 @@ const getOtherSourceByLocal = async <T>(
           },
           true
         )
-        if (result.length)
-          try {
-            return await handler(result)
-          } catch {}
+        const handlerResult3 = await tryHandler(result)
+        if (handlerResult3 !== null) return handlerResult3
+        
         result = await getOtherSource(
           {
             ...musicInfo,
@@ -101,6 +109,8 @@ const getOtherSourceByLocal = async <T>(
           },
           true
         )
+        const handlerResult4 = await tryHandler(result)
+        if (handlerResult4 !== null) return handlerResult4
       } else {
         result = await getOtherSource(
           {
@@ -110,12 +120,37 @@ const getOtherSourceByLocal = async <T>(
           },
           true
         )
+        const handlerResult5 = await tryHandler(result)
+        if (handlerResult5 !== null) return handlerResult5
       }
-      if (result.length)
-        try {
-          return await handler(result)
-        } catch {}
     }
+  }
+
+  // 模糊匹配：如果所有精确匹配都失败，尝试仅用歌名搜索
+  const fuzzyResults = await searchMusic({ 
+    name: musicInfo.name, 
+    singer: '', 
+    source: '' 
+  })
+  
+  if (fuzzyResults.length > 0) {
+    const allOnlineResults: LX.Music.MusicInfoOnline[] = []
+    for (const source of fuzzyResults) {
+      allOnlineResults.push(...source.list.map(s => toNewMusicInfo(s) as LX.Music.MusicInfoOnline))
+    }
+    
+    // 按匹配度排序：优先匹配歌名包含关键词的
+    const sortedResults = allOnlineResults.sort((a, b) => {
+      const name = musicInfo.name.toLowerCase()
+      const aMatch = a.name.toLowerCase().includes(name) || name.includes(a.name.toLowerCase())
+      const bMatch = b.name.toLowerCase().includes(name) || name.includes(b.name.toLowerCase())
+      if (aMatch && !bMatch) return -1
+      if (!aMatch && bMatch) return 1
+      return 0
+    })
+    
+    const handlerResult6 = await tryHandler(sortedResults)
+    if (handlerResult6 !== null) return handlerResult6
   }
 
   throw new Error('source not found')

@@ -11,7 +11,8 @@ import settingState from '@/store/setting/state'
 import { requestMsg } from '@/utils/message'
 import BackgroundTimer from 'react-native-background-timer'
 import { apis } from '@/utils/musicSdk/api-source'
-import wySdk from '@/utils/musicSdk/wy';
+import wySdk from '@/utils/musicSdk/wy'
+import { log } from '@/utils/log'
 
 const getOtherSourcePromises = new Map()
 export const existTimeExp = /\[\d{1,2}:.*\d{1,4}\]/
@@ -24,11 +25,17 @@ export const getOtherSource = async (
   musicInfo: LX.Music.MusicInfo | LX.Download.ListItem,
   isRefresh = false
 ): Promise<LX.Music.MusicInfoOnline[]> => {
+  const name = 'progress' in musicInfo ? musicInfo.metadata.musicInfo.name : musicInfo.name
+  const singer = 'progress' in musicInfo ? musicInfo.metadata.musicInfo.singer : musicInfo.singer
+  
   // if (!isRefresh) {
   //   const cachedInfo = await getOtherSourceFromStore(musicInfo.id)
   //   if (cachedInfo.length) return cachedInfo
   // }
-  if (otherSourceCache.has(musicInfo)) return otherSourceCache.get(musicInfo)!
+  if (otherSourceCache.has(musicInfo)) {
+    log.info(`[在线匹配源] 命中缓存 - 歌曲: ${name} - 歌手: ${singer}`)
+    return otherSourceCache.get(musicInfo)!
+  }
   let key: string
   let searchMusicInfo: {
     name: string
@@ -56,11 +63,17 @@ export const getOtherSource = async (
       interval: musicInfo.interval ?? '',
     }
   }
-  if (getOtherSourcePromises.has(key)) return getOtherSourcePromises.get(key)
+  if (getOtherSourcePromises.has(key)) {
+    log.info(`[在线匹配源] 已有查询中 - 歌曲: ${name} - 歌手: ${singer}`)
+    return getOtherSourcePromises.get(key)
+  }
+
+  log.info(`[在线匹配源] 开始搜索 - 歌曲: ${name} - 歌手: ${singer}`)
 
   const promise = new Promise<LX.Music.MusicInfoOnline[]>((resolve, reject) => {
     let timeout: null | number = BackgroundTimer.setTimeout(() => {
       timeout = null
+      log.error(`[在线匹配源] 搜索超时 - 歌曲: ${name} - 歌手: ${singer}`)
       reject(new Error('find music timeout'))
     }, 12_000)
     findMusic(searchMusicInfo)
@@ -68,9 +81,13 @@ export const getOtherSource = async (
         if (otherSourceCache.size > 10) otherSourceCache.clear()
         const source = otherSource.map(toNewMusicInfo) as LX.Music.MusicInfoOnline[]
         otherSourceCache.set(musicInfo, source)
+        log.info(`[在线匹配源] 搜索完成 - 歌曲: ${name} - 歌手: ${singer} - 找到结果: ${source.length} 个`)
         resolve(source)
       })
-      .catch(reject)
+      .catch((err) => {
+        log.error(`[在线匹配源] 搜索失败 - 歌曲: ${name} - 歌手: ${singer} - 错误: ${err?.message || err}`)
+        reject(err)
+      })
       .finally(() => {
         if (timeout) BackgroundTimer.clearTimeout(timeout)
       })
@@ -203,20 +220,34 @@ export const getOnlineOtherSourceLyricByLocal = async (
   lyricInfo: LX.Music.LyricInfo
   isFromCache: boolean
 }> => {
-  if (!(await global.lx.apiInitPromise[0])) throw new Error('source init failed')
+  if (!(await global.lx.apiInitPromise[0])) {
+    log.error('[在线匹配歌词] API 未初始化')
+    throw new Error('source init failed')
+  }
 
   const lyricInfo = await getCachedLyricInfo(musicInfo)
-  if (lyricInfo && !isRefresh) return { lyricInfo, isFromCache: true }
+  if (lyricInfo && !isRefresh) {
+    log.info(`[在线匹配歌词] 命中缓存 - 歌曲: ${musicInfo.name} - 歌手: ${musicInfo.singer}`)
+    return { lyricInfo, isFromCache: true }
+  }
 
+  log.info(`[在线匹配歌词] 开始匹配 - 歌曲: ${musicInfo.name} - 歌手: ${musicInfo.singer}`)
+  
   let reqPromise
   try {
     reqPromise = apis('local').getLyric(toOldMusicInfo(musicInfo)).promise
   } catch (err: any) {
+    log.error(`[在线匹配歌词] API 调用失败 - 歌曲: ${musicInfo.name} - 错误: ${err?.message || err}`)
     reqPromise = Promise.reject(err)
   }
 
   return reqPromise.then((lyricInfo: LX.Music.LyricInfo) => {
+    const hasLyric = lyricInfo?.lyric?.length > 0
+    log.info(`[在线匹配歌词] 匹配完成 - 歌曲: ${musicInfo.name} - 是否成功: ${hasLyric} - 歌词长度: ${lyricInfo?.lyric?.length || 0}`)
     return { lyricInfo, isFromCache: false }
+  }).catch((err) => {
+    log.error(`[在线匹配歌词] 匹配失败 - 歌曲: ${musicInfo.name} - 错误: ${err?.message || err}`)
+    throw err
   })
 }
 
@@ -225,17 +256,28 @@ export const getOnlineOtherSourcePicByLocal = async (
 ): Promise<{
   url: string
 }> => {
-  if (!(await global.lx.apiInitPromise[0])) throw new Error('source init failed')
+  if (!(await global.lx.apiInitPromise[0])) {
+    log.error('[在线匹配封面] API 未初始化')
+    throw new Error('source init failed')
+  }
+
+  log.info(`[在线匹配封面] 开始匹配 - 歌曲: ${musicInfo.name} - 歌手: ${musicInfo.singer}`)
 
   let reqPromise
   try {
     reqPromise = apis('local').getPic(toOldMusicInfo(musicInfo)).promise
   } catch (err: any) {
+    log.error(`[在线匹配封面] API 调用失败 - 歌曲: ${musicInfo.name} - 错误: ${err?.message || err}`)
     reqPromise = Promise.reject(err)
   }
 
   return reqPromise.then((url: string) => {
+    const hasUrl = !!url && url.length > 0
+    log.info(`[在线匹配封面] 匹配完成 - 歌曲: ${musicInfo.name} - 是否成功: ${hasUrl} - URL: ${url || '空'}`)
     return { url }
+  }).catch((err) => {
+    log.error(`[在线匹配封面] 匹配失败 - 歌曲: ${musicInfo.name} - 错误: ${err?.message || err}`)
+    throw err
   })
 }
 
