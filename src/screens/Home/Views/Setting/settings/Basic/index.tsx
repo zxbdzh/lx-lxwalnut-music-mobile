@@ -26,7 +26,7 @@ export default memo(() => {
   const t = useI18n()
 
   return (
-    <Section title={t('setting_basic')}>
+    <Section title={t('setting_basic')} sectionId="setting_basic">
       <IsStartupAutoPlay />
       {/*<IsStartupPushPlayDetailScreen />*/}
       {global.lx.isCarMode ? (

@@ -246,6 +246,7 @@ const UserApiItem = memo(({
 export default memo(() => {
   const t = useI18n()
   const theme = useTheme()
+  const subContainerOpacity = useSettingValue('theme.subContainerOpacity')
   const list = useMemo(
     () =>
       apiSourceList.map((s) => ({
@@ -436,14 +437,14 @@ export default memo(() => {
   const reorderHint = t('setting_basic_source_user_api_reorder_tip')
 
   return (
-    <SubTitle title={t('setting_basic_source')}>
+    <SubTitle title={t('setting_basic_source')} collapsible sectionId="setting_basic_source_user_api">
       <View style={styles.list}>
         {list.map(({ id, name }) => (
           <BuiltInItem name={name} id={id} key={id} change={setApiSourceId} />
         ))}
       </View>
       {userApiList.length > 0 && (
-        <View style={styles.userApiContainer}>
+        <View style={{ ...styles.userApiContainer, backgroundColor: `rgba(255, 255, 255, ${subContainerOpacity / 100})` }}>
           <ScrollView
             style={styles.userApiScrollView}
             keyboardShouldPersistTaps={'always'}

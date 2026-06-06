@@ -22,7 +22,7 @@ export default memo(() => {
   } as const
 
   return (
-    <Section title={t('setting_about')}>
+    <Section title={t('setting_about')} sectionId="setting_about">
       <View style={styles.part}>
         <Text style={styles.text}>本软件(LX-Netease Music简称LX-N Music)完全免费，代码已开源。开源地址：</Text>
         <TouchableOpacity onPress={openHomePage}>

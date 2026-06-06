@@ -14,7 +14,7 @@ export default memo(() => {
   const t = useI18n()
 
   return (
-    <Section title={t('setting_other')}>
+    <Section title={t('setting_other')} sectionId="setting_other">
       <HideNavigationBar />
       <IsShowStartupGreeting />
       <ResourceCache />

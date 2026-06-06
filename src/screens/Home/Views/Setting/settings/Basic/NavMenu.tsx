@@ -189,6 +189,7 @@ export default memo(() => {
   const theme = useTheme();
   const navStatus = useSettingValue('common.navStatus');
   const navOrder = useSettingValue('common.navOrder');
+  const subContainerOpacity = useSettingValue('theme.subContainerOpacity');
 
   const [localOrder, setLocalOrder] = useState<NAV_ID_Type[]>(() => {
     return navOrder || NAV_MENUS.map(m => m.id);
@@ -363,7 +364,7 @@ export default memo(() => {
   const reorderHint = t('setting_basic_nav_menu_reorder_tip');
 
   return (
-    <SubTitle title={t('setting_basic_nav_menu')}>
+    <SubTitle title={t('setting_basic_nav_menu')} collapsible sectionId="setting_basic_nav_menu">
       <View style={styles.container}>
         <ScrollView
           style={styles.scrollView}
@@ -373,7 +374,7 @@ export default memo(() => {
           <View style={{
             overflow: 'hidden',
             borderRadius: 8,
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            backgroundColor: `rgba(255, 255, 255, ${subContainerOpacity / 100})`,
           }}>
             <View style={styles.menuList}>
               {menuList.map((item, idx) => {

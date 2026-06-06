@@ -155,6 +155,30 @@ const FolderIcon = ({ size, color }: { size: number; color: string }) => (
   </Svg>
 )
 
+/**
+ * 展开图标 - 向下箭头
+ */
+const ExpandIcon = ({ size, color }: { size: number; color: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 1048 1024" fill="none">
+    <Path
+      d="M565.514 752.186c0.393-0.394 0.491-0.935 0.861-1.326l431.062-392.233c23.201-23.692 23.471-61.882 0.566-85.254-22.906-23.374-60.284-23.126-83.511 0.589l-390.168 355.025-390.933-355.739c-23.224-23.691-60.826-23.716-84.025-0.049-23.174 23.692-23.151 62.079 0.049 85.795l432.096 393.168c23.199 23.692 60.827 23.714 84.001 0.024z"
+      fill={color}
+    />
+  </Svg>
+)
+
+/**
+ * 折叠图标 - 向上箭头
+ */
+const CollapseIcon = ({ size, color }: { size: number; color: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 1048 1024" fill="none">
+    <Path
+      d="M565.514 273.221c0.393 0.394 0.491 0.935 0.861 1.326l431.062 392.233c23.201 23.692 23.471 61.883 0.566 85.254-22.906 23.374-60.284 23.126-83.511-0.589l-390.168-355.025-390.933 355.739c-23.224 23.691-60.826 23.716-84.025 0.049-23.174-23.692-23.151-62.079 0.049-85.795l432.096-393.168c23.199-23.692 60.827-23.716 84.001-0.024z"
+      fill={color}
+    />
+  </Svg>
+)
+
 export const SvgIcon = memo(({ name, size = 15, rawSize, color = '#000', style }: SvgIconProps) => {
   const finalSize = rawSize ?? scaleSizeW(size)
 
@@ -178,6 +202,10 @@ export const SvgIcon = memo(({ name, size = 15, rawSize, color = '#000', style }
         return <MusicListIcon size={finalSize} color={color} />
       case 'export':
         return <ExportIcon size={finalSize} color={color} />
+      case 'expand':
+        return <ExpandIcon size={finalSize} color={color} />
+      case 'collapse':
+        return <CollapseIcon size={finalSize} color={color} />
       default:
         return null
     }

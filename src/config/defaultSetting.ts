@@ -54,6 +54,23 @@ const defaultSetting: LX.AppSetting = {
     'nav_setting',
   ],
 
+  'common.sectionExpandedStatus': {
+    setting_player: true,
+    setting_lyricDesktop: true,
+    setting_download: true,
+    setting_theme: true,
+    setting_sync: true,
+    setting_search: true,
+    setting_list: true,
+    setting_basic: true,
+    setting_other: true,
+    setting_backup: true,
+    setting_about: true,
+    setting_version: true,
+    setting_basic_nav_menu: true,
+    setting_basic_source_user_api: true,
+  },
+
   'player.startupAutoPlay': false,
   'player.startupPushPlayDetailScreen': false,
   'player.togglePlayMethod': 'listLoop',
@@ -151,6 +168,7 @@ const defaultSetting: LX.AppSetting = {
   'theme.customBgPicPath': '',
   'theme.picOpacity': 76,
   'theme.sectionOpacity': 50,
+  'theme.subContainerOpacity': 50,
 }
 
 // 使用新年皮肤

@@ -122,7 +122,7 @@ export default memo(() => {
   };
 
   return (
-    <Section title={t('setting_sync')}>
+    <Section title={t('setting_sync')} sectionId="setting_sync">
       {/* WebDAV 设置部分 */}
       <SubTitle title="WebDAV 同步">
         <CheckBoxItem

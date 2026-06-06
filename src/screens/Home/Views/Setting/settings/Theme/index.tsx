@@ -10,6 +10,7 @@ import Blur from "@/screens/Home/Views/Setting/settings/Theme/Blur.tsx";
 import CustomBg from "@/screens/Home/Views/Setting/settings/Theme/CustomBg.tsx";
 import PicOpacity from "@/screens/Home/Views/Setting/settings/Theme/PicOpacity.tsx";
 import SectionOpacity from "@/screens/Home/Views/Setting/settings/Theme/SectionOpacity.tsx";
+import SubContainerOpacity from "@/screens/Home/Views/Setting/settings/Theme/SubContainerOpacity.tsx";
 // import { useI18n } from '@/lang/i18n'
 
 export default memo(() => {
@@ -20,8 +21,9 @@ export default memo(() => {
       <IsDynamicBg />
       <CustomBg />
       <PicOpacity />
-      <Blur />
       <SectionOpacity />
+      <SubContainerOpacity />
+      <Blur />
       <IsFontShadow />
     </>
   )

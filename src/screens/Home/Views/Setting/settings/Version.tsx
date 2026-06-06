@@ -69,7 +69,7 @@ export default memo(() => {
   }, [t, versionInfo, progress])
 
   return (
-    <Section title={t('setting_version')}>
+    <Section title={t('setting_version')} sectionId="setting_version">
       <SubTitle title={title}>
         <View style={styles.desc}>
           <Text size={14}>

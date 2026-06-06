@@ -14,7 +14,7 @@ export default memo(() => {
   const t = useI18n()
 
   return (
-    <Section title={t('setting_list')}>
+    <Section title={t('setting_list')} sectionId="setting_list">
       <IsClickPlayList />
       <IsShowAlbumName />
       <IsShowInterval />
