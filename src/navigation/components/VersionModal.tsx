@@ -6,6 +6,7 @@ import { compareVer, sizeFormate } from '@/utils'
 import Button from '@/components/common/Button'
 import { updateApp } from '@/utils/version'
 import { createStyle } from '@/utils/tools'
+import { openUrl } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { type VersionInfo } from '@/store/version/state'
 import Text from '@/components/common/Text'
@@ -94,8 +95,10 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
   })
   const [closeBtnText, setCloseBtnText] = useState(t('version_btn_close'))
   const [confirmBtn, setConfirmBtn] = useState({ text: '', show: true, disabled: false })
+  const [manualUpdateBtn, setManualUpdateBtn] = useState({ show: true })
   const [title, setTitle] = useState('')
   const [tip, setTip] = useState('')
+  const MANUAL_UPDATE_URL = 'https://1813811951.share.123pan.cn/123pan/XINlVv-II4TH'
 
   useEffect(() => {
     let ignoreBtnConfig = { ...ignoreBtn }
@@ -170,6 +173,17 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
         : 'version_btn_ignore'
     )
     setIgnoreBtn(ignoreBtnConfig)
+
+    // 控制手动更新按钮显示
+    if (versionInfo.isLatest) {
+      setManualUpdateBtn({ show: false })
+    } else if (versionInfo.isUnknown) {
+      setManualUpdateBtn({ show: true })
+    } else if (versionInfo.status === 'downloading' || versionInfo.status === 'downloaded') {
+      setManualUpdateBtn({ show: false })
+    } else {
+      setManualUpdateBtn({ show: true })
+    }
   }, [t, versionInfo, ignoreVersion, progress])
 
   const handleCancel = () => {
@@ -180,6 +194,10 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
       ignoreVersion != versionInfo.newVersion!.version ? versionInfo.newVersion!.version : null
     )
     // handleCancel()
+  }
+
+  const handleManualUpdate = () => {
+    void openUrl(MANUAL_UPDATE_URL)
   }
 
   const handleConfirm = () => {
@@ -201,30 +219,42 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
         </Text>
       ) : null}
       <View style={styles.btns}>
-        {ignoreBtn.show ? (
+        <View style={styles.btnRow}>
+          {ignoreBtn.show ? (
+            <Button
+              disabled={ignoreBtn.disabled}
+              style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }}
+              onPress={handleIgnore}
+            >
+              <Text color={theme['c-button-font']}>{ignoreBtn.text}</Text>
+            </Button>
+          ) : null}
           <Button
-            disabled={ignoreBtn.disabled}
             style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }}
-            onPress={handleIgnore}
+            onPress={handleCancel}
           >
-            <Text color={theme['c-button-font']}>{ignoreBtn.text}</Text>
+            <Text color={theme['c-button-font']}>{closeBtnText}</Text>
           </Button>
-        ) : null}
-        <Button
-          style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }}
-          onPress={handleCancel}
-        >
-          <Text color={theme['c-button-font']}>{closeBtnText}</Text>
-        </Button>
-        {confirmBtn.show ? (
-          <Button
-            disabled={confirmBtn.disabled}
-            style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }}
-            onPress={handleConfirm}
-          >
-            <Text color={theme['c-button-font']}>{confirmBtn.text}</Text>
-          </Button>
-        ) : null}
+        </View>
+        <View style={styles.btnRow}>
+          {manualUpdateBtn.show ? (
+            <Button
+              style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }}
+              onPress={handleManualUpdate}
+            >
+              <Text color={theme['c-button-font']}>{t('version_btn_manual_update')}</Text>
+            </Button>
+          ) : null}
+          {confirmBtn.show ? (
+            <Button
+              disabled={confirmBtn.disabled}
+              style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }}
+              onPress={handleConfirm}
+            >
+              <Text color={theme['c-button-font']}>{confirmBtn.text}</Text>
+            </Button>
+          ) : null}
+        </View>
       </View>
     </ModalContent>
   )
@@ -267,11 +297,14 @@ const styles = createStyle({
     paddingBottom: 10,
   },
   btns: {
-    flexDirection: 'row',
-    justifyContent: 'center',
     paddingBottom: 15,
     paddingLeft: 15,
-    // paddingRight: 15,
+    paddingRight: 15,
+  },
+  btnRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
   },
   btn: {
     flex: 1,

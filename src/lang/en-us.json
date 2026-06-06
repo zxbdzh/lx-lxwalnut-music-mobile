@@ -593,6 +593,7 @@
   "version_btn_new": "Update",
   "version_btn_unknown": "Project Homepage",
   "version_btn_update": "Install",
+  "version_btn_manual_update": "Manual Update",
   "version_label_change_log": "Changelog: ",
   "version_label_current_ver": "Current: ",
   "version_label_history": "History: ",
