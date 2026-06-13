@@ -22,7 +22,7 @@ import ListMusicMultiAdd, {
   type MusicMultiAddModalType as ListAddMultiType,
 } from '@/components/MusicMultiAddModal'
 import {createStyle, toast} from '@/utils/tools'
-import { type LayoutChangeEvent, View } from 'react-native'
+import { type LayoutChangeEvent, TouchableOpacity, View } from 'react-native'
 import ActiveList, { type ActiveListType } from './ActiveList'
 import MultipleModeBar, { type SelectMode, type MultipleModeBarType } from './MultipleModeBar'
 import ListSearchBar, { type ListSearchBarType } from './ListSearchBar'
@@ -41,7 +41,11 @@ import {getMvUrl} from "@/utils/musicSdk/wy/mv.js";
 import commonState from '@/store/common/state';
 import SimilarSongsModal, { type SimilarSongsModalType } from '@/components/SimilarSongsModal'
 
-export default () => {
+export interface MusicListProps {
+  onBack?: () => void
+}
+
+export default ({ onBack }: MusicListProps) => {
   const activeListRef = useRef<ActiveListType>(null)
   const listMusicSearchRef = useRef<ListMusicSearchType>(null)
   const listRef = useRef<ListType>(null)
@@ -139,7 +143,6 @@ export default () => {
     isShowSearchBarModeBar.current = false
     listMusicSearchRef.current?.hide()
     listSearchBarRef.current?.hide()
-    // console.log('handleExitSearch', isShowMultipleModeBar.current)
     if (isShowMultipleModeBar.current) {
       multipleModeBarRef.current?.setVisibleBar(true)
     } else activeListRef.current?.setVisibleBar(true)
@@ -204,6 +207,7 @@ export default () => {
           onScrollToTop={hancelScrollToTop}
           showCover={showCover}
           onToggleView={handleToggleView}
+          onBack={onBack}
         />
         <MultipleModeBar
           ref={multipleModeBarRef}

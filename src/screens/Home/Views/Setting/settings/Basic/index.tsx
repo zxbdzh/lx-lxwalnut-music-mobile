@@ -18,6 +18,7 @@ import IsUseSystemFileSelector from './IsUseSystemFileSelector'
 import IsAlwaysKeepStatusbarHeight from './IsAlwaysKeepStatusbarHeight'
 import DrawerLayoutPosition from './DrawerLayoutPosition'
 import IsShowMyListSubMenu from './IsShowMyListSubMenu'
+import IsNewListUI from './IsNewListUI'
 import { useI18n } from '@/lang/i18n'
 import WyCookie from './WyCookie'
 import NavMenu from "@/screens/Home/Views/Setting/settings/Basic/NavMenu.tsx";
@@ -39,6 +40,7 @@ export default memo(() => {
       ) : null}
       <IsHomePageScroll />
       <IsShowMyListSubMenu />
+      <IsNewListUI />
       <IsUseSystemFileSelector />
       <IsAlwaysKeepStatusbarHeight />
       <Theme />

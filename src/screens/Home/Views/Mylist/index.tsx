@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import settingState from '@/store/setting/state'
 import MusicList from './MusicList'
 import MyList from './MyList'
+import NewListUI from './NewListUI'
 import { useTheme } from '@/store/theme/hook'
 import DrawerLayoutFixed, {
   type DrawerLayoutFixedType,
@@ -9,12 +10,14 @@ import DrawerLayoutFixed, {
 import { COMPONENT_IDS } from '@/config/constant'
 import { scaleSizeW } from '@/utils/pixelRatio'
 import type { InitState as CommonState } from '@/store/common/state'
+import { useSettingValue } from '@/store/setting/hook'
 
 const MAX_WIDTH = scaleSizeW(400)
 
 export default () => {
   const drawer = useRef<DrawerLayoutFixedType>(null)
   const theme = useTheme()
+  const isNewListUI = useSettingValue('list.isNewListUI')
   // const [width, setWidth] = useState(0)
 
   useEffect(() => {
@@ -53,6 +56,10 @@ export default () => {
 
   const navigationView = () => <MyList />
   // console.log('render drawer content')
+
+  if (isNewListUI) {
+    return <NewListUI />
+  }
 
   return (
     <DrawerLayoutFixed

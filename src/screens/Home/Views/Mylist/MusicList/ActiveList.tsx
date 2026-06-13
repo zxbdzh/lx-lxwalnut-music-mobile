@@ -19,13 +19,14 @@ export interface ActiveListProps {
   onScrollToTop: () => void
   showCover: boolean
   onToggleView: () => void
+  onBack?: () => void
 }
 export interface ActiveListType {
   setVisibleBar: (visible: boolean) => void
 }
 
 export default forwardRef<ActiveListType, ActiveListProps>(
-  ({ onShowSearchBar, onScrollToTop, showCover, onToggleView }, ref) => {
+  ({ onShowSearchBar, onScrollToTop, showCover, onToggleView, onBack }, ref) => {
     const theme = useTheme()
     const currentListId = useActiveListId()
     const fetching = useListFetching(currentListId)
@@ -62,7 +63,7 @@ export default forwardRef<ActiveListType, ActiveListProps>(
 
     return (
       <TouchableOpacity
-        onPress={showList}
+        onPress={onBack || showList}
         onLongPress={onScrollToTop}
         style={{
           ...styles.currentList,
@@ -73,12 +74,12 @@ export default forwardRef<ActiveListType, ActiveListProps>(
         <Icon
           style={styles.currentListIcon}
           color={theme['c-button-font']}
-          name="chevron-right"
-          size={12}
+          name={onBack ? 'chevron-left' : 'chevron-right'}
+          size={onBack ? 18 : 12}
         />
         {fetching ? <Loading color={theme['c-button-font']} style={styles.loading} /> : null}
         <Text style={styles.currentListText} numberOfLines={1} color={theme['c-button-font']}>
-          {currentListName}
+          {onBack ? '返回' : currentListName}
         </Text>
         <TouchableOpacity style={styles.currentListBtns} onPress={onToggleView}>
           <Icon color={theme['c-button-font']} name={showCover ? 'menu' : 'album'} />

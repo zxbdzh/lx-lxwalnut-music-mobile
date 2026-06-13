@@ -129,6 +129,11 @@ declare global {
       'theme.sectionOpacity': number
 
       /**
+       * 我的列表新UI
+       */
+      'list.isNewListUI': boolean
+
+      /**
        * 字体阴影
        */
       'theme.fontShadow': boolean
