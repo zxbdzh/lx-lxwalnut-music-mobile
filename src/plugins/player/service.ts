@@ -18,12 +18,9 @@ import { getAllKeys, removeDataMultiple } from '@/plugins/storage'
 
 let isInitialized = false
 
-// let retryTrack: LX.Player.Track | null = null
-// let retryGetUrlId: string | null = null
-// let retryGetUrlNum = 0
-// let errorTime = 0
-// let prevDuration = 0
-// let isPlaying = false
+let retryGetUrlId: string | null = null
+let retryGetUrlNum = 0
+const MAX_RETRY_NUM = 3
 
 // 销毁播放器并退出
 const handleExitApp = async (reason: string) => {
@@ -114,35 +111,55 @@ const registerPlaybackService = async () => {
 
     try {
       const currentMusicInfo = playerState.playMusicInfo.musicInfo
-      if (currentMusicInfo) {
-        log.info('[Player] Clearing music URL cache for:', currentMusicInfo.name, currentMusicInfo.id)
-        // 获取所有缓存键 - 使用直接的字符串常量避免模块加载问题
-        const allKeys = await getAllKeys()
-        const prefix = '@music_url__'
-        const musicId = currentMusicInfo.id
-        // 找到该音乐的所有音质缓存
-        const cacheKeys = allKeys.filter(key => key.startsWith(prefix + musicId))
-        if (cacheKeys.length > 0) {
-          log.info('[Player] Found cached keys:', cacheKeys)
-          await removeDataMultiple(cacheKeys)
-          log.info('[Player] Music URL cache cleared successfully')
-        } else {
-          log.info('[Player] No cached URL found for this music')
-        }
-
-        // 尝试重新获取播放地址
-        global.lx.playerError = true
-        log.info('[Player] Attempting to re-fetch music URL')
-        if (currentMusicInfo) {
-          // 等待一段时间再重试，避免立即重试
-          setTimeout(() => {
-            log.info('[Player] Re-fetching music URL...')
-            setMusicUrl(currentMusicInfo, true) // true 表示刷新缓存
-          }, 1000)
-        }
-      } else {
+      if (!currentMusicInfo) {
         log.warn('[Player] No current music info available')
+        return
       }
+
+      const currentId = currentMusicInfo.id
+      
+      // 检查是否是同一首歌在重试
+      if (retryGetUrlId === currentId) {
+        retryGetUrlNum++
+      } else {
+        retryGetUrlId = currentId
+        retryGetUrlNum = 1
+      }
+
+      // 超过最大重试次数，停止重试
+      if (retryGetUrlNum > MAX_RETRY_NUM) {
+        log.error('[Player] Max retry attempts reached, stopping playback recovery')
+        log.error('[Player] Playback failed for:', currentMusicInfo.name, currentMusicInfo.id)
+        retryGetUrlId = null
+        retryGetUrlNum = 0
+        return
+      }
+
+      log.info(`[Player] Retry attempt ${retryGetUrlNum}/${MAX_RETRY_NUM} for:`, currentMusicInfo.name)
+
+      log.info('[Player] Clearing music URL cache for:', currentMusicInfo.name, currentMusicInfo.id)
+      // 获取所有缓存键 - 使用直接的字符串常量避免模块加载问题
+      const allKeys = await getAllKeys()
+      const prefix = '@music_url__'
+      const musicId = currentMusicInfo.id
+      // 找到该音乐的所有音质缓存
+      const cacheKeys = allKeys.filter(key => key.startsWith(prefix + musicId))
+      if (cacheKeys.length > 0) {
+        log.info('[Player] Found cached keys:', cacheKeys)
+        await removeDataMultiple(cacheKeys)
+        log.info('[Player] Music URL cache cleared successfully')
+      } else {
+        log.info('[Player] No cached URL found for this music')
+      }
+
+      // 尝试重新获取播放地址
+      global.lx.playerError = true
+      log.info('[Player] Attempting to re-fetch music URL')
+      // 等待一段时间再重试，避免立即重试
+      setTimeout(() => {
+        log.info('[Player] Re-fetching music URL...')
+        setMusicUrl(currentMusicInfo, true) // true 表示刷新缓存
+      }, 1000)
     } catch (clearErr) {
       log.warn('[Player] Cache clearing had an issue, but will still retry:', clearErr)
     }

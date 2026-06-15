@@ -112,9 +112,8 @@ export const toNewMusicInfo = (oldMusicInfo: any): LX.Music.MusicInfo => {
         break
       case 'tx':
         meta.strMediaMid = oldMusicInfo.strMediaMid
-        meta.songmid = oldMusicInfo.songmid
+        meta.songmid = oldMusicInfo.songmid || oldMusicInfo.songId || oldMusicInfo.id
         meta.albumMid = oldMusicInfo.albumMid
-        // getListDetailNew 返回的字段名是 id 不是 songId，兼容两种写法
         meta.id = oldMusicInfo.songId || oldMusicInfo.id
         meta.vid = oldMusicInfo.vid || oldMusicInfo.meta?.vid || ''
         break
@@ -138,7 +137,7 @@ export const toOldMusicInfo = (minfo: LX.Music.MusicInfo): any => {
     name: minfo.name,
     singer: minfo.singer,
     source: minfo.source,
-    songmid: minfo.meta.songId,
+    songmid: minfo.meta.songmid || minfo.meta.songId || minfo.meta.id || minfo.id,
     interval: minfo.interval,
     albumName: minfo.meta.albumName,
     img: minfo.meta.picUrl ?? '',
@@ -161,10 +160,11 @@ export const toOldMusicInfo = (minfo: LX.Music.MusicInfo): any => {
         oInfo.hash = minfo.meta.hash
         break
       case 'tx':
-        oInfo.strMediaMid = minfo.meta.strMediaMid
-        oInfo.songmid = minfo.meta.songmid || minfo.meta.songId
-        oInfo.albumMid = minfo.meta.albumMid
-        oInfo.songId = minfo.meta.id
+        oInfo.strMediaMid = minfo.meta.strMediaMid || ''
+        oInfo.songmid = minfo.meta.songmid || minfo.songmid || minfo.meta.songId || minfo.meta.id || minfo.id || minfo.meta.strMediaMid || ''
+        oInfo.albumMid = minfo.meta.albumMid || ''
+        oInfo.songId = minfo.meta.id || minfo.id || ''
+        oInfo.vid = minfo.meta.vid || ''
         break
       case 'mg':
         oInfo.copyrightId = minfo.meta.copyrightId
@@ -189,7 +189,7 @@ export const fixNewMusicInfoQuality = (musicInfo: LX.Music.MusicInfo) => {
   if (musicInfo.source == 'local') return musicInfo
 
   // @ts-expect-error
-  if (musicInfo.meta._qualitys.flac32bit && !musicInfo.meta._qualitys.hires) {
+  if (musicInfo.meta?._qualitys?.flac32bit && !musicInfo.meta?._qualitys?.hires) {
     // @ts-expect-error
     musicInfo.meta._qualitys.hires = musicInfo.meta._qualitys.flac32bit
     // @ts-expect-error
@@ -203,7 +203,7 @@ export const fixNewMusicInfoQuality = (musicInfo: LX.Music.MusicInfo) => {
   }
 
   // @ts-expect-error
-  if (musicInfo.meta._qualitys.flac24bit && !musicInfo.meta._qualitys.hires) {
+  if (musicInfo.meta?._qualitys?.flac24bit && !musicInfo.meta?._qualitys?.hires) {
     // @ts-expect-error
     musicInfo.meta._qualitys.hires = musicInfo.meta._qualitys.flac24bit
     // @ts-expect-error
@@ -217,7 +217,7 @@ export const fixNewMusicInfoQuality = (musicInfo: LX.Music.MusicInfo) => {
   }
 
   // @ts-expect-error
-  if (musicInfo.meta._qualitys.effect && !musicInfo.meta._qualitys.atmos) {
+  if (musicInfo.meta?._qualitys?.effect && !musicInfo.meta?._qualitys?.atmos) {
     // @ts-expect-error
     musicInfo.meta._qualitys.atmos = musicInfo.meta._qualitys.effect
     // @ts-expect-error
@@ -231,7 +231,7 @@ export const fixNewMusicInfoQuality = (musicInfo: LX.Music.MusicInfo) => {
   }
 
   // @ts-expect-error
-  if (musicInfo.meta._qualitys.effect_plus && !musicInfo.meta._qualitys.atmos_plus) {
+  if (musicInfo.meta?._qualitys?.effect_plus && !musicInfo.meta?._qualitys?.atmos_plus) {
     // @ts-expect-error
     musicInfo.meta._qualitys.atmos_plus = musicInfo.meta._qualitys.effect_plus
     // @ts-expect-error

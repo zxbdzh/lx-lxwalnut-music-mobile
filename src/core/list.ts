@@ -14,6 +14,23 @@ import { clearPlayedList } from '@/core/player/playedList'
  * @param index 开始播放的歌曲索引
  */
 export const playOnlineList = async (listId: string, list: LX.Music.MusicInfoOnline[], index: number, isSkipPlay: boolean = false) => {
+  // 详细日志：检查传递给播放器的歌曲信息
+  const targetMusic = list[index];
+  if (targetMusic) {
+    console.log('[playOnlineList] === 播放歌曲信息诊断 ===', {
+      listId,
+      index,
+      musicId: targetMusic.id,
+      musicName: targetMusic.name,
+      musicSource: targetMusic.source,
+      musicSongmid: targetMusic.songmid,
+      metaSongmid: targetMusic.meta?.songmid,
+      metaSongId: targetMusic.meta?.songId,
+      metaId: targetMusic.meta?.id,
+      metaKeys: targetMusic.meta ? Object.keys(targetMusic.meta) : [],
+    });
+  }
+  
   await overwriteListMusics(LIST_IDS.TEMP, [...list])
   await setTempList(listId, list) // 确保meta信息被设置
   clearPlayedList()

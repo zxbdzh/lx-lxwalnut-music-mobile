@@ -22,6 +22,7 @@ export interface ListType {
 export default forwardRef<ListType, ListProps>(({ onSearch, onOpenDetail }, ref) => {
   const [listType, setListType] = useState<SearchState['searchType']>('music')
   const [showBlankView, setShowListView] = useState(true)
+  const [currentSource, setCurrentSource] = useState<MusicSource | SongListSource>('wy')
   const listRef = useRef<MusicListType>(null)
   const blankViewRef = useRef<BlankViewType>(null)
 
@@ -29,6 +30,7 @@ export default forwardRef<ListType, ListProps>(({ onSearch, onOpenDetail }, ref)
     ref,
     () => ({
       loadList(text, source, type) {
+        setCurrentSource(source)
         if (text) {
           setShowListView(false)
           setListType(type)
@@ -51,9 +53,9 @@ export default forwardRef<ListType, ListProps>(({ onSearch, onOpenDetail }, ref)
       case 'songlist':
         return <SonglistList ref={listRef} onOpenDetail={onOpenDetail} />
       case 'singer':
-        return <SearchResultList ref={listRef} searchType="singer" />
+        return <SearchResultList ref={listRef} searchType="singer" source={currentSource} />
       case 'album':
-        return <SearchResultList ref={listRef} searchType="album" />
+        return <SearchResultList ref={listRef} searchType="album" source={currentSource} />
       case 'music':
       default:
         return <MusicList ref={listRef} />

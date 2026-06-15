@@ -22,19 +22,27 @@ export const sizeFormate = (size: number): string => {
  * @returns 时间对象或空字符串
  */
 export const toDateObj = (date?: number | string | Date): Date | '' => {
-  // console.log(date)
   if (!date) return ''
+  let result: Date
   switch (typeof date) {
     case 'string':
-      if (!date.includes('T')) date = date.split('.')[0].replace(/-/g, '/')
+      const cleanDate = date.split('.')[0]
+      if (!cleanDate.includes('T')) {
+        result = new Date(cleanDate.replace(/-/g, '/'))
+      } else {
+        result = new Date(cleanDate)
+      }
+      break
     case 'number':
-      date = new Date(date)
+      result = new Date(date)
+      break
     case 'object':
+      result = date as Date
       break
     default:
       return ''
   }
-  return date
+  return isNaN(result.getTime()) ? '' : result
 }
 
 const numFix = (n: number): string => (n < 10 ? `0${n}` : n.toString())

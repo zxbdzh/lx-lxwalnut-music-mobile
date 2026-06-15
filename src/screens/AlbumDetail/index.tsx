@@ -4,6 +4,7 @@ import PageContent from '@/components/PageContent'
 import Header from './Header'
 import OnlineList, { type OnlineListType } from '@/components/OnlineList'
 import wyApi from '@/utils/musicSdk/wy/album'
+import txApi from '@/utils/musicSdk/tx/album'
 import { toast } from '@/utils/tools'
 import { setComponentId } from '@/core/common'
 import PlayerBar from '@/components/player/PlayerBar'
@@ -14,8 +15,18 @@ import {COMPONENT_IDS, LIST_IDS} from "@/config/constant.ts"
 import playerState from '@/store/player/state'
 import listState from '@/store/list/state'
 import {usePlayerMusicInfo} from "@/store/player/hook.ts";
+import { log } from '@/utils/log'
 
-export default memo(({ componentId, albumInfo }: { componentId: string; albumInfo: ListInfoItem }) => {
+export default memo(({ componentId, albumInfo }: { componentId: string; albumInfo: any }) => {
+  log.info('[AlbumDetail] === 专辑详情页初始化 ===', {
+    componentId,
+    albumInfo,
+    albumSource: albumInfo.source,
+    albumId: albumInfo.id,
+    albumMid: albumInfo.mid,
+    albumName: albumInfo.name,
+    timestamp: new Date().toISOString(),
+  })
   const [albumDetail, setAlbumDetail] = useState({ info: null, list: [] })
   const listRef = useRef<OnlineListType>(null)
   const playerMusicInfo = usePlayerMusicInfo()
@@ -38,42 +49,102 @@ export default memo(({ componentId, albumInfo }: { componentId: string; albumInf
   }, [albumInfo.id])
 
   useEffect(() => {
+    log.info('[AlbumDetail] === 开始加载专辑详情 ===', {
+      albumId: albumInfo.id,
+      albumMid: albumInfo.mid,
+      albumSource: albumInfo.source,
+      albumName: albumInfo.name,
+    })
     setComponentId(COMPONENT_IDS.ALBUM_DETAIL_SCREEN, componentId);
+    log.info('[AlbumDetail] === 设置列表状态为loading ===')
     listRef.current?.setStatus('loading');
-    wyApi.getAlbum(albumInfo.id).then(data => {
+    
+    const api = albumInfo.source === 'tx' ? txApi : wyApi
+    const albumParam = albumInfo.source === 'tx' ? albumInfo.mid : albumInfo.id
+    
+    log.info('[AlbumDetail] === 调用API获取专辑详情 ===', {
+      albumId: albumInfo.id,
+      albumMid: albumInfo.mid,
+      albumSource: albumInfo.source,
+      api: albumInfo.source === 'tx' ? 'txApi' : 'wyApi',
+      albumParam,
+    })
+    
+    api.getAlbum(albumParam).then(data => {
+      log.info('[AlbumDetail] 专辑加载成功', { albumId: albumInfo.id, listLength: data.list?.length || 0 })
       setAlbumDetail(data);
       listRef.current?.setList(data.list);
       listRef.current?.setStatus('idle');
-    }).catch(() => {
+    }).catch((err) => {
+      log.error('[AlbumDetail] 专辑加载失败', { albumId: albumInfo.id, error: err.message })
       toast('获取专辑信息失败');
       listRef.current?.setStatus('error');
     });
-  }, [componentId, albumInfo.id]);
+  }, [componentId, albumInfo.id, albumInfo.source, albumInfo.mid]);
 
   const onRefresh = useCallback(() => {
+    log.info('[AlbumDetail] === 下拉刷新专辑详情 ===', {
+      albumId: albumInfo.id,
+      albumMid: albumInfo.mid,
+      albumSource: albumInfo.source,
+    })
     listRef.current?.setStatus('refreshing');
-    wyApi.getAlbum(albumInfo.id).then(data => {
+    
+    const refreshApi = albumInfo.source === 'tx' ? txApi : wyApi
+    const refreshParam = albumInfo.source === 'tx' ? albumInfo.mid : albumInfo.id
+    
+    refreshApi.getAlbum(refreshParam).then(data => {
+      log.info('[AlbumDetail] === 刷新专辑详情成功 ===', {
+        albumId: albumInfo.id,
+        listLength: data.list.length,
+      })
       setAlbumDetail(data);
       listRef.current?.setList(data.list);
       listRef.current?.setStatus('idle');
-    }).catch(() => {
+    }).catch((err) => {
+      log.error('[AlbumDetail] === 刷新专辑详情失败 ===', {
+        albumId: albumInfo.id,
+        error: err.message,
+      })
       toast('刷新专辑信息失败');
       listRef.current?.setStatus('error');
     });
-  }, [albumInfo.id]);
+  }, [albumInfo.id, albumInfo.source, albumInfo.mid]);
 
   const onPlayList = useCallback((index: number) => {
-    if (!albumDetail.list.length) return;
+    log.info('[AlbumDetail] === 点击播放专辑 ===', {
+      albumId: albumInfo.id,
+      albumSource: albumInfo.source,
+      playIndex: index,
+      totalSongs: albumDetail.list.length,
+    })
+    if (!albumDetail.list.length) {
+      log.warn('[AlbumDetail] === 无法播放，专辑列表为空 ===', {
+        albumId: albumInfo.id,
+      })
+      return;
+    }
     const listId = `album_${albumInfo.id}`;
+    log.info('[AlbumDetail] === 调用playOnlineList ===', {
+      listId,
+      playIndex: index,
+      totalSongs: albumDetail.list.length,
+    })
     void playOnlineList(listId, albumDetail.list, index);
+    log.info('[AlbumDetail] === 播放请求已发送 ===')
   }, [albumDetail.list, albumInfo.id]);
 
   const handleListUpdate = useCallback((newList: LX.Music.MusicInfoOnline[]) => {
+    log.info('[AlbumDetail] === 列表数据更新 ===', {
+      albumId: albumInfo.id,
+      oldListLength: albumDetail.list.length,
+      newListLength: newList.length,
+    })
     setAlbumDetail(prev => ({
       ...prev,
       list: newList,
     }));
-  }, []);
+  }, [albumDetail.list, albumInfo.id]);
   return (
     <PageContent>
       <View style={styles.container}>

@@ -19,16 +19,17 @@ export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT)
 const useQualityTag = (musicInfo: LX.Music.MusicInfoOnline) => {
   const t = useI18n()
   let info: { type: BadgeType | null; text: string } = { type: null, text: '' }
-  if (musicInfo.meta._qualitys.hires) {
+  const qualitys = (musicInfo.meta as LX.Music.MusicInfoMeta_online)?._qualitys ?? {}
+  if (qualitys.hires) {
     info.type = 'secondary'
     info.text = t('quality_lossless_24bit')
-  } else if (musicInfo.meta._qualitys.flac) {
+  } else if (qualitys.flac) {
     info.type = 'sq'
     info.text = t('quality_lossless')
-  } else if (musicInfo.meta._qualitys['320k']) {
+  } else if (qualitys['320k']) {
     info.type = 'hq'
     info.text = t('quality_high_quality')
-  } else if (musicInfo.meta._qualitys['192k']) {
+  } else if (qualitys['192k']) {
     info.type = 'hq'
     info.text = '192k'
   }

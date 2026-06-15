@@ -13,6 +13,7 @@ import wyApi from '@/utils/musicSdk/wy/user'
 import { useIsWyArtistFollowed } from '@/store/user/hook'
 import { addWyFollowedArtist, removeWyFollowedArtist } from '@/store/user/action'
 import {FollowedArtistInfo} from "@/store/user/state.ts";
+import { log } from '@/utils/log'
 
 export default memo(({ artist, showFollowButton = false }: { artist: any, showFollowButton?: boolean }) => {
   const theme = useTheme()
@@ -42,7 +43,26 @@ export default memo(({ artist, showFollowButton = false }: { artist: any, showFo
   }
 
   const handlePress = () => {
-    navigations.pushArtistDetailScreen(commonState.componentIds[commonState.componentIds.length - 1]?.id, { id: String(artist.id), name: artist.name });
+    log.info('[FollowedArtists/ListItem] === 点击歌手 ===', {
+      artistId: artist.id,
+      artistMid: artist.mid,
+      artistName: artist.name,
+      artistSource: artist.source,
+      albumSize: artist.albumSize,
+      songNum: artist.songNum,
+      timestamp: new Date().toISOString(),
+    })
+    navigations.pushArtistDetailScreen(commonState.componentIds[commonState.componentIds.length - 1]?.id, { 
+      id: String(artist.id),
+      mid: String(artist.mid),
+      name: artist.name,
+      source: artist.source,
+    });
+    log.info('[FollowedArtists/ListItem] === 跳转请求已发送 ===', {
+      artistId: artist.id,
+      artistMid: artist.mid,
+      artistSource: artist.source,
+    })
   }
   const alias = artist.alias && artist.alias.length ? ` ${artist.alias[0]}` : ''
 
@@ -54,7 +74,11 @@ export default memo(({ artist, showFollowButton = false }: { artist: any, showFo
           {artist.name}
           {alias ? <Text size={12} color={theme['c-font-label']}>{alias}</Text> : null}
         </Text>
-        <Text size={12} color={theme['c-font-label']}>专辑: {artist.albumSize}</Text>
+        <Text size={12} color={theme['c-font-label']}>
+          {artist.source === 'tx'
+            ? `歌曲: ${artist.songNum || 0}  专辑: ${artist.albumSize || 0}`
+            : `专辑: ${artist.albumSize}`}
+        </Text>
       </View>
       {showFollowButton && (
         <TouchableOpacity style={styles.followButton} onPress={handleFollow}>

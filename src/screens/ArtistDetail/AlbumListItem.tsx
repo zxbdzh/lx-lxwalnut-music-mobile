@@ -18,14 +18,20 @@ export default memo(({ componentId, item, width, viewMode }: { componentId: stri
   const isSubscribed = useIsWyAlbumSubscribed(item.id)
 
   const handlePress = () => {
+    const author = item.artist?.name || item.artistName || ''
+    const source = item.source || 'wy'
+    // QQ音乐需要使用 albumMid 来获取专辑详情
+    const albumId = source === 'tx' ? (item.mid || item.id) : item.id
+    
     const albumInfo = {
-      id: item.id,
+      id: albumId,
+      mid: item.mid || item.id,
       name: item.name,
-      author: item.artist.name,
+      author,
       img: item.picUrl,
       play_count: '',
       desc: item.briefDesc,
-      source: 'wy',
+      source,
       artists: item.artists,
       picUrl: item.picUrl,
       size: item.size,
@@ -66,7 +72,7 @@ export default memo(({ componentId, item, width, viewMode }: { componentId: stri
         <View style={listStyles.info}>
           <Text style={listStyles.name} numberOfLines={1}>{item.name}</Text>
           <Text style={listStyles.time} size={12} color={theme['c-font-label']}>
-            {dateFormat(item.publishTime, 'Y.M.D')} • {item.size} tracks
+            {item.size} tracks
           </Text>
         </View>
         <TouchableOpacity style={listStyles.likeButton} onPress={toggleSubscribe}>
@@ -84,10 +90,7 @@ export default memo(({ componentId, item, width, viewMode }: { componentId: stri
       <View style={gridStyles.metaContainer}>
         <View style={gridStyles.metaTextContainer}>
           <Text style={gridStyles.time} size={10} color={theme['c-font-label']}>
-            {dateFormat(item.publishTime, 'Y.M.D')}
-          </Text>
-          <Text style={gridStyles.trackCount} size={10} color={theme['c-font-label']}>
-            • {item.size} tracks
+            {item.size} tracks
           </Text>
         </View>
         <TouchableOpacity style={gridStyles.likeButton} onPress={toggleSubscribe}>

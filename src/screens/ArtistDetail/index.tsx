@@ -4,6 +4,7 @@ import PageContent from '@/components/PageContent';
 import Header from './Header';
 import SongList from './SongList';
 import wyApi from '@/utils/musicSdk/wy/artist';
+import txApi from '@/utils/musicSdk/tx/artist';
 import { toast } from '@/utils/tools';
 import {setComponentId, updateSetting} from '@/core/common';
 import PlayerBar from '@/components/player/PlayerBar';
@@ -16,11 +17,18 @@ import listState from '@/store/list/state'
 import { LIST_IDS } from '@/config/constant'
 import { type OnlineListType } from '@/components/OnlineList'
 import {usePlayerMusicInfo} from "@/store/player/hook.ts";
+import { log } from '@/utils/log'
 
 const SONG_LIMIT = 100;
 const ALBUM_LIMIT = 100;
 
-export default memo(({ componentId, artistInfo }: { componentId: string, artistInfo: { id: string, name: string } }) => {
+export default memo(({ componentId, artistInfo }: { componentId: string, artistInfo: { id: string, mid?: string, name: string, source?: string } }) => {
+  log.info('[ArtistDetail] === 歌手详情页初始化 ===', {
+    componentId,
+    artistInfo,
+    artistSource: artistInfo.source,
+    timestamp: new Date().toISOString(),
+  })
   const [artistDetail, setArtistDetail] = useState(null);
   const [songs, setSongs] = useState({ list: [], hasMore: true, page: 1, loading: false, sort: 'hot' });
   const [albums, setAlbums] = useState({ list: [], hasMore: true, page: 1, loading: false });
@@ -76,24 +84,69 @@ export default memo(({ componentId, artistInfo }: { componentId: string, artistI
   useEffect(() => {
     setComponentId('ARTIST_DETAIL', componentId);
     componentIdRef.current = componentId;
+    const api = artistInfo.source === 'tx' ? txApi : wyApi
+    const artistParam = artistInfo.source === 'tx' ? (artistInfo.mid || artistInfo.id) : artistInfo.id
 
-    const cachedDetail = getArtistDetailCache(artistInfo.id);
+    log.info('[ArtistDetail] === 开始获取歌手详情 ===', {
+      artistId: artistInfo.id,
+      artistMid: artistInfo.mid,
+      artistParam,
+      artistName: artistInfo.name,
+      artistSource: artistInfo.source,
+      api: artistInfo.source === 'tx' ? 'txApi' : 'wyApi',
+    })
+
+    const cachedDetail = getArtistDetailCache(artistParam);
     if (cachedDetail) {
+      log.info('[ArtistDetail] === 使用缓存的歌手详情 ===', {
+        artistId: artistInfo.id,
+        artistParam,
+        cached: true,
+      })
       setArtistDetail(cachedDetail);
     } else {
-      wyApi.getDetail(artistInfo.id).then(data => {
-        setArtistDetailCache(artistInfo.id, data); // 存入缓存
+      log.info('[ArtistDetail] === 从API获取歌手详情 ===', {
+        artistId: artistInfo.id,
+        artistParam,
+        cached: false,
+        api: artistInfo.source === 'tx' ? 'txApi' : 'wyApi',
+      })
+      api.getDetail(artistParam).then(data => {
+        log.info('[ArtistDetail] 获取歌手详情成功', { artistId: artistInfo.id, hasArtist: !!data?.artist })
+        setArtistDetailCache(artistInfo.id, data);
         setArtistDetail(data);
-      }).catch(() => toast('获取歌手信息失败'));
+      }).catch((err) => {
+        log.error('[ArtistDetail] 获取歌手详情失败', { artistId: artistInfo.id, error: err.message })
+        toast('获取歌手信息失败');
+      });
     }
-  }, [componentId, artistInfo.id]);
+  }, [componentId, artistInfo.id, artistInfo.source]);
 
   const loadSongs = useCallback((sort, page, isRefresh = false) => {
-    const cacheKey = `${artistInfo.id}_songs_${sort}_${page}`;
+    const currentApi = artistInfo.source === 'tx' ? txApi : wyApi
+    const currentArtistParam = artistInfo.source === 'tx' ? (artistInfo.mid || artistInfo.id) : artistInfo.id
 
-    // 从全局缓存读取
+    log.info('[ArtistDetail] === loadSongs 被调用 ===', {
+      artistId: artistInfo.id,
+      artistMid: artistInfo.mid,
+      artistParam: currentArtistParam,
+      artistSource: artistInfo.source,
+      sort,
+      page,
+      isRefresh,
+      timestamp: new Date().toISOString(),
+    })
+    const cacheKey = `${currentArtistParam}_songs_${sort}_${page}`;
+
     const cachedData = getArtistCache(cacheKey);
     if (!isRefresh && cachedData) {
+      log.info('[ArtistDetail] === 使用缓存的歌曲列表 ===', {
+        artistId: artistInfo.id,
+        artistParam: currentArtistParam,
+        cacheKey,
+        songCount: cachedData.list.length,
+        hasMore: cachedData.hasMore,
+      })
       setSongs(p => ({
         ...p,
         list: page === 1 ? cachedData.list : [...p.list, ...cachedData.list],
@@ -106,10 +159,26 @@ export default memo(({ componentId, artistInfo }: { componentId: string, artistI
     }
 
     setSongs(prev => {
-      if (!isRefresh && (prev.loading || !prev.hasMore)) return prev;
+      if (!isRefresh && (prev.loading || !prev.hasMore)) {
+        log.info('[ArtistDetail] === 跳过歌曲加载 ===', {
+          reason: prev.loading ? '正在加载' : '没有更多数据',
+          loading: prev.loading,
+          hasMore: prev.hasMore,
+        })
+        return prev;
+      }
       const offset = (page - 1) * SONG_LIMIT;
-      wyApi.getSongs(artistInfo.id, sort, SONG_LIMIT, offset).then(data => {
-        // 写入全局缓存
+      log.info('[ArtistDetail] === 请求歌手歌曲列表 ===', {
+        artistId: artistInfo.id,
+        artistParam: currentArtistParam,
+        artistSource: artistInfo.source,
+        sort,
+        page,
+        offset,
+        limit: SONG_LIMIT,
+      })
+      currentApi.getSongs(currentArtistParam, sort, SONG_LIMIT, offset).then(data => {
+        log.info('[ArtistDetail] 歌手歌曲加载成功', { artistId: artistInfo.id, songCount: data.list.length, hasMore: data.hasMore })
         setArtistCache(cacheKey, { list: data.list, hasMore: data.hasMore });
 
         setSongs(p => ({
@@ -120,20 +189,39 @@ export default memo(({ componentId, artistInfo }: { componentId: string, artistI
           loading: false,
           sort,
         }));
-      }).catch(() => {
+      }).catch((err) => {
+        log.error('[ArtistDetail] 歌手歌曲加载失败', { artistId: artistInfo.id, error: err.message })
         toast('获取歌曲失败');
         setSongs(p => ({ ...p, loading: false }));
       });
       return { ...prev, loading: true };
     });
-  }, [artistInfo.id]);
+  }, [artistInfo.id, artistInfo.source]);
 
   const loadAlbums = useCallback((page, isRefresh = false) => {
-    const cacheKey = `${artistInfo.id}_albums_${page}`;
+    const currentApi = artistInfo.source === 'tx' ? txApi : wyApi
+    const currentArtistParam = artistInfo.source === 'tx' ? (artistInfo.mid || artistInfo.id) : artistInfo.id
 
-    // 从全局缓存读取
+    log.info('[ArtistDetail] === loadAlbums 被调用 ===', {
+      artistId: artistInfo.id,
+      artistMid: artistInfo.mid,
+      artistParam: currentArtistParam,
+      artistSource: artistInfo.source,
+      page,
+      isRefresh,
+      timestamp: new Date().toISOString(),
+    })
+    const cacheKey = `${currentArtistParam}_albums_${page}`;
+
     const cachedData = getArtistCache(cacheKey);
     if (!isRefresh && cachedData) {
+      log.info('[ArtistDetail] === 使用缓存的专辑列表 ===', {
+        artistId: artistInfo.id,
+        artistParam: currentArtistParam,
+        cacheKey,
+        albumCount: cachedData.hotAlbums.length,
+        hasMore: cachedData.hasMore,
+      })
       setAlbums(p => ({
         ...p,
         list: page === 1 ? cachedData.hotAlbums : [...p.list, ...cachedData.hotAlbums],
@@ -145,10 +233,25 @@ export default memo(({ componentId, artistInfo }: { componentId: string, artistI
     }
 
     setAlbums(prev => {
-      if (!isRefresh && (prev.loading || !prev.hasMore)) return prev;
+      if (!isRefresh && (prev.loading || !prev.hasMore)) {
+        log.info('[ArtistDetail] === 跳过专辑加载 ===', {
+          reason: prev.loading ? '正在加载' : '没有更多数据',
+          loading: prev.loading,
+          hasMore: prev.hasMore,
+        })
+        return prev;
+      }
       const offset = (page - 1) * ALBUM_LIMIT;
-      wyApi.getAlbums(artistInfo.id, ALBUM_LIMIT, offset).then(data => {
-        // 写入全局缓存
+      log.info('[ArtistDetail] === 请求歌手专辑列表 ===', {
+        artistId: artistInfo.id,
+        artistParam: currentArtistParam,
+        artistSource: artistInfo.source,
+        page,
+        offset,
+        limit: ALBUM_LIMIT,
+      })
+      currentApi.getAlbums(currentArtistParam, ALBUM_LIMIT, offset).then(data => {
+        log.info('[ArtistDetail] 歌手专辑加载成功', { artistId: artistInfo.id, albumCount: data.hotAlbums.length, hasMore: data.hasMore })
         setArtistCache(cacheKey, { hotAlbums: data.hotAlbums, hasMore: data.hasMore });
 
         setAlbums(p => ({
@@ -158,13 +261,14 @@ export default memo(({ componentId, artistInfo }: { componentId: string, artistI
           page: page + 1,
           loading: false,
         }));
-      }).catch(() => {
+      }).catch((err) => {
+        log.error('[ArtistDetail] 歌手专辑加载失败', { artistId: artistInfo.id, error: err.message })
         toast('获取专辑失败');
         setAlbums(p => ({ ...p, loading: false }));
       });
       return { ...prev, loading: true };
     });
-  }, [artistInfo.id]);
+  }, [artistInfo.id, artistInfo.source]);
 
 
   useEffect(() => {
@@ -195,7 +299,8 @@ export default memo(({ componentId, artistInfo }: { componentId: string, artistI
   // 调用全局缓存清理
   const handleSortChange = (newSort) => {
     if (songs.sort === newSort) return;
-    clearArtistCache(artistInfo.id); // 清理该歌手所有缓存
+    const cacheKeyParam = artistInfo.source === 'tx' ? (artistInfo.mid || artistInfo.id) : artistInfo.id
+    clearArtistCache(cacheKeyParam); // 清理该歌手所有缓存
     setSongs(prev => ({ ...prev, sort: newSort, list: [], page: 1, hasMore: true }));
   };
 
@@ -205,10 +310,13 @@ export default memo(({ componentId, artistInfo }: { componentId: string, artistI
   };
 
   const handleRefresh = useCallback(() => {
-    clearArtistCache(artistInfo.id);
+    const refreshApi = artistInfo.source === 'tx' ? txApi : wyApi
+    const refreshParam = artistInfo.source === 'tx' ? (artistInfo.mid || artistInfo.id) : artistInfo.id
 
-    wyApi.getDetail(artistInfo.id).then(data => {
-      setArtistDetailCache(artistInfo.id, data);
+    clearArtistCache(refreshParam);
+
+    refreshApi.getDetail(refreshParam).then(data => {
+      setArtistDetailCache(refreshParam, data);
       setArtistDetail(data);
     }).catch(() => toast('刷新歌手信息失败'));
 
@@ -227,6 +335,22 @@ export default memo(({ componentId, artistInfo }: { componentId: string, artistI
   }, [])
 
   const displayArtist = artistDetail?.artist || artistInfo
+
+  log.info('[ArtistDetail] === 界面渲染诊断 ===', {
+    artistId: artistInfo.id,
+    hasArtistDetail: !!artistDetail,
+    artistDetailKeys: artistDetail ? Object.keys(artistDetail) : [],
+    displayArtistName: displayArtist?.name,
+    displayArtistPicUrl: displayArtist?.picUrl ? '有封面' : '无封面',
+    songsListLength: songs.list.length,
+    songsHasMore: songs.hasMore,
+    songsLoading: songs.loading,
+    albumsListLength: albums.list.length,
+    albumsHasMore: albums.hasMore,
+    albumsLoading: albums.loading,
+    activeTab,
+  })
+
   return (
     <PageContent>
       <View style={styles.container}>

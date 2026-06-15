@@ -31,7 +31,7 @@ export default memo(({ artist, onFollow, componentId }: Props) => {
   const artistName = artist?.name || ''
   const artistAlias = artist?.alias?.length ? ` ${artist.alias[0]}` : ''
   const description = artist?.briefDesc || ''
-  const artistPic = artist?.avatar || artist?.cover
+  const artistPic = artist?.avatar || artist?.cover || artist?.picUrl
 
   const toggleFollow = () => {
     if (!artist.name) {
@@ -68,7 +68,7 @@ export default memo(({ artist, onFollow, componentId }: Props) => {
 
   return (
     <View style={{ paddingTop: statusBarHeight }}>
-      <ImageBackground source={artist?.cover ? { uri: artist.cover } : null} style={styles.headerContainer} blurRadius={10}>
+      <ImageBackground source={artist?.cover || artist?.picUrl ? { uri: artist.cover || artist?.picUrl } : null} style={styles.headerContainer} blurRadius={10}>
         <View style={styles.overlay}>
           <TouchableOpacity activeOpacity={0.85} disabled={!artistPic} onPress={() => setPreviewVisible(true)}>
             <Image url={artistPic} style={styles.avatar} />

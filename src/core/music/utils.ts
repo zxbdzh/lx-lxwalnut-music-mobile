@@ -416,12 +416,16 @@ export const getPlayQuality = (
   preferredQuality: LX.Quality,
   musicInfo: LX.Music.MusicInfoOnline
 ): LX.Quality => {
-  console.log('Preferred quality:', preferredQuality);
   // 获取这首歌实际支持的所有音质
   const availableQualities = musicInfo.meta._qualitys;
 
+  // 确保 preferredQuality 有效，如果无效则使用默认音质 '128k'
+  const validPreferredQuality = QUALITY_RANK.includes(preferredQuality)
+    ? preferredQuality
+    : '128k';
+
   // 找到用户偏好音质在排行榜中的位置
-  const startIndex = QUALITY_RANK.indexOf(preferredQuality);
+  const startIndex = QUALITY_RANK.indexOf(validPreferredQuality);
 
   // 如果用户的偏好设置不在我们的榜单里（例如设置了无效值），就从最高音质开始找
   const searchIndex = startIndex === -1 ? 0 : startIndex;
@@ -640,12 +644,40 @@ export const handleGetOnlineMusicUrl = async ({
   userApiLog.info(`[在线播放] 音源: "${musicInfo.source}"`)
   userApiLog.info(`[在线播放] 音乐ID: "${musicInfo.id}"`)
   userApiLog.info(`[在线播放] 时长: ${musicInfo.interval || '未知'}`)
+  
+  // 修复 TX 音源的 songmid 问题
+  if (musicInfo.source === 'tx') {
+    if (!musicInfo.meta.songmid || musicInfo.meta.songmid === undefined) {
+      const fallbackSongmid = musicInfo.songmid || musicInfo.meta.songId || musicInfo.meta.id || musicInfo.id
+      userApiLog.info(`[在线播放] === 修复 TX songmid ===`, {
+        currentSongmid: musicInfo.meta.songmid,
+        fallbackSongmid,
+        musicInfoSongmid: musicInfo.songmid,
+        metaSongId: musicInfo.meta.songId,
+        metaId: musicInfo.meta.id,
+        musicId: musicInfo.id,
+      })
+      musicInfo.meta.songmid = String(fallbackSongmid)
+    }
+  }
+
+  // 详细的meta信息日志
+  userApiLog.info(`[在线播放] === 音乐元信息诊断 ===`)
+  userApiLog.info(`[在线播放]   songId: ${musicInfo.meta.songId}`)
+  userApiLog.info(`[在线播放]   songmid: ${musicInfo.meta.songmid}`)
+  userApiLog.info(`[在线播放]   meta.mid: ${musicInfo.meta.mid}`)
+  userApiLog.info(`[在线播放]   meta 完整 keys: ${JSON.stringify(Object.keys(musicInfo.meta ?? {}))}`)
+  userApiLog.info(`[在线播放]   strMediaMid: ${musicInfo.meta.strMediaMid}`)
+  userApiLog.info(`[在线播放]   albumId: ${musicInfo.meta.albumId}`)
+  userApiLog.info(`[在线播放]   albumMid: ${musicInfo.meta.albumMid}`)
+  userApiLog.info(`[在线播放]   vid: ${musicInfo.meta.vid || '(空)'}`)
+  userApiLog.info(`[在线播放]   支持音质列表: ${JSON.stringify(Object.keys(musicInfo.meta._qualitys ?? {}))}`)
 
   const preferredQuality = quality ?? settingState.setting['player.playQuality']
   const targetQuality = getPlayQuality(preferredQuality, musicInfo)
   userApiLog.info(`[在线播放] 用户偏好音质: ${preferredQuality}`)
   userApiLog.info(`[在线播放] 实际选择音质: ${targetQuality}`)
-  userApiLog.info(`[在线播放] 支持的音质: ${Object.keys(musicInfo.meta._qualitys).join(', ')}`)
+  userApiLog.info(`[在线播放] 支持的音质: ${Object.keys(musicInfo.meta._qualitys ?? {}).join(', ')}`)
   if (preferredQuality !== targetQuality) {
     userApiLog.info(`[在线播放] 音质降级: ${preferredQuality} -> ${targetQuality}`)
   }
@@ -667,10 +699,14 @@ export const handleGetOnlineMusicUrl = async ({
     const currentQuality = qualities[0]
     userApiLog.info(`[在线播放]   尝试音质: ${currentQuality}`)
 
+    // 记录转换后的旧格式数据
+    const oldMusicInfo = toOldMusicInfo(musicInfo)
+    userApiLog.info(`[在线播放]   转换后的旧格式数据: songmid=${oldMusicInfo.songmid}, strMediaMid=${oldMusicInfo.strMediaMid}, vid=${oldMusicInfo.vid || '(空)'}`)
+
     let reqPromise
     try {
       reqPromise = musicSdk[musicInfo.source].getMusicUrl(
-        toOldMusicInfo(musicInfo),
+        oldMusicInfo,
         currentQuality
       ).promise
     } catch (err: any) {
@@ -682,7 +718,13 @@ export const handleGetOnlineMusicUrl = async ({
       .then((result: { url: string; type: LX.Quality }) => {
         userApiLog.info(`[在线播放]   请求成功，获取到播放地址`)
         userApiLog.info(`[在线播放]   播放地址长度: ${result.url.length} 字符`)
+        userApiLog.info(`[在线播放]   播放地址: ${result.url}`)
         userApiLog.info(`[在线播放]   实际音质: ${result.type}`)
+        
+        // 验证URL有效性
+        if (!result.url || result.url.length < 10) {
+          userApiLog.warn(`[在线播放]   警告: 播放地址可能无效`)
+        }
         return result
       })
       .catch((err: any) => {

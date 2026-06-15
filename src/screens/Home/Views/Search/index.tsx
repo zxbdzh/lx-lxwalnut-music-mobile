@@ -107,9 +107,6 @@ export default () => {
       setSelectedList(null)
       searchInfo.current.searchType = type
       void saveSearchSetting({ type })
-      if ((type === 'singer' || type === 'album') && searchInfo.current.source !== 'wy') {
-        toast('歌手与专辑搜索目前仅支持网易云源')
-      }
       if (searchState.searchText) {
         listRef.current?.loadList(searchState.searchText, searchInfo.current.source, type)
       }

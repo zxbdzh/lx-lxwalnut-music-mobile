@@ -113,6 +113,15 @@ const handleRequestData = async (
   )
   if (url.includes('music.163.com')) {
     headers.cookie = settingState.setting['common.wy_cookie']
+  } else if (url.includes('y.qq.com')) {
+    headers.cookie = settingState.setting['common.tx_cookie']
+    console.log('=== QQ音乐Cookie设置 ===', {
+      url: url.slice(0, 50),
+      hasCookie: !!headers.cookie,
+      cookieLength: headers.cookie?.length || 0,
+      cookiePreview: headers.cookie ? headers.cookie.slice(0, 100) : '',
+      cookieFull: headers.cookie || '',
+    })
   }
   options.cache = cache
   
@@ -174,12 +183,27 @@ const handleRequestData = async (
     delete headers[bHh]
   }
 
-  return {
+  const finalOptions = {
     ...options,
     method,
     headers: Object.assign({}, defaultHeaders, headers),
     url,
   }
+
+  if (url.includes('y.qq.com')) {
+    console.log('=== QQ音乐请求发送 ===', {
+      url: finalOptions.url,
+      method: finalOptions.method,
+      headers: {
+        ...finalOptions.headers,
+        cookie: finalOptions.headers.cookie ? `有Cookie(${finalOptions.headers.cookie.length}字符)` : '无Cookie',
+      },
+      bodyType: typeof finalOptions.body,
+      bodyPreview: finalOptions.body ? JSON.stringify(finalOptions.body).slice(0, 200) : '无body',
+    })
+  }
+
+  return finalOptions
 }
 
 // https://stackoverflow.com/a/64945178
