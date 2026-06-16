@@ -81,6 +81,7 @@ export default forwardRef<PlayDetailMenuType, PlayDetailMenuProps>((props, ref) 
     }
 
     if (musicInfo?.source === 'tx') {
+      menuItems.push({ action: 'similarSongs', label: '相似歌曲' });
       if (musicInfo.meta.vid && menuSetting.playMV) {
         menuItems.push({ action: 'playMv', label: '播放MV' })
       }

@@ -7,6 +7,7 @@ import { playOnlineList } from '@/core/list'
 import { usePlayerMusicInfo } from '@/store/player/hook'
 import { createStyle, toast } from '@/utils/tools'
 import wyApi from '@/utils/musicSdk/wy'
+import txApi from '@/utils/musicSdk/tx'
 import musicDetailApi from '@/utils/musicSdk/wy/musicDetail'
 
 const LIST_ID = 'similar_songs_list'
@@ -39,12 +40,21 @@ export default forwardRef<SimilarSongsModalType, {}>((props, ref) => {
     listRef.current?.setStatus(isAppend ? 'loading' : 'loading')
 
     try {
-      const rawList = await wyApi.dailyRec.getSimilarSongs(
-        musicInfo.meta.songId,
-        PAGE_SIZE,
-        isAppend ? offsetRef.current : 0
-      )
-      const detailList = await musicDetailApi.filterList({ songs: rawList ?? [], privileges: [] })
+      let detailList: LX.Music.MusicInfoOnline[] = []
+
+      if (musicInfo.source === 'wy') {
+        const rawList = await wyApi.dailyRec.getSimilarSongs(
+          musicInfo.meta.songId,
+          PAGE_SIZE,
+          isAppend ? offsetRef.current : 0
+        )
+        detailList = await musicDetailApi.filterList({ songs: rawList ?? [], privileges: [] })
+      } else if (musicInfo.source === 'tx') {
+        detailList = await txApi.dailyRec.getSimilarSongs(
+          musicInfo.meta.id,
+          PAGE_SIZE
+        )
+      }
 
       if (requestId !== requestIdRef.current) return
 
@@ -60,7 +70,7 @@ export default forwardRef<SimilarSongsModalType, {}>((props, ref) => {
 
       currentListRef.current = list
       offsetRef.current = isAppend ? offsetRef.current + PAGE_SIZE : PAGE_SIZE
-      hasMoreRef.current = (rawList?.length ?? 0) >= PAGE_SIZE && nextList.length > 0
+      hasMoreRef.current = (detailList?.length ?? 0) >= PAGE_SIZE && nextList.length > 0
 
       listRef.current?.setList(list, isAppend)
       listRef.current?.setStatus(hasMoreRef.current ? 'idle' : 'end')
@@ -77,8 +87,8 @@ export default forwardRef<SimilarSongsModalType, {}>((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     show(musicInfo) {
-      if (musicInfo.source !== 'wy') {
-        toast('非网易源歌曲无法查看相似歌曲')
+      if (musicInfo.source !== 'wy' && musicInfo.source !== 'tx') {
+        toast('该源歌曲无法查看相似歌曲')
         return
       }
 

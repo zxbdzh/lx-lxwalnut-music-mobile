@@ -542,4 +542,86 @@ export default {
       return this.getRecommendNewsong(retryNum + 1)
     }
   },
+
+  async getSimilarSongs(songMid, limit = 30, retryNum = 0) {
+    if (retryNum > 2) return Promise.reject(new Error('try max num'))
+
+    try {
+      log.info('[TX DailyRec] getSimilarSongs 开始请求', { songMid, limit })
+      
+      const cookie = settingState.setting['common.tx_cookie']
+      log.info('[TX DailyRec] getSimilarSongs cookie状态:', cookie ? `已设置 (长度:${cookie.length})` : '未设置')
+      
+      const payload = {
+        comm: buildComm(),
+        req_0: {
+          module: 'music.recommend.TrackRelationServer',
+          method: 'GetSimilarSongs',
+          param: {
+            songid: parseInt(songMid, 10) || songMid,
+          },
+        },
+      }
+
+      const url = `https://u.y.qq.com/cgi-bin/musicu.fcg?loginUin=0&hostUin=0&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=wk_v15.json&needNewCode=0&data=${encodeURIComponent(JSON.stringify(payload))}`
+
+      log.info('[TX DailyRec] getSimilarSongs URL:', url.substring(0, 200))
+      
+      const { body, statusCode } = await httpFetch(url, {
+        headers: {
+          'Cookie': cookie || '',
+        },
+      }).promise
+
+      log.info('[TX DailyRec] getSimilarSongs 响应状态', { statusCode, bodyCode: body?.code })
+      log.info('[TX DailyRec] getSimilarSongs 响应体:', JSON.stringify(body)?.substring(0, 1000))
+
+      if (statusCode !== 200) {
+        throw new Error(`HTTP错误: ${statusCode}`)
+      }
+      
+      if (body.code !== 0) {
+        throw new Error(`API错误: code=${body.code}`)
+      }
+
+      const reqData = body.req_0?.data
+      log.info('[TX DailyRec] getSimilarSongs req_0.data状态', { 
+        exists: !!reqData,
+        dataKeys: Object.keys(reqData || {})
+      })
+      
+      // 尝试不同的数据路径
+      let songlist = reqData?.songlist || []
+      if (!songlist.length && reqData?.songs?.length) {
+        songlist = reqData.songs
+        log.info('[TX DailyRec] getSimilarSongs 使用songs字段')
+      }
+      
+      // QQ音乐API返回的是嵌套结构: data.song[].song[]
+      if (!songlist.length && reqData?.song?.length) {
+        songlist = reqData.song.flatMap(item => item.song || [])
+        log.info('[TX DailyRec] getSimilarSongs 使用嵌套song字段')
+      }
+      
+      // QQ音乐GetSimilarSongs API返回的是 vecSong[].track 结构
+      if (!songlist.length && reqData?.vecSong?.length) {
+        songlist = reqData.vecSong.map(item => item.track || item)
+        log.info('[TX DailyRec] getSimilarSongs 使用vecSong字段')
+      }
+      
+      log.info('[TX DailyRec] getSimilarSongs songlist数量:', songlist.length)
+      
+      if (songlist.length === 0) {
+        log.warn('[TX DailyRec] getSimilarSongs songlist为空')
+        throw new Error('返回歌曲列表为空')
+      }
+      
+      const list = transformSongList(songlist, 'getSimilarSongs')
+      log.info('[TX DailyRec] getSimilarSongs 转换完成', { listLength: list.length })
+      return list
+    } catch (error) {
+      log.error(`[TX DailyRec] getSimilarSongs 失败:`, error.message, error.stack)
+      return this.getSimilarSongs(songMid, limit, retryNum + 1)
+    }
+  },
 }
