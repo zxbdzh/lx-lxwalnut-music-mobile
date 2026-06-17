@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.lyric;
+package com.xwalnut.music.mobile.lyric;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;

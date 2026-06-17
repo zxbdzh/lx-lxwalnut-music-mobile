@@ -9,17 +9,17 @@ const abis = ['arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86', 'universal']
 
 const address = [
   [
-    'https://raw.githubusercontent.com/WalnutBai/lx-n-music-mobile-pro/master/publish/version.json',
+    'https://raw.githubusercontent.com/WalnutBai/lx-xwalnut-music-mobile/master/publish/version.json',
     'direct',
   ],
-  ['https://cdn.jsdelivr.net/gh/WalnutBai/lx-n-music-mobile-pro/publish/version.json', 'direct'],
-  ['https://fastly.jsdelivr.net/gh/WalnutBai/lx-n-music-mobile-pro/publish/version.json', 'direct'],
-  ['https://gcore.jsdelivr.net/gh/WalnutBai/lx-n-music-mobile-pro/publish/version.json', 'direct'],
+  ['https://cdn.jsdelivr.net/gh/WalnutBai/lx-xwalnut-music-mobile/publish/version.json', 'direct'],
+  ['https://fastly.jsdelivr.net/gh/WalnutBai/lx-xwalnut-music-mobile/publish/version.json', 'direct'],
+  ['https://gcore.jsdelivr.net/gh/WalnutBai/lx-xwalnut-music-mobile/publish/version.json', 'direct'],
 ]
 
-const releaseRepo = 'lx-n-music-mobile-pro'
+const releaseRepo = 'lx-xwalnut-music-mobile'
 const releaseOwner = 'WalnutBai'
-const apkFileNamePrefix = 'lx-netease-music-mobile'
+const apkFileNamePrefix = 'lx-xwalnut-music-mobile'
 
 const request = async (url, retryNum = 0) => {
   return new Promise((resolve, reject) => {
@@ -89,7 +89,7 @@ export const downloadNewVersion = async (version, onDownload = noop) => {
   const abi = await getTargetAbi()
   const url = `https://github.com/${releaseOwner}/${releaseRepo}/releases/download/v${version}/${apkFileNamePrefix}-v${version}-${abi}.apk`
   // 使用私有存储路径而不是临时目录，这样更可靠
-  let savePath = privateStorageDirectoryPath + '/lx-n-music-mobile-pro.apk'
+  let savePath = privateStorageDirectoryPath + '/lx-xwalnut-music-mobile.apk'
 
   log.info(`[Update] Download URL: ${url}`)
   log.info(`[Update] Target ABI: ${abi}`)

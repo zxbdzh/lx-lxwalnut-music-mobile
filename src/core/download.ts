@@ -92,16 +92,23 @@ const startDownload = async (task: DownloadTask) => {
   // 对于 bilibili 源，先以临时文件名下载，下载完成后再重命名为 mp3
   const isBilibiliSource = task.musicInfo.source === 'bilibili';
   let finalFilePath = task.filePath;
-  
+
   // 获取 URL 中的真实扩展名
   const urlExtension = getFileExtensionFromUrl(url);
-  
+  const taskExt = task.filePath.substring(task.filePath.lastIndexOf('.') + 1).toLowerCase();
+
   // 如果是 bilibili 源，先使用临时扩展名下载
   let downloadFilePath = task.filePath;
   if (isBilibiliSource && urlExtension) {
-    const downloadDir = settingState.setting['download.path'] || (RNFetchBlob.fs.dirs.MusicDir + '/LX-N Music');
+    const downloadDir = settingState.setting['download.path'] || (RNFetchBlob.fs.dirs.MusicDir + '/LX-X Music');
     downloadFilePath = `${downloadDir}/${task.fileName}.download.${urlExtension}`;
     console.log(`[Download] Bilibili 源使用临时路径下载: ${downloadFilePath}`);
+  } else if (urlExtension && urlExtension !== taskExt) {
+    // 对于所有其他源，如果 URL 的真实扩展名与任务路径不一致，使用真实扩展名
+    const downloadDir = settingState.setting['download.path'] || (RNFetchBlob.fs.dirs.MusicDir + '/LX-X Music');
+    downloadFilePath = `${downloadDir}/${task.fileName}.download.${urlExtension}`;
+    finalFilePath = `${downloadDir}/${task.fileName}.${urlExtension}`;
+    console.log(`[Download] URL 扩展名(${urlExtension})与任务扩展名(${taskExt})不一致，使用真实扩展名下载: ${downloadFilePath} -> ${finalFilePath}`);
   }
 
   await requestStoragePermission()
@@ -145,16 +152,14 @@ const startDownload = async (task: DownloadTask) => {
     downloadedFilePath = res.path();
     console.log('下载完成:', downloadedFilePath);
     
-    // 对于 bilibili 源，下载完成后重命名为 mp3
-    if (isBilibiliSource) {
-      // task.filePath 已经是带 .mp3 扩展名的路径
-      const correctedPath = task.filePath;
+    // 下载完成后，如果最终路径与下载路径不一致，进行重命名
+    if (finalFilePath !== downloadedFilePath) {
       try {
-        await RNFetchBlob.fs.mv(downloadedFilePath, correctedPath);
-        downloadedFilePath = correctedPath;
-        console.log('[Download] Bilibili 源重命名为 MP3:', downloadedFilePath);
+        await RNFetchBlob.fs.mv(downloadedFilePath, finalFilePath);
+        downloadedFilePath = finalFilePath;
+        console.log(`[Download] 重命名为最终路径: ${downloadedFilePath}`);
       } catch (renameError) {
-        console.warn('[Download] Bilibili 源重命名失败:', renameError);
+        console.warn('[Download] 重命名失败:', renameError);
       }
     }
     
@@ -208,7 +213,7 @@ const handleMetadata = async (task: DownloadTask, filePath: string) => {
     }
   }
 
-  const downloadDir = settingState.setting['download.path'] || (RNFetchBlob.fs.dirs.MusicDir + '/LX-N Music')
+  const downloadDir = settingState.setting['download.path'] || (RNFetchBlob.fs.dirs.MusicDir + '/LX-X Music')
   // 写入封面
   if (settingState.setting['download.writePicture']) {
     try {
@@ -417,7 +422,7 @@ export const addTask = (musicInfo: LX.Music.MusicInfo, quality: LX.Quality, isFo
     .replace('歌名', musicInfo.name)
     .replace('歌手', finalSingerString);
   fileName = filterFileName(fileName);
-  const downloadDir = settingState.setting['download.path'] || (RNFetchBlob.fs.dirs.MusicDir + '/LX-N Music');
+  const downloadDir = settingState.setting['download.path'] || (RNFetchBlob.fs.dirs.MusicDir + '/LX-X Music');
   const filePath = `${downloadDir}/${fileName}.${extension}`;
 
   const task: DownloadTask = {

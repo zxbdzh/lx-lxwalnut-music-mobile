@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.utils;
+package com.xwalnut.music.mobile.utils;
 
 import static android.content.Context.POWER_SERVICE;
 

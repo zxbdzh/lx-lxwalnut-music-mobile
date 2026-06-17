@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.userApi;
+package com.xwalnut.music.mobile.userApi;
 
 import android.os.Bundle;
 import android.os.Handler;

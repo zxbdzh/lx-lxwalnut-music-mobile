@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.userApi;
+package com.xwalnut.music.mobile.userApi;
 
 public class HandlerWhat {
   public static final int ACTION = 1000;

@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.widget;
+package com.xwalnut.music.mobile.widget;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -14,7 +14,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.lxnetease.music.mobile.R;
+import com.xwalnut.music.mobile.R;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -25,15 +25,15 @@ import java.util.concurrent.Executors;
 public class MusicWidgetProvider extends AppWidgetProvider {
 
     private static final String TAG = "MusicWidget";
-    public static final String ACTION_PLAY_PAUSE = "com.lxnetease.music.mobile.widget.PLAY_PAUSE";
-    public static final String ACTION_PREV = "com.lxnetease.music.mobile.widget.PREV";
-    public static final String ACTION_NEXT = "com.lxnetease.music.mobile.widget.NEXT";
-    public static final String ACTION_UPDATE_WIDGET = "com.lxnetease.music.mobile.widget.UPDATE";
+    public static final String ACTION_PLAY_PAUSE = "com.xwalnut.music.mobile.widget.PLAY_PAUSE";
+    public static final String ACTION_PREV = "com.xwalnut.music.mobile.widget.PREV";
+    public static final String ACTION_NEXT = "com.xwalnut.music.mobile.widget.NEXT";
+    public static final String ACTION_UPDATE_WIDGET = "com.xwalnut.music.mobile.widget.UPDATE";
 
     // Internal actions to forward to JS to avoid loop
-    public static final String INTERNAL_ACTION_PLAY_PAUSE = "com.lxnetease.music.mobile.widget.INTERNAL_PLAY_PAUSE";
-    public static final String INTERNAL_ACTION_PREV = "com.lxnetease.music.mobile.widget.INTERNAL_PREV";
-    public static final String INTERNAL_ACTION_NEXT = "com.lxnetease.music.mobile.widget.INTERNAL_NEXT";
+    public static final String INTERNAL_ACTION_PLAY_PAUSE = "com.xwalnut.music.mobile.widget.INTERNAL_PLAY_PAUSE";
+    public static final String INTERNAL_ACTION_PREV = "com.xwalnut.music.mobile.widget.INTERNAL_PREV";
+    public static final String INTERNAL_ACTION_NEXT = "com.xwalnut.music.mobile.widget.INTERNAL_NEXT";
 
     private static final String PREFS_NAME = "MusicWidgetPrefs";
     private static final String KEY_TITLE = "widget_title";
@@ -98,7 +98,7 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 
         // Read saved state
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String title = prefs.getString(KEY_TITLE, "LX-N Music");
+        String title = prefs.getString(KEY_TITLE, "LX-X Music");
         String artist = prefs.getString(KEY_ARTIST, "未在播放");
         boolean isPlaying = prefs.getBoolean(KEY_IS_PLAYING, false);
         String artworkUrl = prefs.getString(KEY_ARTWORK_URL, null);

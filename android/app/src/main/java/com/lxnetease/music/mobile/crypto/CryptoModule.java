@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.crypto;
+package com.xwalnut.music.mobile.crypto;
 
 import android.util.Base64;
 

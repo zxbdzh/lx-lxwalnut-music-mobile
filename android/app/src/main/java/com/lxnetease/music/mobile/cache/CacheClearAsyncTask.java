@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.cache;
+package com.xwalnut.music.mobile.cache;
 
 import android.os.AsyncTask;
 

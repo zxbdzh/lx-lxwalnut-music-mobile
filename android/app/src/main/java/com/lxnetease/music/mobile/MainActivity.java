@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile;
+package com.xwalnut.music.mobile;
 
 import com.reactnativenavigation.NavigationActivity;
 import com.facebook.react.ReactActivityDelegate;

@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.lyric;
+package com.xwalnut.music.mobile.lyric;
 
 import java.util.ArrayList;
 import java.util.Collections;

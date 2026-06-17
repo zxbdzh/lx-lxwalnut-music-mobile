@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.lyric;
+package com.xwalnut.music.mobile.lyric;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -23,7 +23,7 @@ public class Lyric extends LyricPlayer {
   ReactApplicationContext reactAppContext;
 
   boolean isRunPlayer = false;
-  // String lastText = "LX-N Music ^-^";
+  // String lastText = "LX-X Music ^-^";
   int lastLine = 0;
   List lines = new ArrayList();
   boolean isShowTranslation;

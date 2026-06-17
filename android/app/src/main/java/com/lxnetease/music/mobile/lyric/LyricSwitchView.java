@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.lyric;
+package com.xwalnut.music.mobile.lyric;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

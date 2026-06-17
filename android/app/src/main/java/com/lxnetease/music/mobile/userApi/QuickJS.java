@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.userApi;
+package com.xwalnut.music.mobile.userApi;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -6,8 +6,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
 import android.util.Log;
-import com.lxnetease.music.mobile.crypto.AES;
-import com.lxnetease.music.mobile.crypto.RSA;
+import com.xwalnut.music.mobile.crypto.AES;
+import com.xwalnut.music.mobile.crypto.RSA;
 import com.facebook.react.bridge.ReactApplicationContext;
 
 import com.whl.quickjs.android.QuickJSLoader;

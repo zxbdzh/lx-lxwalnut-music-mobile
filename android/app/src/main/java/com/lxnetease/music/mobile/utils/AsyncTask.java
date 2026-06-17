@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.utils;
+package com.xwalnut.music.mobile.utils;
 
 import android.os.Handler;
 import android.os.Looper;

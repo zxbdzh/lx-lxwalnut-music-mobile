@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.userApi;
+package com.xwalnut.music.mobile.userApi;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;

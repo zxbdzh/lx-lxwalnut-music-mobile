@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.lyric;
+package com.xwalnut.music.mobile.lyric;
 
 import android.app.Activity;
 import android.content.Context;
@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.lxnetease.music.mobile.R;
+import com.xwalnut.music.mobile.R;
 
 public class LyricView extends Activity implements View.OnTouchListener {
   LyricSwitchView textView = null;
@@ -63,7 +63,7 @@ public class LyricView extends Activity implements View.OnTouchListener {
   private String unplayColor = "rgba(255, 255, 255, 1)";
   private String playedColor = "rgba(7, 197, 86, 1)";
   private String shadowColor = "rgba(0, 0, 0, 0.15)";
-  // private String lastText = "LX-N Music ^-^";
+  // private String lastText = "LX-X Music ^-^";
   private String textX = "LEFT";
   private String textY = "TOP";
   private float alpha = 1f;
@@ -73,7 +73,7 @@ public class LyricView extends Activity implements View.OnTouchListener {
 
   private int maxLineNum = 5;
   // private float lineHeight = 1;
-  private String currentLyric = "LX-N Music ^-^";
+  private String currentLyric = "LX-X Music ^-^";
   private ArrayList<String> currentExtendedLyrics = new ArrayList<>();
 
   private int mLastRotation;

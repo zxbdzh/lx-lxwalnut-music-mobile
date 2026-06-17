@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile.widget;
+package com.xwalnut.music.mobile.widget;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

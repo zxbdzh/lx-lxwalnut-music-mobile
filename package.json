@@ -1,5 +1,5 @@
 {
-  "name": "lx-netease-music-mobile",
+  "name": "lx-x-music-mobile",
   "version": "26.06.8",
   "versionCode": 260608,
   "private": true,
@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/WalnutBai/lx-n-music-mobile-pro.git"
+    "url": "git+https://github.com/WalnutBai/lx-xwalnut-music-mobile.git"
   },
   "keywords": [
     "music-player",
@@ -39,9 +39,9 @@
   },
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/WalnutBai/lx-n-music-mobile-pro/issues"
+    "url": "https://github.com/WalnutBai/lx-xwalnut-music-mobile/issues"
   },
-  "homepage": "https://github.com/WalnutBai/lx-n-music-mobile-pro#readme",
+  "homepage": "https://github.com/WalnutBai/lx-xwalnut-music-mobile#readme",
   "dependencies": {
     "@craftzdog/react-native-buffer": "^6.0.5",
     "@d11/react-native-fast-image": "^8.13.0",

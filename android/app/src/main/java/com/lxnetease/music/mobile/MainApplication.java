@@ -1,4 +1,4 @@
-package com.lxnetease.music.mobile;
+package com.xwalnut.music.mobile;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.flipper.ReactNativeFlipper;
@@ -10,12 +10,12 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.reactnativenavigation.react.NavigationReactNativeHost;
 import java.util.List;
 
-import com.lxnetease.music.mobile.cache.CachePackage;
-import com.lxnetease.music.mobile.crypto.CryptoPackage;
-import com.lxnetease.music.mobile.lyric.LyricPackage;
-import com.lxnetease.music.mobile.userApi.UserApiPackage;
-import com.lxnetease.music.mobile.utils.UtilsPackage;
-import com.lxnetease.music.mobile.widget.WidgetPackage;
+import com.xwalnut.music.mobile.cache.CachePackage;
+import com.xwalnut.music.mobile.crypto.CryptoPackage;
+import com.xwalnut.music.mobile.lyric.LyricPackage;
+import com.xwalnut.music.mobile.userApi.UserApiPackage;
+import com.xwalnut.music.mobile.utils.UtilsPackage;
+import com.xwalnut.music.mobile.widget.WidgetPackage;
 
 public class MainApplication extends NavigationApplication {
 
