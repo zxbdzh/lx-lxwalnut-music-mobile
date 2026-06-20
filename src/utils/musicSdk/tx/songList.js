@@ -282,6 +282,35 @@ export default {
     }
 
     log.info(`[TX SongList] getListDetailNew 成功`, { songCount: data.songlist.length, dissname: data.dissinfo?.dissname })
+
+    // 如果 dissinfo 中没有歌单名，尝试从旧接口获取
+    let dissname = data.dissinfo?.dissname || ''
+    let logo = data.dissinfo?.logo || ''
+    let desc = data.dissinfo?.desc ? decodeName(data.dissinfo.desc).replace(/<br>/g, '\n') : ''
+    let nickname = data.dissinfo?.nickname || ''
+    let visitnum = data.dissinfo?.visitnum || 0
+
+    if (!dissname) {
+      try {
+        log.info(`[TX SongList] getListDetailNew dissname为空，尝试旧接口`)
+        const oldUrl = this.getListDetailUrl(id)
+        const { body: oldBody } = await httpFetch(oldUrl, {
+          headers: { Origin: 'https://y.qq.com', Referer: `https://y.qq.com/n/yqq/playsquare/${id}.html` },
+        }).promise
+        if (oldBody?.cdlist?.[0]) {
+          const cdlist = oldBody.cdlist[0]
+          dissname = cdlist.dissname || ''
+          logo = cdlist.logo || ''
+          desc = cdlist.desc ? decodeName(cdlist.desc).replace(/<br>/g, '\n') : ''
+          nickname = cdlist.nickname || ''
+          visitnum = cdlist.visitnum || 0
+          log.info(`[TX SongList] 旧接口获取到歌单名`, { dissname })
+        }
+      } catch (e) {
+        log.warn(`[TX SongList] 旧接口获取歌单名失败`, { error: e.message })
+      }
+    }
+
     return {
       list: await this.filterListDetailNew(data.songlist),
       page: 1,
@@ -289,11 +318,11 @@ export default {
       total: data.songlist.length,
       source: 'tx',
       info: {
-        name: data.dissinfo?.dissname || '',
-        img: data.dissinfo?.logo || '',
-        desc: data.dissinfo?.desc ? decodeName(data.dissinfo.desc).replace(/<br>/g, '\n') : '',
-        author: data.dissinfo?.nickname || '',
-        play_count: data.dissinfo?.visitnum ? formatPlayCount(data.dissinfo.visitnum) : '',
+        name: dissname,
+        img: logo,
+        desc,
+        author: nickname,
+        play_count: visitnum ? formatPlayCount(visitnum) : '',
       },
     }
   },

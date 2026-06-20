@@ -1,4 +1,4 @@
-import state, {FollowedArtistInfo, SubscribedAlbumInfo, SubscribedPlaylistInfo, TxPlaylistInfo} from './state'
+import state, {FollowedArtistInfo, SubscribedAlbumInfo, SubscribedPlaylistInfo, TxPlaylistInfo, KgPlaylistInfo} from './state'
 
 export const setWyUid = (uid: string) => {
   state.wy_uid = uid
@@ -152,4 +152,24 @@ export const removeTxSubscribedPlaylist = (id: string | number) => {
   newList.splice(index, 1)
   state.tx_subscribed_playlists = newList
   global.state_event.txSubscribedPlaylistsChanged()
+}
+
+// 酷狗音乐歌单列表
+export const setKgSubscribedPlaylists = (playlists: KgPlaylistInfo[]) => {
+  state.kg_subscribed_playlists = playlists
+  global.state_event.kgSubscribedPlaylistsChanged()
+}
+export const addKgSubscribedPlaylist = (playlist: KgPlaylistInfo) => {
+  if (state.kg_subscribed_playlists.some(p => String(p.id) === String(playlist.id))) return
+  state.kg_subscribed_playlists = [playlist, ...state.kg_subscribed_playlists]
+  global.state_event.kgSubscribedPlaylistsChanged()
+}
+export const removeKgSubscribedPlaylist = (id: string | number) => {
+  const strId = String(id)
+  const index = state.kg_subscribed_playlists.findIndex(p => String(p.id) === strId)
+  if (index < 0) return
+  const newList = [...state.kg_subscribed_playlists]
+  newList.splice(index, 1)
+  state.kg_subscribed_playlists = newList
+  global.state_event.kgSubscribedPlaylistsChanged()
 }

@@ -114,6 +114,8 @@ export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
       }
 
       if (musicInfo.source === 'tx') {
+        menu.push({ action: 'artistDetail', label: t('artist_detail') })
+        menu.push({ action: 'albumDetail', label: t('album_detail') })
         if (musicInfo.meta.vid && menuSetting.playMV) {
           menu.push({ action: 'playMv', label: '播放MV' })
         }

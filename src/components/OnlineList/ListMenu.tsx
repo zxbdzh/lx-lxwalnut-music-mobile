@@ -92,6 +92,10 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
     }
 
     if (selectInfo.musicInfo?.source === 'tx') {
+      wyMenuItems.push(
+        { action: 'artistDetail', label: t('artist_detail') },
+        { action: 'albumDetail', label: t('album_detail') },
+      );
       if (selectInfo.musicInfo.meta.vid && menuSetting.playMV) {
         wyMenuItems.push({ action: 'playMv', label: '播放MV' });
       }

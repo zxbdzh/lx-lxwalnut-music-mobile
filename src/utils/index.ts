@@ -62,6 +62,7 @@ export const toNewMusicInfo = (oldMusicInfo: any): LX.Music.MusicInfo => {
     meta.qualitys = oldMusicInfo.types || []
     meta._qualitys = oldMusicInfo._types || {}
     meta.albumId = oldMusicInfo.albumId || ''
+    if ((oldMusicInfo as any).mixSongId) meta.mixSongId = (oldMusicInfo as any).mixSongId
 
     if (meta._qualitys && typeof meta._qualitys === 'object' && Array.isArray(meta.qualitys)) {
       if (meta._qualitys.flac32bit && !meta._qualitys.hires) {

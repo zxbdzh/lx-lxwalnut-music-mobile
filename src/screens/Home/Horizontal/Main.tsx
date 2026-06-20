@@ -14,6 +14,7 @@ import PlayHistory from '../Views/PlayHistory'
 import OneDrive from '../Views/OneDrive'
 import WebDAV from '../Views/WebDAV'
 import TXPlaylist from '../Views/TxPlaylist'
+import KgPlaylist from '../Views/KgPlaylist'
 
 const Main = () => {
   const [id, setId] = useState(commonState.navActiveId)
@@ -54,6 +55,8 @@ const Main = () => {
         return <WebDAV />
       case 'nav_tx_playlist':
         return <TXPlaylist />
+      case 'nav_kg_playlist':
+        return <KgPlaylist />
       case 'nav_love':
         return <Mylist />
       case 'nav_setting':

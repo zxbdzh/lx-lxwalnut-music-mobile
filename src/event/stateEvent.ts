@@ -36,6 +36,9 @@ export class StateEvent extends Event {
   txSubscribedPlaylistsChanged() {
     this.emit('txSubscribedPlaylistsChanged');
   }
+  kgSubscribedPlaylistsChanged() {
+    this.emit('kgSubscribedPlaylistsChanged');
+  }
 
   languageChanged(locale: I18n['locale']) {
     this.emit('languageChanged', locale)

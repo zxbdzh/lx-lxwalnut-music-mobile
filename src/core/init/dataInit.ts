@@ -11,6 +11,7 @@ import { TEMP_FILE_PATH } from '@/utils/tools'
 // import { play, playList } from '../player/player'
 import wyUserApi from '@/utils/musicSdk/wy/user'
 import txUserApi from '@/utils/musicSdk/tx/user'
+import { getUserPlaylists as getKgUserPlaylists } from '@/utils/kugouApi'
 import {
   setWyFollowedArtists,
   setWyLikedSongs,
@@ -18,7 +19,8 @@ import {
   setWySubscribedPlaylists,
   setWyUid,
   setTxLikedSongs,
-  setTxSubscribedPlaylists
+  setTxSubscribedPlaylists,
+  setKgSubscribedPlaylists
 } from '@/store/user/action.ts'
 import {getDownloadTasks} from "@/utils/data/download.ts";
 import downloadActions from '@/store/download/action';
@@ -131,6 +133,30 @@ export default async (appSetting: LX.AppSetting) => {
       bootLog('Tx playlists inited.')
     }).catch(err => {
       bootLog(`Tx playlists init failed: ${err.message}`)
+    })
+  }
+
+  // 获取酷狗音乐歌单列表
+  const kg_cookie = appSetting['common.kg_cookie']
+  if (kg_cookie) {
+    bootLog('Kg playlists init...')
+    getKgUserPlaylists(kg_cookie).then(result => {
+      if (result.success && result.data) {
+        const allPlaylists = [...(result.data.createdList || []), ...(result.data.collectedList || [])]
+        const formattedPlaylists = allPlaylists.map((p: any) => ({
+          id: p.id || `kg_${p.listid}`,
+          listid: p.listid,  // 保存数字ID用于API调用
+          name: p.name,
+          cover: p.cover,
+          songCount: p.songCount,
+          desc: p.desc,
+          isCollected: p.isCollected || false,  // 是否是收藏的歌单
+        }))
+        setKgSubscribedPlaylists(formattedPlaylists)
+        bootLog('Kg playlists inited.')
+      }
+    }).catch(err => {
+      bootLog(`Kg playlists init failed: ${err.message}`)
     })
   }
 

@@ -62,6 +62,7 @@ export default {
         lrc: null,
         otherSource: null,
         hash: item.FileHash,
+        mixSongId: item.MixSongID || 0,
         types,
         _types,
         typeUrl: {},

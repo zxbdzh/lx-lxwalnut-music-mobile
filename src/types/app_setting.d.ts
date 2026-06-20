@@ -78,6 +78,7 @@ declare global {
        * QQ音乐 Cookie
        */
       'common.tx_cookie': string
+      'common.kg_cookie': string
       'common.yt_cookie': string
 
       /**

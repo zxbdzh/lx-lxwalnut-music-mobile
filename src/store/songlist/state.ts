@@ -37,6 +37,7 @@ export declare interface ListInfoItem {
   source: LX.OnlineSource
   total?: string | number
   userId?: string | number
+  isFavorites?: boolean
 }
 export declare interface ListInfo {
   list: ListInfoItem[]

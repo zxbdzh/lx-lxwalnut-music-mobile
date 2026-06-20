@@ -25,6 +25,7 @@ import { useTheme } from '@/store/theme/hook'
 import OneDrive from '../Views/OneDrive'
 import WebDAV from '../Views/WebDAV'
 import TXPlaylist from '../Views/TxPlaylist'
+import KgPlaylist from '../Views/KgPlaylist'
 
 const hideKeys = ['list.isShowAlbumName', 'list.isShowInterval'] as Readonly<
   Array<keyof LX.AppSetting>
@@ -486,6 +487,42 @@ const TXPlaylistPage = () => {
   return visible ? component : null
 }
 
+const KgPlaylistPage = () => {
+  const [visible, setVisible] = useState(commonState.navActiveId == 'nav_kg_playlist')
+  const component = useMemo(() => <KgPlaylist />, [])
+  useEffect(() => {
+    let currentId: CommonState['navActiveId'] = commonState.navActiveId
+    const handleNavIdUpdate = (id: CommonState['navActiveId']) => {
+      currentId = id
+      if (id == 'nav_kg_playlist') {
+        requestAnimationFrame(() => {
+          setVisible(true)
+        })
+      }
+    }
+    const handleHide = () => {
+      if (currentId != 'nav_setting') return
+      setVisible(false)
+    }
+    const handleConfigUpdated = (keys: Array<keyof LX.AppSetting>) => {
+      if (keys.some((k) => hideKeys.includes(k))) handleHide()
+    }
+    global.state_event.on('navActiveIdUpdated', handleNavIdUpdate)
+    global.state_event.on('themeUpdated', handleHide)
+    global.state_event.on('languageChanged', handleHide)
+    global.state_event.on('configUpdated', handleConfigUpdated)
+
+    return () => {
+      global.state_event.off('navActiveIdUpdated', handleNavIdUpdate)
+      global.state_event.off('themeUpdated', handleHide)
+      global.state_event.off('languageChanged', handleHide)
+      global.state_event.off('configUpdated', handleConfigUpdated)
+    }
+  }, [])
+
+  return visible ? component : null
+}
+
 const SettingPage = () => {
   const [visible, setVisible] = useState(commonState.navActiveId == 'nav_setting')
   const component = useMemo(() => <Setting />, [])
@@ -637,6 +674,7 @@ const Main = () => {
       nav_onedrive: <OneDrivePage />,
       nav_webdav: <WebDAVPage />,
       nav_tx_playlist: <TXPlaylistPage />,
+      nav_kg_playlist: <KgPlaylistPage />,
       nav_setting: <SettingPage />,
     };
 

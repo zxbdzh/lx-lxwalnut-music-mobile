@@ -35,6 +35,16 @@ export interface TxPlaylistInfo {
   isCollected: boolean
 }
 
+export interface KgPlaylistInfo {
+  id: string | number
+  listid: number  // 酷狗数字ID，用于API调用
+  name: string
+  cover: string
+  songCount: number
+  desc: string
+  isCollected?: boolean  // 是否是收藏的歌单（非自建）
+}
+
 export interface InitState {
   wy_uid: string | null
   wy_liked_song_ids: Set<string>
@@ -45,6 +55,8 @@ export interface InitState {
   // QQ音乐
   tx_liked_song_ids: Set<string>
   tx_subscribed_playlists: TxPlaylistInfo[]
+  // 酷狗音乐
+  kg_subscribed_playlists: KgPlaylistInfo[]
 }
 const state: InitState = {
   wy_uid: null,
@@ -56,6 +68,8 @@ const state: InitState = {
   // QQ音乐
   tx_liked_song_ids: new Set(),
   tx_subscribed_playlists: [],
+  // 酷狗音乐
+  kg_subscribed_playlists: [],
 }
 
 export default state

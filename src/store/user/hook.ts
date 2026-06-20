@@ -185,3 +185,18 @@ export const useTxSubscribedPlaylists = () => {
   }, []);
   return list;
 };
+
+export const useKgSubscribedPlaylists = () => {
+  const [list, setList] = useState(() => state.kg_subscribed_playlists);
+  useEffect(() => {
+    const handleUpdate = () => {
+      setList([...state.kg_subscribed_playlists]);
+    };
+    global.state_event.on('kgSubscribedPlaylistsChanged', handleUpdate);
+    handleUpdate();
+    return () => {
+      global.state_event.off('kgSubscribedPlaylistsChanged', handleUpdate);
+    };
+  }, []);
+  return list;
+};

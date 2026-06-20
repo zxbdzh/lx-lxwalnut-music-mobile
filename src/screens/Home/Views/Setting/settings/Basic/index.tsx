@@ -22,6 +22,7 @@ import IsNewListUI from './IsNewListUI'
 import { useI18n } from '@/lang/i18n'
 import WyCookie from './WyCookie'
 import TxCookie from './TxCookie'
+import KgCookie from './KgCookie'
 import SerpApiKey from './SerpApiKey'
 import WebLoginBtn from './WebLoginBtn'
 import NavMenu from "@/screens/Home/Views/Setting/settings/Basic/NavMenu.tsx";
@@ -81,6 +82,7 @@ export default memo(() => {
       <Section title={t('setting_platform')} sectionId="setting_platform">
         <WyCookie />
         <TxCookie />
+        <KgCookie />
         <SerpApiKey />
         <WebLoginBtn />
       </Section>

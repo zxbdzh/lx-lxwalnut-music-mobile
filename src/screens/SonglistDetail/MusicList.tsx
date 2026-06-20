@@ -21,6 +21,7 @@ export interface MusicListProps {
 export interface MusicListType {
   loadList: (source: LX.OnlineSource, listId: string, isRefresh?: boolean) => Promise<DetailInfo>
   scrollToInfo: (info: LX.Music.MusicInfoOnline) => void
+  addSongToList: (rawSong: any) => void
 }
 
 export default forwardRef<MusicListType, MusicListProps>(({componentId, isCreator, playingId }, ref) => {
@@ -28,6 +29,7 @@ export default forwardRef<MusicListType, MusicListProps>(({componentId, isCreato
   const isUnmountedRef = useRef(false)
   const info = useListInfo()
   const [txIsUserCreated, setTxIsUserCreated] = useState(false)
+  const [kgIsUserCreated, setKgIsUserCreated] = useState(false)
 
   // 判断QQ音乐歌单是否是用户自建歌单
   useEffect(() => {
@@ -47,8 +49,19 @@ export default forwardRef<MusicListType, MusicListProps>(({componentId, isCreato
     }
   }, [info.source, info.id])
 
-  // 最终的 isCreator 判断：网易云用传入的 isCreator，QQ音乐用自己判断的
-  const finalIsCreator = info.source === 'tx' ? txIsUserCreated : isCreator
+  // 判断酷狗歌单是否是用户自建歌单
+  useEffect(() => {
+    if (info.source === 'kg') {
+      // 酷狗歌单通过 isCollected 字段判断
+      // 如果歌单详情中没有 isCollected 信息，默认为自建
+      setKgIsUserCreated(true)
+    } else {
+      setKgIsUserCreated(false)
+    }
+  }, [info.source, info.id])
+
+  // 最终的 isCreator 判断
+  const finalIsCreator = info.source === 'tx' ? txIsUserCreated : info.source === 'kg' ? kgIsUserCreated : isCreator
 
   useEffect(() => {
     const handleJumpPosition = () => {
@@ -161,6 +174,33 @@ export default forwardRef<MusicListType, MusicListProps>(({componentId, isCreato
               }, 200)
             }
           })
+        }
+      },
+      addSongToList(rawSong: any) {
+        // 乐观更新：将 API 返回的歌曲数据添加到本地列表
+        const { decodeName } = require('@/utils/index')
+        const song: LX.Music.MusicInfoOnline = {
+          id: `kg__${rawSong.hash || rawSong.audio_id}`,
+          name: decodeName(rawSong.name || rawSong.songname || '').replace(/\.mp3$/i, ''),
+          singer: decodeName(rawSong.singerinfo?.map((s: any) => s.name).join('、') || rawSong.singername || ''),
+          albumName: decodeName(rawSong.album_name || ''),
+          albumId: String(rawSong.album_id || ''),
+          songmid: String(rawSong.audio_id || rawSong.hash || ''),
+          source: 'kg',
+          interval: rawSong.duration ? rawSong.duration + 's' : '',
+          img: rawSong.cover ? rawSong.cover.replace('{size}', '400') : '',
+          hash: rawSong.hash || '',
+          mixsongid: rawSong.mixsongid || 0,
+          fileId: rawSong.fileid || 0,
+        } as any
+        const currentList = [...songlistState.listDetailInfo.list]
+        // 避免重复添加
+        if (!currentList.some(s => s.id === song.id)) {
+          currentList.push(song)
+          songlistState.listDetailInfo.list = currentList
+          songlistState.listDetailInfo.total = currentList.length
+          listRef.current?.setList(currentList)
+          console.log(`[乐观更新] 已添加歌曲到列表: ${song.name}, 当前共 ${currentList.length} 首`)
         }
       },
     }),

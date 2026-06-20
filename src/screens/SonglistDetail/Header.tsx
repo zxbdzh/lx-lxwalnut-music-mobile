@@ -9,6 +9,7 @@ import { useTheme } from '@/store/theme/hook'
 import Text, { AnimatedText } from '@/components/common/Text'
 import { createStyle } from '@/utils/tools'
 import Image from '@/components/common/Image'
+import { Icon } from '@/components/common/Icon'
 import { useListInfo } from './state'
 import { useAnimateOnecNumber } from '@/utils/hooks/useAnimateNumber'
 import { useStatusbarHeight } from '@/store/common/hook'
@@ -41,10 +42,12 @@ const Pic = ({
   componentId,
   playCount,
   imgUrl,
+  isFavorites,
 }: {
   componentId: string
   playCount: string
   imgUrl?: string
+  isFavorites?: boolean
 }) => {
   const [pic, setPic] = useState(imgUrl)
   const [animated, setAnimated] = useState(false)
@@ -59,11 +62,17 @@ const Pic = ({
 
   return (
     <View style={{ ...styles.listItemImg, width: IMAGE_WIDTH, height: IMAGE_WIDTH }}>
-      <Image
-        nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_to_${info.id}`}
-        url={pic}
-        style={{ flex: 1, borderRadius: 4 }}
-      />
+      {isFavorites ? (
+        <View style={styles.favoritesPlaceholder}>
+          <Icon name="love-filled" color="#FF4D6A" size={36} />
+        </View>
+      ) : (
+        <Image
+          nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_to_${info.id}`}
+          url={pic}
+          style={{ flex: 1, borderRadius: 4 }}
+        />
+      )}
       {playCount && animated ? <CountText count={playCount} /> : null}
     </View>
   )
@@ -120,6 +129,7 @@ export default forwardRef<HeaderType, HeaderProps>(
             componentId={componentId}
             playCount={detailInfo.playCount}
             imgUrl={detailInfo.imgUrl}
+            isFavorites={info.isFavorites}
           />
           <View
             style={{ flexDirection: 'column', flexGrow: 1, flexShrink: 1, paddingLeft: 5 }}
@@ -187,5 +197,12 @@ const styles = createStyle({
     color: '#fff',
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 4,
+  },
+  favoritesPlaceholder: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
   },
 })

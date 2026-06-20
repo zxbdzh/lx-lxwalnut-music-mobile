@@ -10,7 +10,7 @@ import songlistState from '@/store/songlist/state'
 import { useI18n } from '@/lang'
 import { useListInfo } from './state'
 
-export default memo(({ onBack }: { onBack: () => void }) => { // 确保接收 onBack prop
+export default memo(({ onBack }: { onBack: () => void }) => {
   const theme = useTheme()
   const t = useI18n()
   const info = useListInfo()
@@ -21,28 +21,23 @@ export default memo(({ onBack }: { onBack: () => void }) => { // 确保接收 on
   }
 
   const handleCollection = () => {
-    if (!songlistState.listDetailInfo.info.name) return
-    void handleCollect(info.id, info.source, songlistState.listDetailInfo.info.name || info.name)
+    console.log('[ActionBar] 收藏按钮点击', { id: info.id, source: info.source, name: info.name })
+    void handleCollect(info.id, info.source, info.name || '未命名歌单')
   }
-
-  const showCollect = info.source !== 'tx'
-  const btnWidth = showCollect ? '33.33%' : '50%'
 
   return (
     <View style={styles.container}>
-      {showCollect && (
-        <Button onPress={handleCollection} style={[styles.controlBtn, { width: btnWidth }]}>
-          <Text style={{ ...styles.controlBtnText, color: theme['c-button-font'] }}>
-            {t('collect_songlist')}
-          </Text>
-        </Button>
-      )}
-      <Button onPress={handlePlayAll} style={[styles.controlBtn, { width: btnWidth }]}>
+      <Button onPress={handleCollection} style={styles.controlBtn}>
+        <Text style={{ ...styles.controlBtnText, color: theme['c-button-font'] }}>
+          {t('collect_songlist')}
+        </Text>
+      </Button>
+      <Button onPress={handlePlayAll} style={styles.controlBtn}>
         <Text style={{ ...styles.controlBtnText, color: theme['c-button-font'] }}>
           {t('play_all')}
         </Text>
       </Button>
-      <Button onPress={onBack} style={[styles.controlBtn, { width: btnWidth }]}>
+      <Button onPress={onBack} style={styles.controlBtn}>
         <Text style={{ ...styles.controlBtnText, color: theme['c-button-font'] }}>{t('back')}</Text>
       </Button>
     </View>

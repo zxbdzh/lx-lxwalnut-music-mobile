@@ -6,6 +6,7 @@ import List from './List'
 import Button from '@/components/common/Button'
 import wyApi from '@/utils/musicSdk/wy/user'
 import txApi from '@/utils/musicSdk/tx/user'
+import { addSongToPlaylist as addKgSongToPlaylist, removeSongsFromPlaylist as removeKgSongsFromPlaylist } from '@/utils/kugouApi'
 import { useI18n } from '@/lang'
 import { addListMusics, moveListMusics } from '@/core/list'
 import settingState from '@/store/setting/state'
@@ -16,6 +17,7 @@ import {addWyLikedSong, removeWyLikedSong, updateWySubscribedPlaylistTrackCount,
 import {clearListDetailCache} from "@/core/songlist.ts";
 import {useWySubscribedPlaylists} from "@/store/user/hook.ts";
 import { log } from '@/utils/log'
+import { useSettingValue } from '@/store/setting/hook'
 
 export interface SelectInfo {
   musicInfo: LX.Music.MusicInfo | null
@@ -37,15 +39,16 @@ export default forwardRef<MusicAddModalType, MusicAddModalProps>(({ onAdded }, r
   const t = useI18n()
   const dialogRef = useRef<DialogType>(null)
   const [selectInfo, setSelectInfo] = useState<SelectInfo>(initSelectInfo as SelectInfo)
-  const [playlistType, setPlaylistType] = useState<'local' | 'wy' | 'tx'>('local')
+  const [playlistType, setPlaylistType] = useState<'local' | 'wy' | 'tx' | 'kg'>('local')
   const theme = useTheme()
   const subscribedPlaylists = useWySubscribedPlaylists()
+  const kgCookie = useSettingValue('common.kg_cookie')
 
   useEffect(() => {
     getPlaylistType().then(setPlaylistType)
   }, [])
 
-  const handlePlaylistTypeChange = (type: 'local' | 'wy' | 'tx') => {
+  const handlePlaylistTypeChange = (type: 'local' | 'wy' | 'tx' | 'kg') => {
     setPlaylistType(type)
     void savePlaylistType(type)
   }
@@ -242,6 +245,118 @@ export default forwardRef<MusicAddModalType, MusicAddModalProps>(({ onAdded }, r
       return;
     }
 
+    // 酷狗音乐歌单
+    if (playlistType === 'kg') {
+      if (!musicInfo) {
+        log.error('[MusicAddModal] 酷狗歌单操作失败: musicInfo 为空')
+        return;
+      }
+
+      // 获取酷狗数字ID（listid）
+      const toListId = (listInfo as any).listid || Number(String(listInfo.id).replace('kg__', ''));
+      if (!toListId || isNaN(toListId)) {
+        log.error('[MusicAddModal] 酷狗歌单操作失败: 无法获取歌单数字ID', {
+          listId: listInfo.id,
+          listid: (listInfo as any).listid,
+        })
+        toast('歌单ID格式错误')
+        return;
+      }
+
+      // 获取酷狗 cookie
+      if (!kgCookie) {
+        toast('请先登录酷狗音乐')
+        return;
+      }
+
+      // 获取歌曲信息
+      const songName = musicInfo.name || '';
+      const songHash = (musicInfo.meta as any)?.hash || '';
+      const albumId = (musicInfo.meta as any)?.albumId || 0;
+      const mixsongid = Number((musicInfo.meta as any)?.mixSongId) || Number(musicInfo.meta?.songId) || 0;
+      const fileId = (musicInfo.meta as any)?.fileId || (musicInfo.meta as any)?.album_audio_id || 0;
+
+      if (isMove) {
+        // 移动：先添加到目标歌单，再从源歌单删除
+        log.info('[MusicAddModal] 酷狗歌单移动开始', {
+          fromListId: selectInfo.listId,
+          toListId,
+          songName,
+          songHash,
+        })
+
+        // 源歌单ID需要从歌单列表中查找listid
+        const fromListIdStr = String(selectInfo.listId).replace('kg__', '');
+        const fromListId = Number(fromListIdStr);
+
+        addKgSongToPlaylist(kgCookie, toListId, {
+          name: songName,
+          hash: songHash,
+          album_id: albumId,
+          mixsongid,
+        }).then((addResult) => {
+          if (addResult.success) {
+            // 添加成功后，从源歌单删除
+            if (fileId && fromListId) {
+              return removeKgSongsFromPlaylist(kgCookie, fromListId, [fileId])
+            }
+            return { success: true, message: '跳过删除（无fileId）' }
+          } else {
+            throw new Error(addResult.message)
+          }
+        }).then((removeResult) => {
+          if (removeResult?.success !== false) {
+            onAdded?.()
+            toast(t('list_edit_action_tip_move_success'))
+            log.info('[MusicAddModal] 酷狗歌单移动成功', { fromListId, toListId, songName })
+          } else {
+            log.error('[MusicAddModal] 酷狗歌单移动-删除失败', { error: removeResult?.message })
+            toast('移动成功但删除失败: ' + (removeResult?.message || ''))
+          }
+        }).catch((err) => {
+          log.error('[MusicAddModal] 酷狗歌单移动失败', {
+            error: err.message || err,
+          })
+          toast(err.message || t('list_edit_action_tip_move_failed'))
+        })
+      } else {
+        // 添加
+        log.info('[MusicAddModal] 酷狗歌单添加开始', {
+          toListId,
+          songName,
+          songHash,
+        })
+
+        addKgSongToPlaylist(kgCookie, toListId, {
+          name: songName,
+          hash: songHash,
+          album_id: albumId,
+          mixsongid,
+        }).then((result) => {
+          if (result.success) {
+            onAdded?.()
+            toast(t('list_edit_action_tip_add_success'))
+            log.info('[MusicAddModal] 酷狗歌单添加成功', { toListId, songName })
+            // 使用 collection_* 格式的 ID（与 SonglistDetail 匹配）
+            const globalCollectionId = String(listInfo.id).replace('kg__', '')
+            clearListDetailCache('kg', globalCollectionId)
+            // 传递添加的歌曲信息用于乐观更新（包含封面）
+            const newCover = result.song?.cover ? result.song.cover.replace('{size}', '400') : undefined
+            global.app_event.playlist_updated({ source: 'kg', listId: globalCollectionId, addedSong: result.song, newCover })
+          } else {
+            log.error('[MusicAddModal] 酷狗歌单添加失败', { error: result.message })
+            toast(result.message || t('list_edit_action_tip_add_failed'))
+          }
+        }).catch((err) => {
+          log.error('[MusicAddModal] 酷狗歌单添加失败', {
+            error: err.message || err,
+          })
+          toast(err.message || t('list_edit_action_tip_add_failed'))
+        })
+      }
+      return;
+    }
+
     if (selectInfo.isMove) {
       void moveListMusics(
         selectInfo.listId,
@@ -278,15 +393,18 @@ export default forwardRef<MusicAddModalType, MusicAddModalProps>(({ onAdded }, r
       {selectInfo.musicInfo ? (
         <>
           <Title musicInfo={selectInfo.musicInfo} isMove={selectInfo.isMove} />
-          <View style={{ flexDirection: 'row', justifyContent: 'center', paddingVertical: 10 }}>
-            <Button onPress={() => handlePlaylistTypeChange('local')} style={{ marginRight: 10, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4, backgroundColor: playlistType === 'local' ? theme['c-button-background-active'] : theme['c-button-background'] }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', paddingVertical: 10, flexWrap: 'wrap', gap: 8 }}>
+            <Button onPress={() => handlePlaylistTypeChange('local')} style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4, backgroundColor: playlistType === 'local' ? theme['c-button-background-active'] : theme['c-button-background'] }}>
               <Text color={theme['c-button-font']}>本地歌单</Text>
             </Button>
-            <Button onPress={() => handlePlaylistTypeChange('wy')} style={{ marginRight: 10, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4, backgroundColor: playlistType === 'wy' ? theme['c-button-background-active'] : theme['c-button-background'] }}>
+            <Button onPress={() => handlePlaylistTypeChange('wy')} style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4, backgroundColor: playlistType === 'wy' ? theme['c-button-background-active'] : theme['c-button-background'] }}>
               <Text color={theme['c-button-font']}>网易歌单</Text>
             </Button>
             <Button onPress={() => handlePlaylistTypeChange('tx')} style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4, backgroundColor: playlistType === 'tx' ? theme['c-button-background-active'] : theme['c-button-background'] }}>
               <Text color={theme['c-button-font']}>QQ歌单</Text>
+            </Button>
+            <Button onPress={() => handlePlaylistTypeChange('kg')} style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4, backgroundColor: playlistType === 'kg' ? theme['c-button-background-active'] : theme['c-button-background'] }}>
+              <Text color={theme['c-button-font']}>酷狗歌单</Text>
             </Button>
           </View>
           <List musicInfo={selectInfo.musicInfo} onPress={handleSelect} playlistType={playlistType} />

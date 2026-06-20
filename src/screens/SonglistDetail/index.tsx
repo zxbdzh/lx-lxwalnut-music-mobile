@@ -67,11 +67,22 @@ const ListHeader = ({ detailInfo, info, onBack }: { detailInfo: DetailInfo, info
       <View style={{ ...styles.listHeaderContainer, borderBottomColor: theme['c-border-background'] }}>
         <View style={{ flexDirection: 'row', flexGrow: 0, flexShrink: 0, padding: 10 }}>
           <View style={{ ...styles.listItemImg, width: IMAGE_WIDTH, height: IMAGE_WIDTH }}>
-            <Image
-              nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_to_${info.id}`}
-              url={detailInfo.imgUrl}
-              style={{ flex: 1, borderRadius: 4 }}
-            />
+            {info.isFavorites ? (
+              <View style={styles.favoritesPlaceholder}>
+                <Icon name="love-filled" color="#FF4D6A" size={36} />
+              </View>
+            ) : (
+              <Image
+                nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_to_${info.id}`}
+                url={detailInfo.imgUrl}
+                style={{ flex: 1, borderRadius: 4 }}
+              />
+            )}
+            {detailInfo.playCount ? (
+              <Text style={styles.playCount} numberOfLines={1}>
+                {detailInfo.playCount}
+              </Text>
+            ) : null}
           </View>
           <View
             style={{ flexDirection: 'column', flexGrow: 1, flexShrink: 1, paddingLeft: 5 }}
@@ -139,14 +150,24 @@ export default ({ info, onBack, initialScrollToInfo }: { info: ListInfoItem, onB
   }, [info.id, info.source])
 
   useEffect(() => {
-    refreshList()
+    // 打开歌单详情时强制刷新（获取实时数据）
+    refreshList(true)
   }, [refreshList])
 
   useEffect(() => {
-    const handlePlaylistUpdate = ({ source, listId }: { source: string, listId: string }) => {
+    const handlePlaylistUpdate = ({ source, listId, addedSong }: { source: string, listId: string, addedSong?: any }) => {
       if (info.source === source && String(info.id) === String(listId)) {
-        console.log(`歌单详情页 ${listId} 收到更新事件，正在刷新...`)
-        refreshList(true)
+        console.log(`歌单详情页 ${listId} 收到更新事件`)
+        if (addedSong) {
+          // 乐观更新：直接添加到本地列表
+          console.log(`[乐观更新] 添加歌曲: ${addedSong.name || addedSong.songname}`)
+          musicListRef.current?.addSongToList(addedSong)
+        } else {
+          // 删除歌曲：刷新列表
+          setTimeout(() => {
+            refreshList(true)
+          }, 100)
+        }
       }
     }
     global.app_event.on('playlist_updated', handlePlaylistUpdate)
@@ -262,5 +283,12 @@ const styles = createStyle({
     paddingRight: 5,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  favoritesPlaceholder: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
   },
 })

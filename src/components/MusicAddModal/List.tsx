@@ -10,7 +10,7 @@ import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeW, scaleSizeH } from '@/utils/pixelRatio'
-import {useWySubscribedPlaylists, useWyUid, useTxSubscribedPlaylists} from "@/store/user/hook.ts"
+import {useWySubscribedPlaylists, useWyUid, useTxSubscribedPlaylists, useKgSubscribedPlaylists} from "@/store/user/hook.ts"
 
 const styles = createStyle({
   list: {
@@ -72,13 +72,14 @@ export default ({
 }: {
   musicInfo: LX.Music.MusicInfo
   onPress: (listInfo: LX.List.MyListInfo) => void
-  playlistType: 'local' | 'wy' | 'tx'
+  playlistType: 'local' | 'wy' | 'tx' | 'kg'
 }) => {
   const windowSize = useWindowSize()
 
   const localLists = useMyList()
   const onlinePlaylists = useWySubscribedPlaylists()
   const txPlaylists = useTxSubscribedPlaylists()
+  const kgPlaylists = useKgSubscribedPlaylists()
   const uid = useWyUid()
 
   const allList = useMemo(() => {
@@ -88,8 +89,17 @@ export default ({
     if (playlistType === 'tx') {
       return txPlaylists
     }
+    if (playlistType === 'kg') {
+      return kgPlaylists.map(p => ({
+        id: `kg__${p.listid}`,
+        listid: p.listid,
+        name: p.name,
+        avatar: p.cover,
+        songCount: p.songCount,
+      }))
+    }
     return localLists
-  }, [playlistType, localLists, onlinePlaylists, uid, txPlaylists])
+  }, [playlistType, localLists, onlinePlaylists, uid, txPlaylists, kgPlaylists])
 
   const itemWidth = useMemo(() => {
     let w = Math.floor(windowSize.width * 0.9 - PADDING)

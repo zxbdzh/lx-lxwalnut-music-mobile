@@ -12,10 +12,15 @@ export default memo(() => {
     global.app_event.emit('showTxWebLogin');
   };
 
+  const handleShowKgLoginModal = () => {
+    global.app_event.emit('showKgWebLogin');
+  };
+
   return (
     <View style={styles.content}>
       <Button onPress={handleShowWyLoginModal}>网易登录</Button>
       <Button onPress={handleShowTxLoginModal}>QQ登录</Button>
+      <Button onPress={handleShowKgLoginModal}>酷狗登录</Button>
     </View>
   );
 });

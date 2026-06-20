@@ -26,6 +26,7 @@ import MusicDownloadModal, {
 import {createStyle, toast} from '@/utils/tools'
 import wyApi from '@/utils/musicSdk/wy/user'
 import txUserApi from '@/utils/musicSdk/tx/user'
+import { removeSongsFromPlaylist as removeKgSongsFromPlaylist, getPlaylistSongs as getKgPlaylistSongs } from '@/utils/kugouApi'
 import {batchDownload} from "@/core/download.ts"
 import {getMvUrl as getWyMvUrl} from "@/utils/musicSdk/wy/mv.js"
 import {getMvUrl as getTxMvUrl} from "@/utils/musicSdk/tx/mv.js"
@@ -34,6 +35,7 @@ import {removeWyLikedSong, updateWySubscribedPlaylistTrackCount} from "@/store/u
 import {clearListDetailCache} from "@/core/songlist.ts"
 import commonState from '@/store/common/state'
 import {useWySubscribedPlaylists} from "@/store/user/hook.ts";
+import {useSettingValue} from "@/store/setting/hook.ts";
 import SimilarSongsModal, { type SimilarSongsModalType } from '@/components/SimilarSongsModal'
 
 export interface OnlineListProps {
@@ -89,6 +91,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(
     const similarSongsModalRef = useRef<SimilarSongsModalType>(null)
     const t = useI18n()
     const subscribedPlaylists = useWySubscribedPlaylists()
+    const kgCookie = useSettingValue('common.kg_cookie')
 
     useImperativeHandle(ref, () => ({
       setList(list, isAppend = false, showSource = false) {
@@ -224,10 +227,63 @@ export default forwardRef<OnlineListType, OnlineListProps>(
         }).catch(err => {
           toast('移除失败: ' + err.message)
         })
+      } else if (listId.startsWith('kg__')) {
+        // 酷狗音乐 - 需要先获取歌单歌曲的 fileid
+        if (!kgCookie) {
+          toast('请先登录酷狗音乐')
+          return
+        }
+        const playlistId = listId.replace('kg__', '')
+        // 从 collection_3_userid_listid_ver 格式提取数字 listid
+        const numericListId = (() => {
+          const parts = playlistId.split('_')
+          return parts.length >= 4 ? Number(parts[3]) : Number(playlistId)
+        })()
+        if (!numericListId || isNaN(numericListId)) {
+          toast('无法获取歌单ID')
+          return
+        }
+        // 获取歌单歌曲列表来获取 fileid
+        getKgPlaylistSongs(kgCookie, playlistId, 1, 500).then(songsResult => {
+          if (!songsResult.success || !songsResult.data?.list) {
+            toast('获取歌单歌曲失败')
+            return
+          }
+          // 通过 songmid(hash) 匹配找到 fileid
+          const hashToFileId = new Map<string, number>()
+          for (const song of songsResult.data.list) {
+            if (song.songmid && song.fileId) hashToFileId.set(song.songmid.toLowerCase(), song.fileId)
+          }
+          // 尝试多种方式获取 hash
+          const selectedHashes = musicInfos.map(m => {
+            const meta = m.meta as any
+            return (meta?.songmid || meta?.songId || m.id || '').toString().toLowerCase()
+          }).filter(h => h)
+          console.log('[KuGou] 歌单歌曲 hash 列表:', [...hashToFileId.keys()].slice(0, 5))
+          console.log('[KuGou] 选中歌曲 hash:', selectedHashes.slice(0, 5))
+          const fileids = selectedHashes.map(h => hashToFileId.get(h) || 0).filter(id => id > 0)
+          if (fileids.length === 0) {
+            toast('找不到对应的歌曲')
+            return
+          }
+          return removeKgSongsFromPlaylist(kgCookie, numericListId, fileids)
+        }).then(result => {
+          if (!result) return
+          if (result.success) {
+            toast(t('list_edit_action_tip_remove_success'))
+            clearListDetailCache('kg', playlistId)
+            global.app_event.playlist_updated({ source: 'kg', listId: playlistId })
+            hancelExitSelect()
+          } else {
+            toast('移除失败: ' + result.message)
+          }
+        }).catch(err => {
+          toast('移除失败: ' + err.message)
+        })
       } else {
         toast('不支持的操作')
       }
-    }, [listId, hancelExitSelect, t, subscribedPlaylists])
+    }, [listId, hancelExitSelect, t, subscribedPlaylists, kgCookie])
 
     return (
       <View style={styles.container}>
