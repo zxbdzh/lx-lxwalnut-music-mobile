@@ -14,7 +14,16 @@ const defaultSetting: LX.AppSetting = {
   'common.showExitBtn': false,
   'common.useSystemFileSelector': true,
   'common.wy_cookie': '',
+  'common.tx_cookie': '',
+  'common.kg_cookie': '',
   'common.yt_cookie': '',
+  'common.wy_serpapi_key': '',
+  'common.hideNavigationBar': false,
+  'common.isShowStartupGreeting': true,
+  'common.isEnableSearchLog': false,
+  'common.isEnablePlayerLog': false,
+  'common.isEnableWebDAVLog': false,
+  'common.sectionExpandedStatus': {},
   'common.alwaysKeepStatusbarHeight': false,
 
   'common.navStatus': {
@@ -46,8 +55,14 @@ const defaultSetting: LX.AppSetting = {
   'player.isS2t': true,
   'player.isShowBluetoothLyric': false,
 
+  'player.isEnableSlideSwitchSong': false,
+  'player.isSwipeToShowPlaylist': true,
+
   'playDetail.isCoverSpin': true,
   'playDetail.style.align': 'center',
+  'playDetail.style.newUI': true,
+  'playDetail.style.coverSize': 100,
+  'playDetail.style.miniLyricAlign': 'center',
   'playDetail.vertical.style.lrcFontSize': 200,
   'playDetail.horizontal.style.lrcFontSize': 220,
   'playDetail.isShowLyricProgressSetting': true,
@@ -78,7 +93,13 @@ const defaultSetting: LX.AppSetting = {
   'list.isSaveScrollLocation': true,
   'list.addMusicLocationType': 'top',
   'list.isShowMyListSubMenu': true,
+  'list.isNewListUI': true,
   'list.isAutoSaveDailyRec': true,
+
+  'theme.sidebarDynamicBg': false,
+  'theme.mylistDynamicBg': false,
+  'theme.sectionOpacity': 50,
+  'theme.subContainerOpacity': 50,
   'list.isShowCover': true,
 
   'menu.playLater': true,
@@ -111,6 +132,11 @@ const defaultSetting: LX.AppSetting = {
   'sync.webdav.password': '',
   'sync.webdav.path': '/LX_Music/',
   'sync.webdav.lastSyncTimeLists': 0,
+  'sync.webdav.downloadPath': '',
+  'webdav.downloadPath': '',
+  'nav_onedrive': true,
+  'nav_webdav': true,
+  'nav_play_history': true,
 
   'theme.id': 'green',
   'theme.lightId': 'green',

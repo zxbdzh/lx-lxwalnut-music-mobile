@@ -73,7 +73,34 @@ declare global {
        * 网易云音乐 Cookie
        */
       'common.wy_cookie': string
+      'common.tx_cookie': string
+      'common.kg_cookie': string
       'common.yt_cookie': string
+      'common.wy_serpapi_key': string
+      /**
+       * 隐藏导航栏
+       */
+      'common.hideNavigationBar': boolean
+      /**
+       * 显示启动问候语
+       */
+      'common.isShowStartupGreeting': boolean
+      /**
+       * 启用搜索日志
+       */
+      'common.isEnableSearchLog': boolean
+      /**
+       * 启用播放日志
+       */
+      'common.isEnablePlayerLog': boolean
+      /**
+       * 启用WebDAV日志
+       */
+      'common.isEnableWebDAVLog': boolean
+      /**
+       * 设置页面折叠状态
+       */
+      'common.sectionExpandedStatus': Record<string, boolean>
 
       /**
        * 总是保留状态栏高度
@@ -118,6 +145,23 @@ declare global {
       'theme.customBgPicPath': string
 
       /**
+       * 侧边栏动态背景
+       */
+      'theme.sidebarDynamicBg': boolean
+      /**
+       * 我的列表动态背景
+       */
+      'theme.mylistDynamicBg': boolean
+      /**
+       * 设置页面分组透明度
+       */
+      'theme.sectionOpacity': number
+      /**
+       * 设置页面子容器透明度
+       */
+      'theme.subContainerOpacity': number
+
+      /**
        * 字体阴影
        */
       'theme.fontShadow': boolean
@@ -136,6 +180,15 @@ declare global {
        * 切歌模式
        */
       'player.togglePlayMethod': 'listLoop' | 'random' | 'list' | 'singleLoop' | 'heartbeat' | 'none'
+
+      /**
+       * 滑动切歌
+       */
+      'player.isEnableSlideSwitchSong': boolean
+      /**
+       * 上滑显示播放列表
+       */
+      'player.isSwipeToShowPlaylist': boolean
 
       /**
        * 优先播放的音质
@@ -232,6 +285,19 @@ declare global {
        * 播放详情页-是否允许通过歌词调整播放进度
        */
       'playDetail.isShowLyricProgressSetting': boolean
+
+      /**
+       * 播放详情页新UI
+       */
+      'playDetail.style.newUI': boolean
+      /**
+       * 封面大小
+       */
+      'playDetail.style.coverSize': number
+      /**
+       * 迷你歌词对齐方式
+       */
+      'playDetail.style.miniLyricAlign': 'center' | 'left' | 'right'
 
       /**
        * 是否启用桌面歌词
@@ -351,6 +417,10 @@ declare global {
 
       'list.isShowMyListSubMenu': boolean
       'list.isAutoSaveDailyRec': boolean
+      /**
+       * 列表新UI
+       */
+      'list.isNewListUI': boolean
 
       'menu.playLater': boolean
       'menu.addTo': boolean
@@ -409,6 +479,14 @@ declare global {
       'sync.webdav.password': string;
       'sync.webdav.path': string;
       'sync.webdav.lastSyncTimeLists': number;
+      'sync.webdav.downloadPath': string;
+      'webdav.downloadPath': string;
+      /**
+       * 导航项显示控制
+       */
+      'nav_onedrive': boolean;
+      'nav_webdav': boolean;
+      'nav_play_history': boolean;
     }
   }
 }

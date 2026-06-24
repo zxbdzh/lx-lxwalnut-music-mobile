@@ -71,8 +71,12 @@ declare global {
     showArtistSelector: (artists: Artist[], onSelect: (artist: Artist) => void) => void;
     triggerSearch: (text: string) => void;
     'wy-cookie-set': (cookie: string) => void
+    'tx-cookie-set': (cookie: string) => void
+    'kg-cookie-set': (cookie: string) => void
     'yt-cookie-set': (cookie: string) => void
     showWebLogin: () => void
+    showTxWebLogin: () => void
+    showKgWebLogin: () => void
     showYouTubeLogin: () => void
     showVideoPlayer: (url: string) => void
   }
