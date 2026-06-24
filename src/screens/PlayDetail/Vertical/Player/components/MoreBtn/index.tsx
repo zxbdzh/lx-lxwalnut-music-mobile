@@ -9,12 +9,18 @@ import Btn from './Btn'
 import { type Position } from '@/screens/Home/Views/Mylist/MusicList/ListMenu'
 import PlayDetailMenu, { type PlayDetailMenuType, type SelectInfo } from '@/screens/PlayDetail/components/PlayDetailMenu'
 import playerState from '@/store/player/state'
-import { handleDislikeMusic, handleShare, handleShowMusicSourceDetail } from '@/screens/Home/Views/Mylist/MusicList/listAction'
-import {handleLikeMusic, handleShowAlbumDetail, handleShowArtistDetail} from '@/components/OnlineList/listAction'
+import { handleDislikeMusic, handleShare, handleShowMusicSourceDetail, handleClearMusicCache } from '@/screens/Home/Views/Mylist/MusicList/listAction'
+import {handleLikeMusic, handleTxLikeMusic, handleKgLikeMusic, handleShowAlbumDetail, handleShowArtistDetail} from '@/components/OnlineList/listAction'
 import MusicAddModal, { type MusicAddModalType } from '@/components/MusicAddModal'
 import MusicDownloadModal, { type MusicDownloadModalType } from '@/screens/Home/Views/Mylist/MusicList/MusicDownloadModal'
 import settingState from '@/store/setting/state'
-import {getMvUrl} from "@/utils/musicSdk/wy/mv.js";
+import {getMvUrl as getWyMvUrl} from "@/utils/musicSdk/wy/mv.js";
+import {getMvUrl as getTxMvUrl} from "@/utils/musicSdk/tx/mv.js";
+import {getMvUrl as getKgMvUrl} from "@/utils/musicSdk/kg/mv.js";
+import SimilarSongsModal, { type SimilarSongsModalType } from '@/components/SimilarSongsModal'
+import { isOneDriveMusicInfo } from '@/core/oneDrive/utils'
+import { usePlayMusicInfo } from '@/store/player/hook'
+import ClimaxBtn from './ClimaxBtn'
 
 
 export default memo(({ componentId }: { componentId: string }) => {
@@ -22,6 +28,9 @@ export default memo(({ componentId }: { componentId: string }) => {
   const moreBtnRef = useRef<TouchableOpacity>(null);
   const musicAddModalRef = useRef<MusicAddModalType>(null);
   const musicDownloadModalRef = useRef<MusicDownloadModalType>(null);
+  const similarSongsModalRef = useRef<SimilarSongsModalType>(null);
+  const playMusicInfo = usePlayMusicInfo();
+  const isOneDrive = isOneDriveMusicInfo(playMusicInfo.musicInfo);
 
   // 监听歌曲变化，以便在菜单打开时能重新渲染以获取最新的“喜欢”状态
   useEffect(() => {
@@ -83,6 +92,10 @@ export default memo(({ componentId }: { componentId: string }) => {
     }
   };
 
+  const onSimilarSongs = (info: SelectInfo) => {
+    similarSongsModalRef.current?.show(info.musicInfo);
+  };
+
   const onMusicSourceDetail = (info: SelectInfo) => {
     void handleShowMusicSourceDetail(info.musicInfo);
   };
@@ -92,28 +105,83 @@ export default memo(({ componentId }: { componentId: string }) => {
   };
 
   const onPlayMv = useCallback((info: SelectInfo) => {
-    const mvId = info.musicInfo.meta.mv;
-    if (!mvId) return;
-    getMvUrl(mvId).then(data => {
-      global.app_event.showVideoPlayer(data.url);
-    }).catch(err => {
-      toast(err.message || '获取MV失败');
-    });
+    console.log('[MV] 点击播放MV, source:', info.musicInfo.source, 'musicInfo:', info.musicInfo)
+    
+    if (info.musicInfo.source === 'wy') {
+      const mvId = info.musicInfo.meta.mv;
+      if (!mvId) {
+        console.log('[MV] 网易云: 无MV ID')
+        return
+      }
+      console.log('[MV] 网易云: 获取MV URL, mvId:', mvId)
+      getWyMvUrl(mvId).then(data => {
+        console.log('[MV] 网易云: 获取MV URL成功:', data)
+        global.app_event.showVideoPlayer(data.url);
+      }).catch(err => {
+        console.error('[MV] 网易云: 获取MV失败:', err)
+        toast(err.message || '获取MV失败');
+      });
+    } else if (info.musicInfo.source === 'tx') {
+      const vid = info.musicInfo.meta.vid;
+      if (!vid) {
+        console.log('[MV] QQ: 无VID')
+        return
+      }
+      console.log('[MV] QQ: 获取MV URL, vid:', vid)
+      getTxMvUrl(vid).then(data => {
+        console.log('[MV] QQ: 获取MV URL成功:', data)
+        global.app_event.showVideoPlayer(data.url);
+      }).catch(err => {
+        console.error('[MV] QQ: 获取MV失败:', err)
+        toast(err.message || '获取MV失败');
+      });
+    } else if (info.musicInfo.source === 'kg') {
+      const mixSongId = info.musicInfo.meta.mixSongId || info.musicInfo.mixSongId || info.musicInfo.meta.songId;
+      const songName = info.musicInfo.name;
+      const singerName = info.musicInfo.singer;
+      if (!mixSongId) {
+        console.log('[MV] 酷狗: 无mixSongId')
+        toast('无法获取歌曲ID')
+        return
+      }
+      console.log('[MV] 酷狗: 开始获取MV, mixSongId:', mixSongId, 'songName:', songName, 'singerName:', singerName)
+      getKgMvUrl(String(mixSongId), songName, singerName).then(data => {
+        console.log('[MV] 酷狗: 获取MV URL成功:', data)
+        if (data && data.url) {
+          global.app_event.showVideoPlayer(data.url);
+        } else {
+          console.log('[MV] 酷狗: 返回数据无URL:', data)
+          toast('获取MV链接失败')
+        }
+      }).catch(err => {
+        console.error('[MV] 酷狗: 获取MV失败:', err)
+        toast(err.message || '该歌曲暂无MV');
+      });
+    }
   }, []);
 
   const onLike = (info: SelectInfo) => {
     if (info.musicInfo.source === 'wy') {
       handleLikeMusic(info.musicInfo as LX.Music.MusicInfoOnline);
+    } else if (info.musicInfo.source === 'tx') {
+      handleTxLikeMusic(info.musicInfo as LX.Music.MusicInfoOnline);
+    } else if (info.musicInfo.source === 'kg') {
+      handleKgLikeMusic(info.musicInfo as LX.Music.MusicInfoOnline);
     }
+  };
+
+  const onClearCache = (info: SelectInfo) => {
+    void handleClearMusicCache(info.musicInfo);
   };
 
   return (
     <>
       <View style={styles.container}>
+        <ClimaxBtn />
         <DesktopLyricBtn />
         <MusicAddBtn />
         <PlayModeBtn />
-        <CommentBtn />
+        {isOneDrive ? null : <CommentBtn />}
         <Btn icon="dots-vertical" onPress={handleShowMenu} ref={moreBtnRef} />
       </View>
 
@@ -125,12 +193,15 @@ export default memo(({ componentId }: { componentId: string }) => {
         onCopyName={onCopyName}
         onArtistDetail={onArtistDetail}
         onAlbumDetail={onAlbumDetail}
+        onSimilarSongs={onSimilarSongs}
         onMusicSourceDetail={onMusicSourceDetail}
         onDislikeMusic={onDislikeMusic}
         onPlayMv={onPlayMv}
+        onClearCache={onClearCache}
       />
       <MusicAddModal ref={musicAddModalRef} />
       {settingState.setting['download.enable'] && <MusicDownloadModal ref={musicDownloadModalRef} onDownloadInfo={() => {}} />}
+      <SimilarSongsModal ref={similarSongsModalRef} />
     </>
   )
 })

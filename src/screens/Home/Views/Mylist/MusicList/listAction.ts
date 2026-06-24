@@ -2,9 +2,11 @@ import musicSdk from '@/utils/musicSdk'
 import RNFetchBlob from 'rn-fetch-blob'
 import playerState from '@/store/player/state'
 import settingState from '@/store/setting/state'
+import { setMusicUrl, stop } from '@/core/player/player'
+import { log } from '@/utils/log'
 
-import { removeListMusics, updateListMusicPosition, updateListMusics } from '@/core/list'
-import { playList, playNext } from '@/core/player/player'
+import { addListMusics, removeListMusics, updateListMusicPosition, updateListMusics } from '@/core/list'
+import { playList, playListById, playNext } from '@/core/player/player'
 import { addTempPlayList } from '@/core/player/tempPlayList'
 
 import { filterFileName, similar, sortInsert, toOldMusicInfo } from '@/utils'
@@ -22,6 +24,9 @@ import { requestStoragePermission } from '@/utils/tools'
 import { getMusicUrl, getLyricInfo, getPicUrl } from '@/core/music/online'
 import { writeMetadata, writePic, writeLyric } from '@/utils/localMediaMetadata'
 import { downloadFile, writeFile } from '@/utils/fs'
+import { clearMusicUrl } from '@/utils/data'
+import { getAllKeys, removeDataMultiple } from '@/plugins/storage'
+import { storageDataPrefix } from '@/config/constant'
 import {MusicMetadata} from "react-native-local-media-metadata";
 export const handlePlay = (listId: SelectInfo['listId'], index: SelectInfo['index']) => {
   void playList(listId, index)
@@ -112,6 +117,19 @@ export const handleShare = (musicInfo: SelectInfo['musicInfo']) => {
 }
 
 export const searchListMusic = (list: LX.Music.MusicInfo[], text: string) => {
+  const fullMathNameResults = new Set<LX.Music.MusicInfo>()
+  const fullMathSingerResults = new Set<LX.Music.MusicInfo>()
+  const fullMathAlbumResults = new Set<LX.Music.MusicInfo>()
+  const textLower = text.toLowerCase()
+  for (const mInfo of list) {
+    if (mInfo.name?.toLowerCase().includes(textLower)) {
+      fullMathNameResults.add(mInfo)
+    } else if (mInfo.singer?.toLowerCase().includes(textLower)) {
+      fullMathSingerResults.add(mInfo)
+    } else if (mInfo.meta.albumName?.toLowerCase().includes(textLower)) {
+      fullMathAlbumResults.add(mInfo)
+    }
+  }
   let result: LX.Music.MusicInfo[] = []
   let rxp = new RegExp(
     text
@@ -121,6 +139,8 @@ export const searchListMusic = (list: LX.Music.MusicInfo[], text: string) => {
     'i'
   )
   for (const mInfo of list) {
+    if (fullMathNameResults.has(mInfo) || fullMathSingerResults.has(mInfo) || fullMathAlbumResults.has(mInfo)) continue
+
     const str = `${mInfo.name}${mInfo.singer}${mInfo.meta.albumName ? mInfo.meta.albumName : ''}`
     if (rxp.test(str)) result.push(mInfo)
   }
@@ -136,7 +156,12 @@ export const searchListMusic = (list: LX.Music.MusicInfo[], text: string) => {
       data: mInfo,
     })
   }
-  return sortedList.map((item) => item.data).reverse()
+  return [
+    ...fullMathNameResults.values(),
+    ...fullMathSingerResults.values(),
+    ...fullMathAlbumResults.values(),
+    ...sortedList.map((item) => item.data).reverse(),
+  ]
 }
 
 export const handleShowMusicSourceDetail = async (minfo: SelectInfo['musicInfo']) => {
@@ -167,36 +192,34 @@ export const handleDislikeMusic = async (musicInfo: SelectInfo['musicInfo']) => 
   }
 }
 
-export const handleToggleSource = (
-  listId: string,
-  musicInfo: LX.Music.MusicInfo,
-  toggleMusicInfo?: LX.Music.MusicInfoOnline | null
-) => {
+export const handleToggleSource = async(listId: string, musicInfo: LX.Music.MusicInfo, toggleMusicInfo: LX.Music.MusicInfoOnline) => {
   const list = getListMusicSync(listId)
-  const idx = list.findIndex((m) => m.id == musicInfo.id)
-  if (idx < 0) return null
-  musicInfo.meta.toggleMusicInfo = toggleMusicInfo
-  const newInfo = {
-    ...musicInfo,
-    meta: {
-      ...musicInfo.meta,
-      toggleMusicInfo,
-    },
+  const oldId = musicInfo.id
+  let oldIdx = list.findIndex(m => m.id == oldId)
+  if (oldIdx < 0) {
+    void addListMusics(listId, [toggleMusicInfo], settingState.setting['list.addMusicLocationType'])
+    return true
   }
-  void updateListMusics([
-    {
-      id: listId,
-      musicInfo: newInfo as LX.Music.MusicInfo,
-    },
-  ])
-  if (
-    !!toggleMusicInfo ||
-    (playerState.playMusicInfo.listId == listId &&
-      playerState.playMusicInfo.musicInfo?.id == musicInfo.id)
-  ) {
-    void playList(listId, idx)
+  const id = toggleMusicInfo.id
+  const index = list.findIndex(m => m.id == id)
+  const removeIds = [oldId]
+  if (index > -1) {
+    if (!await confirmDialog({
+      message: global.i18n.t('music_toggle__duplicate_tip'),
+      cancelButtonText: global.i18n.t('dialog_cancel'),
+      confirmButtonText: global.i18n.t('dialog_confirm'),
+    })) return false
+    removeIds.push(id)
   }
-  return newInfo as LX.Music.MusicInfo
+  void removeListMusics(listId, removeIds).then(async() => {
+    await addListMusics(listId, [toggleMusicInfo], 'bottom')
+    if (index != -1 && index < oldIdx) oldIdx--
+    await updateListMusicPosition(listId, oldIdx, [id])
+    if (playerState.playMusicInfo.listId == listId && playerState.playMusicInfo.musicInfo?.id == oldId) {
+      void playListById(listId, toggleMusicInfo.id)
+    }
+  })
+  return true
 }
 
 export const handleDownload = async (musicInfo: LX.Music.MusicInfo, quality: LX.Quality) => {
@@ -216,7 +239,7 @@ export const handleDownload = async (musicInfo: LX.Music.MusicInfo, quality: LX.
 
       fileName = filterFileName(fileName) // 过滤非法字符
 
-      const downloadDir = settingState.setting['download.path'] || (RNFetchBlob.fs.dirs.MusicDir + '/LX-N Music')
+      const downloadDir = settingState.setting['download.path'] || (RNFetchBlob.fs.dirs.MusicDir + '/LX-X Music')
       const path = `${downloadDir}/${fileName}.${extension}`
 
       const downloader = RNFetchBlob.config({
@@ -230,10 +253,11 @@ export const handleDownload = async (musicInfo: LX.Music.MusicInfo, quality: LX.
         //   description: '正在下载文件...',
         // },
       })
-      const headers = {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.54',
-          Referer: 'https://music.163.com/',
-      }
+      const headers = musicInfo.source === 'wy'
+        ? { 'User-Agent': '' }
+        : {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.54',
+          }
       const data = await downloader.fetch('GET', url, headers)
       const filePath = data.path()
 
@@ -349,5 +373,55 @@ export const handleDownload = async (musicInfo: LX.Music.MusicInfo, quality: LX.
   } catch (e) {
     console.log(e)
     return await Promise.reject(e ?? '权限获取失败')
+  }
+}
+
+export const handleClearMusicCache = async (musicInfo: LX.Music.MusicInfo) => {
+  const musicName = musicInfo.name
+  const musicId = musicInfo.id
+  
+  log.info(`[清除缓存] 开始清除歌曲缓存 - 歌曲名: ${musicName}, ID: ${musicId}`)
+  
+  try {
+    const prefix = storageDataPrefix.musicUrl
+    const allKeys = await getAllKeys()
+    const cacheKeys = allKeys.filter(key => key.startsWith(`${prefix}${musicId}_`))
+    
+    log.info(`[清除缓存] 待清除的缓存键: ${JSON.stringify(cacheKeys)}`)
+    
+    if (cacheKeys.length > 0) {
+      await removeDataMultiple(cacheKeys)
+      log.info(`[清除缓存] URL缓存清除成功 - 歌曲名: ${musicName}, ID: ${musicId}`)
+    } else {
+      log.info(`[清除缓存] 未找到该歌曲的缓存 - 歌曲名: ${musicName}, ID: ${musicId}`)
+    }
+    
+    const isCurrentPlaying = playerState.playMusicInfo.musicInfo?.id === musicId
+    
+    if (isCurrentPlaying) {
+      log.info(`[清除缓存] 歌曲正在播放，准备重新加载 - 歌曲名: ${musicName}`)
+      
+      toast('已清除缓存，正在重新加载...')
+      
+      try {
+        await stop()
+        log.info(`[清除缓存] 已停止当前播放`)
+        
+        setMusicUrl(musicInfo, true)
+        log.info(`[清除缓存] 已触发重新获取URL - 歌曲名: ${musicName}`)
+        
+      } catch (reloadError) {
+        log.error(`[清除缓存] 重新加载失败 - 歌曲名: ${musicName}, 错误:`, reloadError)
+        toast('清除缓存成功，但重新加载失败')
+      }
+      
+    } else {
+      toast(global.i18n.t('setting_other_cache_clear_success_tip'))
+      log.info(`[清除缓存] 清除完成，歌曲未在播放 - 歌曲名: ${musicName}`)
+    }
+    
+  } catch (error) {
+    log.error(`[清除缓存] 清除失败 - 歌曲名: ${musicName}, ID: ${musicId}, 错误:`, error)
+    toast('清除缓存失败')
   }
 }

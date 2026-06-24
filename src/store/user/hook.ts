@@ -24,6 +24,44 @@ export const useIsWyLiked = (songId: string | number) => {
   return isLiked
 }
 
+export const useIsTxLiked = (songId: string | number) => {
+  const strId = String(songId)
+  const [isLiked, setIsLiked] = useState(() => state.tx_liked_song_ids.has(strId))
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      const newLikedStatus = state.tx_liked_song_ids.has(strId)
+      setIsLiked(currentStatus => currentStatus === newLikedStatus ? currentStatus : newLikedStatus)
+    }
+    global.state_event.on('txLikedListChanged', handleUpdate)
+    handleUpdate()
+    return () => {
+      global.state_event.off('txLikedListChanged', handleUpdate)
+    }
+  }, [strId])
+
+  return isLiked
+}
+
+export const useIsKgLiked = (songId: string | number) => {
+  const strId = String(songId)
+  const [isLiked, setIsLiked] = useState(() => state.kg_liked_song_ids.has(strId))
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      const newLikedStatus = state.kg_liked_song_ids.has(strId)
+      setIsLiked(currentStatus => currentStatus === newLikedStatus ? currentStatus : newLikedStatus)
+    }
+    global.state_event.on('kgLikedListChanged', handleUpdate)
+    handleUpdate()
+    return () => {
+      global.state_event.off('kgLikedListChanged', handleUpdate)
+    }
+  }, [strId])
+
+  return isLiked
+}
+
 export const useIsWyArtistFollowed = (artistId: string | number | undefined) => { // 允许传入 undefined
   const strId = String(artistId)
   const [isFollowed, setIsFollowed] = useState(() => artistId === undefined || artistId === null ? false : state.wy_followed_artists.some(a => String(a.id) === strId))

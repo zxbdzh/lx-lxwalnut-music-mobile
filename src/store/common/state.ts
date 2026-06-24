@@ -3,7 +3,7 @@ import { type NAV_ID_Type, type COMPONENT_IDS } from '@/config/constant'
 export interface InitState {
   fontSize: number
   statusbarHeight: number
-  componentIds: Array<{ name: COMPONENT_IDS; id: string }>
+  componentIds: Array<{ name: COMPONENT_IDS; id: string } & Record<string, any>>
   navActiveId: NAV_ID_Type
   lastNavActiveId: NAV_ID_Type
   sourceNames: Record<LX.OnlineSource | 'all', string>

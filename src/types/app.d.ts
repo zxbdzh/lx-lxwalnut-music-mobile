@@ -62,6 +62,8 @@ interface GlobalData {
 interface Artist {
   id: string | number;
   name: string;
+  mid?: string;
+  picUrl?: string;
 }
 declare global {
   var isDev: boolean
@@ -72,13 +74,14 @@ declare global {
     triggerSearch: (text: string) => void;
     'wy-cookie-set': (cookie: string) => void
     'tx-cookie-set': (cookie: string) => void
-    'kg-cookie-set': (cookie: string) => void
     'yt-cookie-set': (cookie: string) => void
     showWebLogin: () => void
     showTxWebLogin: () => void
     showKgWebLogin: () => void
     showYouTubeLogin: () => void
     showVideoPlayer: (url: string) => void
+    showPlaylist: () => void
+    switchToLyricPage: () => void
   }
   var list_event: ListEventTypes
   var dislike_event: DislikeEventTypes

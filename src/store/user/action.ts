@@ -23,6 +23,32 @@ export const removeWyLikedSong = (id: string | number) => {
   global.state_event.wyLikedListChanged()
 }
 
+export const addTxLikedSong = (id: string | number) => {
+  const strId = String(id)
+  if (state.tx_liked_song_ids.has(strId)) return
+  state.tx_liked_song_ids.add(strId)
+  global.state_event.txLikedListChanged?.()
+}
+export const removeTxLikedSong = (id: string | number) => {
+  const strId = String(id)
+  if (!state.tx_liked_song_ids.has(strId)) return
+  state.tx_liked_song_ids.delete(strId)
+  global.state_event.txLikedListChanged?.()
+}
+
+export const addKgLikedSong = (id: string | number) => {
+  const strId = String(id)
+  if (state.kg_liked_song_ids.has(strId)) return
+  state.kg_liked_song_ids.add(strId)
+  global.state_event.kgLikedListChanged?.()
+}
+export const removeKgLikedSong = (id: string | number) => {
+  const strId = String(id)
+  if (!state.kg_liked_song_ids.has(strId)) return
+  state.kg_liked_song_ids.delete(strId)
+  global.state_event.kgLikedListChanged?.()
+}
+
 export const setWyFollowedArtists = (artists: FollowedArtistInfo[]) => {
   state.wy_followed_artists = artists
   global.state_event.wyFollowedListChanged()

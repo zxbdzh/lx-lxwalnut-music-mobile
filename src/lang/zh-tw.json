@@ -365,6 +365,7 @@
   "setting_other": "其他",
   "setting_other_cache": "快取管理（包括歌曲、歌詞、錯誤日誌等快取，若沒有歌曲播放相關的問題則不建議清理）",
   "setting_other_cache_clear_btn": "清理快取",
+  "clear_music_cache": "清除緩存",
   "setting_other_cache_clear_success_tip": "快取清理完成",
   "setting_other_cache_getting": "統計快取中...",
   "setting_other_cache_size": "目前已用快取大小：",

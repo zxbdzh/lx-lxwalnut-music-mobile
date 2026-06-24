@@ -585,7 +585,7 @@ export interface RowInfo {
   rowWidth: `${number}%`
 }
 
-export type RowInfoType = 'full' | 'medium'
+export type RowInfoType = 'full' | 'medium' | 'single'
 
 export const getRowInfo = (type: RowInfoType = 'full'): RowInfo => {
   const win = windowSizeTools.getSize()

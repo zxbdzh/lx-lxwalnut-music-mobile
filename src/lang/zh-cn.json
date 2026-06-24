@@ -371,6 +371,7 @@
   "setting_download_history_opened_file": "已打开文件：{{file}}",
   "setting_download_history_opened_folder": "已打开文件夹：{{path}}",
   "setting_download_path_change": "更改路径",
+  "clear_music_cache": "清除缓存",
   "setting_download_select_folder": "请选择文件夹",
   "setting_download_select_file": "请选择文件",
   "setting_download_path_none": "未设置",

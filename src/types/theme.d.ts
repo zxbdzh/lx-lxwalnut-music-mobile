@@ -264,6 +264,7 @@ declare global {
       Pick<Theme, 'id' | 'name' | 'isDark'> & {
         'c-font': string
         'c-font-label': string
+        'c-font-secondary': string
         'c-primary-font': string
         'c-primary-font-hover': string
         'c-primary-font-active': string
@@ -281,6 +282,7 @@ declare global {
         'c-content-background': string
         'c-border-background': string
         'c-liked': string;
+        'c-danger': string;
         'bg-image'?: ImageSourcePropType
       }
 

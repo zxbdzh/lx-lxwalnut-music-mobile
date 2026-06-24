@@ -42,6 +42,12 @@ declare namespace LX {
       _qualitys: _MusicQualityType
       albumId?: string | number
       originCoverType?: number
+      noCopyrightRcmd?: {
+        songId?: string | number
+        id?: string | number
+        type?: number
+        typeDesc?: string
+      } | null
       _full?: boolean
       mv?: number
     }
@@ -75,15 +81,19 @@ declare namespace LX {
       qualitys: MusicQualityTypeKg[]
       _qualitys: _MusicQualityTypeKg
       hash: string // 歌曲hash
+      mixSongId?: string | number
     }
     interface MusicInfo_kg extends MusicInfoBase<'kg'> {
       meta: MusicInfoMeta_kg
+      mixSongId?: string | number
     }
 
     interface MusicInfoMeta_tx extends MusicInfoMeta_online {
       strMediaMid: string // 歌曲strMediaMid
+      songmid?: string // 歌曲mid
       id?: number // 歌曲songId
       albumMid?: string // 歌曲albumMid
+      vid?: string // MV vid
     }
     interface MusicInfo_tx extends MusicInfoBase<'tx'> {
       meta: MusicInfoMeta_tx

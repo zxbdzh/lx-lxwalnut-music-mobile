@@ -306,6 +306,18 @@ export class AppEvent extends Event {
   playlist_updated(data: { source: string, listId: string }) {
     this.emit('playlist_updated', data)
   }
+
+  jumpOneDrivePosition() {
+    this.emit('jumpOneDrivePosition')
+  }
+
+  showPlaylist() {
+    this.emit('showPlaylist')
+  }
+
+  switchToLyricPage() {
+    this.emit('switchToLyricPage')
+  }
 }
 
 type EventMethods = Omit<EventType, keyof Event>

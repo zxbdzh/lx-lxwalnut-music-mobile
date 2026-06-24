@@ -24,7 +24,7 @@ export interface MenuSize {
   width?: number
   height?: number
 }
-export type Menus = Readonly<Array<{ action: string; label: string; disabled?: boolean }>>
+export type Menus = ReadonlyArray<{ action: string; label: string | React.ReactNode; disabled?: boolean }>
 
 const styles = createStyle({
   mask: {
