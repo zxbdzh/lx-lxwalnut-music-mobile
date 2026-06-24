@@ -17,8 +17,10 @@ import DailyRec from '../Views/DailyRec'
 import MyPlaylist from '../Views/MyPlaylist'
 import FollowedArtists from '../Views/FollowedArtists'
 import SubscribedAlbums from '../Views/SubscribedAlbums';
-import {NAV_MENUS} from "@/config/constant.ts";
+import {NAV_MENUS, type NAV_ID_Type} from "@/config/constant.ts";
 import {useSettingValue} from "@/store/setting/hook.ts";
+import OneDrive from '../Views/OneDrive'
+import WebDAV from '../Views/WebDAV'
 
 const hideKeys = ['list.isShowAlbumName', 'list.isShowInterval', 'theme.fontShadow'] as Readonly<
   Array<keyof LX.AppSetting>
@@ -330,6 +332,78 @@ const SettingPage = () => {
   return visible ? component : null
 }
 
+const OneDrivePage = () => {
+  const [visible, setVisible] = useState(commonState.navActiveId == 'nav_onedrive')
+  const component = useMemo(() => <OneDrive />, [])
+  useEffect(() => {
+    let currentId: CommonState['navActiveId'] = commonState.navActiveId
+    const handleNavIdUpdate = (id: CommonState['navActiveId']) => {
+      currentId = id
+      if (id == 'nav_onedrive') {
+        requestAnimationFrame(() => {
+          setVisible(true)
+        })
+      }
+    }
+    const handleHide = () => {
+      if (currentId != 'nav_setting') return
+      setVisible(false)
+    }
+    const handleConfigUpdated = (keys: Array<keyof LX.AppSetting>) => {
+      if (keys.some((k) => hideKeys.includes(k))) handleHide()
+    }
+    global.state_event.on('navActiveIdUpdated', handleNavIdUpdate)
+    global.state_event.on('themeUpdated', handleHide)
+    global.state_event.on('languageChanged', handleHide)
+    global.state_event.on('configUpdated', handleConfigUpdated)
+
+    return () => {
+      global.state_event.off('navActiveIdUpdated', handleNavIdUpdate)
+      global.state_event.off('themeUpdated', handleHide)
+      global.state_event.off('languageChanged', handleHide)
+      global.state_event.on('configUpdated', handleConfigUpdated)
+    }
+  }, [])
+
+  return visible ? component : null
+}
+
+const WebDAVPage = () => {
+  const [visible, setVisible] = useState(commonState.navActiveId == 'nav_webdav')
+  const component = useMemo(() => <WebDAV />, [])
+  useEffect(() => {
+    let currentId: CommonState['navActiveId'] = commonState.navActiveId
+    const handleNavIdUpdate = (id: CommonState['navActiveId']) => {
+      currentId = id
+      if (id == 'nav_webdav') {
+        requestAnimationFrame(() => {
+          setVisible(true)
+        })
+      }
+    }
+    const handleHide = () => {
+      if (currentId != 'nav_setting') return
+      setVisible(false)
+    }
+    const handleConfigUpdated = (keys: Array<keyof LX.AppSetting>) => {
+      if (keys.some((k) => hideKeys.includes(k))) handleHide()
+    }
+    global.state_event.on('navActiveIdUpdated', handleNavIdUpdate)
+    global.state_event.on('themeUpdated', handleHide)
+    global.state_event.on('languageChanged', handleHide)
+    global.state_event.on('configUpdated', handleConfigUpdated)
+
+    return () => {
+      global.state_event.off('navActiveIdUpdated', handleNavIdUpdate)
+      global.state_event.off('themeUpdated', handleHide)
+      global.state_event.off('languageChanged', handleHide)
+      global.state_event.on('configUpdated', handleConfigUpdated)
+    }
+  }, [])
+
+  return visible ? component : null
+}
+
 const Main = () => {
   const pagerViewRef = useRef<ComponentRef<typeof PagerView>>(null);
   const navStatus = useSettingValue('common.navStatus'); // 获取菜单显示状态
@@ -402,13 +476,15 @@ const Main = () => {
       nav_daily_rec: <DailyRecPage />,
       nav_followed_artists: <FollowedArtistsPage />,
       nav_subscribed_albums: <SubscribedAlbumsPage />,
+      nav_onedrive: <OneDrivePage />,
+      nav_webdav: <WebDAVPage />,
       nav_my_playlist: <MyPlaylistPage />,
       nav_setting: <SettingPage />,
     };
 
     return visibleNavs.map(nav => (
       <View collapsable={false} key={nav.id} style={styles.pageStyle}>
-        {pageComponents[nav.id]}
+        {(pageComponents as Record<string, React.ReactNode>)[nav.id]}
       </View>
     ));
   }, [visibleNavs]);

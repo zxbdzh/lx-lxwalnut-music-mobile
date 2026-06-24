@@ -7,13 +7,14 @@ interface SvgIconProps {
   size?: number
   rawSize?: number
   color?: string
+  style?: any
 }
 
 /**
  * 日历图标 - 用于每日推荐
  * 参考网易云音乐每日推荐的日历样式
  */
-const CalendarIcon = ({ size, color }: { size: number; color: string }) => (
+const CalendarIcon = ({ size, color, style: _style }: { size: number; color: string; style?: any }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     {/* 日历主体 */}
     <Rect x="2" y="3" width="20" height="19" rx="2" ry="2" stroke={color} strokeWidth="1.6" fill="none" />
@@ -37,7 +38,7 @@ const CalendarIcon = ({ size, color }: { size: number; color: string }) => (
  * 用户图标 - 用于关注的歌手
  * 简洁的用户轮廓图标
  */
-const ArtistIcon = ({ size, color }: { size: number; color: string }) => (
+const ArtistIcon = ({ size, color, style: _style }: { size: number; color: string; style?: any }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     {/* 头部 */}
     <Circle cx="12" cy="8.5" r="4.5" stroke={color} strokeWidth="1.6" fill="none" />
@@ -56,7 +57,7 @@ const ArtistIcon = ({ size, color }: { size: number; color: string }) => (
  * 专辑/唱片图标 - 用于收藏的专辑
  * 参考网易云音乐收藏专辑的黑胶唱片样式
  */
-const AlbumDiscIcon = ({ size, color }: { size: number; color: string }) => (
+const AlbumDiscIcon = ({ size, color, style: _style }: { size: number; color: string; style?: any }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     {/* 外圈 */}
     <Circle cx="12" cy="12" r="11" stroke={color} strokeWidth="1.6" fill="none" />
@@ -67,7 +68,26 @@ const AlbumDiscIcon = ({ size, color }: { size: number; color: string }) => (
   </Svg>
 )
 
-const HeartbeatIcon = ({ size, color }: { size: number; color: string }) => (
+const WebDAVIcon = ({ size, color, style: _style }: { size: number; color: string; style?: any }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    {/* 云形状 */}
+    <Path d="M6 19h12a4 4 0 0 0 0-8 5 5 0 0 0-10 0 3 3 0 0 0 0 6H6" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    {/* 上下箭头 */}
+    <Line x1="8" y1="14" x2="12" y2="10" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+    <Line x1="12" y1="10" x2="16" y2="14" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+    <Line x1="8" y1="10" x2="12" y2="14" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+    <Line x1="12" y1="14" x2="16" y2="10" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+  </Svg>
+)
+
+const OneDriveIcon = ({ size, color, style: _style }: { size: number; color: string; style?: any }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    {/* OneDrive O形状 */}
+    <Path d="M18.5 6.5a5 5 0 0 0-3.8 1.7A6 6 0 0 0 7 9.5a5 5 0 0 0-1 5 4 4 0 0 0 4 3.5h7.5a3 3 0 0 0 3-3 3 3 0 0 0-.3-1.4A3.5 3.5 0 0 0 21 11a4 4 0 0 0-2.5-4.5z" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+  </Svg>
+)
+
+const HeartbeatIcon = ({ size, color, style: _style }: { size: number; color: string; style?: any }) => (
   <Svg width={size} height={size} viewBox="0 0 1165 1024" fill="none">
     <Path
       d="M582.103 1023.979c-0.017 0-0.037 0-0.057 0-9.91 0-19.135-2.929-26.858-7.969l0.189 0.116-0.366-0.236c-37.014-20.47-322.334-182.265-474.13-387.408-50.491-68.21-80.819-154.003-80.819-246.879 0-19.704 1.365-39.089 4.006-58.067l-0.25 2.192c14.344-104.705 67.037-196.32 148.366-258.045 92.559-70.283 201.609-86.225 315.345-45.86 43.791 16.083 81.683 36.31 116.21 60.947l-1.48-1.003c33.048-23.634 70.939-43.86 111.372-58.853l3.359-1.091c113.788-40.337 222.838-24.422 315.37 45.86 81.33 61.829 134.022 153.471 148.366 258.045 2.401 16.818 3.771 36.242 3.771 55.986 0 92.851-30.314 178.622-81.584 247.955l0.802-1.136c-152.712 206.19-440.415 368.797-474.783 387.643-7.598 4.895-16.869 7.819-26.821 7.853h-0.009zM347.59 105.694c-43.425 0-89.994 12.46-135.593 47.117-59.054 44.892-97.349 111.588-107.794 187.813-1.757 12.365-2.76 26.646-2.76 41.16 0 68.639 22.431 132.040 60.363 183.271l-0.591-0.835c123.421 166.664 348.143 304.769 421.071 347.018 73.005-42.169 297.65-180.354 421.071-347.018 37.342-50.393 59.773-113.792 59.773-182.429 0-14.517-1.004-28.801-2.945-42.783l0.184 1.616c-10.471-76.199-48.74-142.895-107.82-187.813-159.125-120.933-330.108 28.27-337.384 34.684-8.691 7.859-20.268 12.668-32.969 12.668s-24.278-4.809-33.012-12.706l0.043 0.038c-5.052-4.555-93.553-81.801-201.634-81.801z"
@@ -84,16 +104,20 @@ const HeartbeatIcon = ({ size, color }: { size: number; color: string }) => (
   </Svg>
 )
 
-export const SvgIcon = memo(({ name, size = 15, rawSize, color = '#000' }: SvgIconProps) => {
+export const SvgIcon = memo(({ name, size = 15, rawSize, color = '#000', style }: SvgIconProps) => {
   const finalSize = rawSize ?? scaleSizeW(size)
 
   switch (name) {
     case 'calendar':
-      return <CalendarIcon size={finalSize} color={color} />
+      return <CalendarIcon size={finalSize} color={color} style={style} />
     case 'artist':
-      return <ArtistIcon size={finalSize} color={color} />
+      return <ArtistIcon size={finalSize} color={color} style={style} />
     case 'album-disc':
-      return <AlbumDiscIcon size={finalSize} color={color} />
+      return <AlbumDiscIcon size={finalSize} color={color} style={style} />
+    case 'webdav':
+      return <WebDAVIcon size={finalSize} color={color} style={style} />
+    case 'onedrive':
+      return <OneDriveIcon size={finalSize} color={color} style={style} />
     case 'heartbeat':
       return <HeartbeatIcon size={finalSize} color={color} />
     default:
