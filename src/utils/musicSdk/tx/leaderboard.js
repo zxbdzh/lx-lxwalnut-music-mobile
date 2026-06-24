@@ -167,21 +167,21 @@ export default {
           size,
         }
       }
-      if (item.file.size_new[1] !== 0) {
+      if (item.file.size_new?.[1] !== 0) {
         let size = sizeFormate(item.file.size_new[1])
         types.push({ type: 'atmos', size })
         _types.atmos = {
           size,
         }
       }
-      if (item.file.size_new[2] !== 0) {
+      if (item.file.size_new?.[2] !== 0) {
         let size = sizeFormate(item.file.size_new[2])
         types.push({ type: 'atmos_plus', size })
         _types.atmos_plus = {
           size,
         }
       }
-      if (item.file.size_new[0] !== 0) {
+      if (item.file.size_new?.[0] !== 0) {
         let size = sizeFormate(item.file.size_new[0])
         types.push({ type: 'master', size })
         _types.master = {
@@ -190,7 +190,9 @@ export default {
       }
       // types.reverse()
       return {
+        id: String(item.id),
         singer: formatSingerName(item.singer, 'name'),
+        artists: item.singer?.map(s => ({ id: s.id || s.mid, mid: s.mid, name: s.name })) || [],
         name: item.title,
         albumName: item.album.name,
         albumId: item.album.mid,
@@ -211,6 +213,7 @@ export default {
         types,
         _types,
         typeUrl: {},
+        vid: item.mv?.vid || '',
       }
     })
   },

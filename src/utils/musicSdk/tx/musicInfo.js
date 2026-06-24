@@ -68,21 +68,21 @@ export default (songmid) => {
         size,
       }
     }
-    if (file.size_new[1] !== 0) {
+    if (file.size_new?.[1] !== 0) {
       let size = sizeFormate(file.size_new[1])
       types.push({ type: 'atmos', size })
       _types.atmos = {
         size,
       }
     }
-    if (file.size_new[2] !== 0) {
+    if (file.size_new?.[2] !== 0) {
       let size = sizeFormate(file.size_new[2])
       types.push({ type: 'atmos_plus', size })
       _types.atmos_plus = {
         size,
       }
     }
-    if (file.size_new[0] !== 0) {
+    if (file.size_new?.[0] !== 0) {
       let size = sizeFormate(file.size_new[0])
       types.push({ type: 'master', size })
       _types.master = {
@@ -97,6 +97,7 @@ export default (songmid) => {
       albumId = item.album.mid
     }
     return {
+      id: String(item.id),
       singer: getSinger(item.singer),
       name: item.title,
       albumName,
@@ -116,6 +117,7 @@ export default (songmid) => {
       types,
       _types,
       typeUrl: {},
+      vid: item.mv?.vid || '',
     }
   })
 }

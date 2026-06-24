@@ -507,6 +507,7 @@ export default {
       const limit = total > 300 ? 300 : total
       total -= limit
       page += 1
+      const now = Date.now().toString()
       const params =
         'appid=1058&global_specialid=' +
         id +
@@ -514,21 +515,20 @@ export default {
         page +
         '&pagesize=' +
         limit +
-        '&srcappid=2919&clientver=20000&clienttime=1586163263991&mid=1586163263991&uuid=1586163263991&dfid=-'
+        '&srcappid=2919&clientver=20000&clienttime=' + now + '&mid=' + now + '&uuid=' + now + '&dfid=-'
+      const songUrl = `https://mobiles.kugou.com/api/v5/special/song_v2?${params}&signature=${signatureParams(params, 'web')}`
+      console.log('[KuGou] [SDK] 获取歌曲列表 URL:', songUrl)
       tasks.push(
         this.createHttp(
-          `https://mobiles.kugou.com/api/v5/special/song_v2?${params}&signature=${signatureParams(
-            params,
-            'web'
-          )}`,
+          songUrl,
           {
             headers: {
-              mid: '1586163263991',
+              mid: now,
               Referer: 'https://m3ws.kugou.com/share/index.php',
               'User-Agent':
                 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1',
               dfid: '-',
-              clienttime: '1586163263991',
+              clienttime: now,
             },
           }
         ).then((data) => data.info)
@@ -539,28 +539,67 @@ export default {
   async getUserListDetail2(global_collection_id) {
     let id = global_collection_id
     if (id.length > 1000) throw new Error('get list error')
+    const now = Date.now().toString()
     const params =
       'appid=1058&specialid=0&global_specialid=' +
       id +
-      '&format=jsonp&srcappid=2919&clientver=20000&clienttime=1586163242519&mid=1586163242519&uuid=1586163242519&dfid=-'
+      '&format=jsonp&srcappid=2919&clientver=20000&clienttime=' + now + '&mid=' + now + '&uuid=' + now + '&dfid=-'
+    const infoUrl = `https://mobiles.kugou.com/api/v5/special/info_v2?${params}&signature=${signatureParams(params, 'web')}`
+    console.log('[KuGou] [SDK] 获取歌单信息 URL:', infoUrl)
     let info = await this.createHttp(
-      `https://mobiles.kugou.com/api/v5/special/info_v2?${params}&signature=${signatureParams(
-        params,
-        'web'
-      )}`,
+      infoUrl,
       {
         headers: {
-          mid: '1586163242519',
+          mid: now,
           Referer: 'https://m3ws.kugou.com/share/index.php',
           'User-Agent':
             'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1',
           dfid: '-',
-          clienttime: '1586163242519',
+          clienttime: now,
         },
       }
     )
-    const songInfo = await this.createGetListDetail2Task(id, info.songcount)
+    console.log('[KuGou] [SDK] 歌单信息响应:', JSON.stringify(info).substring(0, 300))
+    console.log('[KuGou] [SDK] 歌曲数量:', info.songcount)
+
+    // 优先使用网关端点获取歌曲（无 2 分钟缓存）
+    let songInfo
+    const totalSongs = info.songcount || 0
+    try {
+      const allSongs = []
+      let beginIdx = 0
+      const pageSize = 300
+      console.log('[KuGou] [SDK] 使用网关端点获取歌曲, 总数:', totalSongs)
+      while (beginIdx < totalSongs || allSongs.length < totalSongs) {
+        const clienttime = Math.floor(Date.now() / 1000)
+        const gwParams = `area_code=1&appid=1005&begin_idx=${beginIdx}&clienttime=${clienttime}&clientver=20489&extend_fields=abtags,hot_cmt,popularization&global_collection_id=${id}&mode=1&pagesize=${pageSize}&personal_switch=1&plat=1&type=1&uuid=-`
+        const gwSig = signatureParams(gwParams, 'android', '')
+        const gwUrl = `https://gateway.kugou.com/pubsongs/v2/get_other_list_file_nofilt?${gwParams}&signature=${gwSig}`
+        const gwResult = await this.createHttp(gwUrl, {
+          headers: {
+            'User-Agent': 'Android15-1070-11083-46-0-DiscoveryDRADProtocol-wifi',
+            'kg-rc': '1', 'kg-thash': '5d816a0', 'kg-rec': '1',
+            'kg-rf': 'B9EDA08A64250DEFFBCADDEE00F8F25F',
+          },
+        })
+        const batch = gwResult?.songs || gwResult?.data?.songs || []
+        console.log('[KuGou] [SDK] 网关批次返回:', batch.length, '首, beginIdx:', beginIdx)
+        if (batch.length === 0) break
+        allSongs.push(...batch)
+        beginIdx += batch.length
+        if (batch.length < pageSize) break
+      }
+      songInfo = allSongs
+      console.log('[KuGou] [SDK] 网关总计:', songInfo.length, '首')
+    } catch (e) {
+      console.log('[KuGou] [SDK] 网关失败，回退 mobiles:', e.message)
+      songInfo = await this.createGetListDetail2Task(id, totalSongs)
+    }
+
+    console.log('[KuGou] [SDK] 歌曲列表详情:', songInfo.map((s, i) => `${i + 1}. ${s.songname || s.filename || s.name} | hash=${s.hash}`).join('\n'))
     let list = await this.getMusicInfos(songInfo)
+    console.log('[KuGou] [SDK] 最终歌曲数:', list.length)
+    console.log('[KuGou] [SDK] 最终歌曲列表:', list.map((s, i) => `${i + 1}. ${s.name} | songmid=${s.songmid}`).join('\n'))
     return {
       list,
       page: 1,
@@ -764,6 +803,9 @@ export default {
       return this.getUserListDetailByCode(id)
     } else if (id.startsWith('id_')) {
       id = id.replace('id_', '')
+    } else if (id.startsWith('collection_')) {
+      // 酷狗用户歌单 global_collection_id 格式
+      return this.getUserListDetail2(id)
     }
     // if ((/[?&:/]/.test(id))) id = id.replace(this.regExps.listDetailLink, '$1')
 
