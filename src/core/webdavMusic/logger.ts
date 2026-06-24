@@ -1,0 +1,25 @@
+import { log } from '@/utils/log'
+import settingState from '@/store/setting/state'
+
+export const webDAVLog = {
+  info(...msgs: unknown[]) {
+    if (!settingState.setting['common.isEnableWebDAVLog']) return
+    log.info(`[WebDAV] ${msgs.map(m => typeof m === 'string' ? m : JSON.stringify(m)).join(' ')}`)
+  },
+  warn(...msgs: unknown[]) {
+    if (!settingState.setting['common.isEnableWebDAVLog']) return
+    log.warn(`[WebDAV] ${msgs.map(m => typeof m === 'string' ? m : JSON.stringify(m)).join(' ')}`)
+  },
+  error(...msgs: unknown[]) {
+    if (!settingState.setting['common.isEnableWebDAVLog']) return
+    log.error(`[WebDAV] ${msgs.map(m => typeof m === 'string' ? m : JSON.stringify(m)).join(' ')}`)
+  },
+}
+
+export const initWebDAVLog = async () => {
+  // 现在使用统一的日志系统，不需要单独初始化
+}
+
+export const clearWebDAVLogs = async () => {
+  // 现在使用统一的日志系统，不需要单独清理
+}

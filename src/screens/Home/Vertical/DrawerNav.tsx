@@ -19,6 +19,7 @@ import { useMyList } from '@/store/list/hook';
 import { setActiveList } from '@/core/list';
 import { navigations } from "@/navigation";
 import commonState from '@/store/common/state';
+import { startMusicRecognition } from '@/core/musicRecognition';
 
 const CollapsibleMyListItem = () => {
   const t = useI18n();
@@ -282,6 +283,9 @@ export default memo(() => {
       </ScrollView>
 
       <View style={styles.footer}>
+        <TouchableOpacity style={styles.footerBtn} onPress={() => startMusicRecognition()}>
+          <SvgIcon name="music-recognition" size={28} color={theme['c-font-label']} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.footerBtn} onPress={handleDownloadPress}>
           <Icon name="download-2" size={22} color={theme['c-font-label']} />
         </TouchableOpacity>

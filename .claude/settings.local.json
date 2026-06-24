@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__utools__utools_everythingfind_search_files",
+      "Read(//c/Users/Admin/AppData/Local/**)",
+      "Read(//c/Program Files/**)",
+      "Read(//d//**)",
+      "Read(//e//**)"
+    ]
+  }
+}
