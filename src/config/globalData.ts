@@ -57,6 +57,9 @@ global.lx = {
   apiInitPromise: [Promise.resolve(false), true, () => { }],
 
   jumpMyListPosition: false,
+  isEnableLog: false,
+  isEnablePlayerLog: false,
+  isEnableSearchLog: false,
 
   settingActiveId: 'basic',
 
@@ -74,7 +77,7 @@ global.lx = {
   // },
 }
 
-global.app_event = createAppEventHub()
+;(global as any).app_event = createAppEventHub()
 global.list_event = createListEventHub()
 global.dislike_event = createDislikeEventHub()
-global.state_event = createStateEventHub()
+global.state_event = createStateEventHub() as any

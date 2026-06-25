@@ -52,33 +52,33 @@ export default async (appSetting: LX.AppSetting) => {
   if (wy_cookie) {
     bootLog('Wy like list init...')
     wyUserApi.getUid(wy_cookie)
-      .then(uid =>
+      .then((uid: string) =>
       {
         setWyUid(uid)
-        wyUserApi.getLikedSongList(uid, wy_cookie).then(ids => {
+        wyUserApi.getLikedSongList(uid, wy_cookie).then((ids: string[]) => {
           setWyLikedSongs(ids)
           bootLog('Wy like list inited.')
         })
-        wyUserApi.getAllSublist().then(artists => {
+        wyUserApi.getAllSublist().then((artists: any[]) => {
           setWyFollowedArtists(artists)
           bootLog('Wy followed artists inited.')
-        }).catch(err => {
+        }).catch((err: any) => {
           bootLog(`Wy followed artists init failed: ${err.message}`)
         })
-        wyUserApi.getAllSubAlbumList().then(albums => {
+        wyUserApi.getAllSubAlbumList().then((albums: any[]) => {
           setWySubscribedAlbums(albums)
           bootLog('Wy liked albums inited.')
-        }).catch(err => {
+        }).catch((err: any) => {
           bootLog(`Wy liked albums init failed: ${err.message}`)
         })
-        wyUserApi.getUserPlaylists(uid, wy_cookie).then(playlists => {
+        wyUserApi.getUserPlaylists(uid, wy_cookie).then((playlists: any[]) => {
           setWySubscribedPlaylists(playlists)
           bootLog('Wy subscribed playlists inited.')
-        }).catch(err => {
+        }).catch((err: any) => {
           bootLog(`Wy subscribed playlists init failed: ${err.message}`)
         })
       })
-      .catch(err => {
+      .catch((err: any) => {
         bootLog(`Wy like list init failed: ${err.message}`)
       })
   }

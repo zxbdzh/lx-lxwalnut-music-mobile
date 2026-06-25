@@ -25,9 +25,9 @@ import {
   handleLikeMusic,
   handleShowAlbumDetail,
   handleShowArtistDetail,
-  handleShowMusicSourceDetail,
+  handleShowMusicSourceDetail as handleOnlineMusicSourceDetail,
 } from "@/components/OnlineList/listAction";
-import { handleShare } from '@/screens/Home/Views/Mylist/MusicList/listAction';
+import { handleShare as handleMylistShare } from '@/screens/Home/Views/Mylist/MusicList/listAction';
 import settingState from '@/store/setting/state';
 import commonState from '@/store/common/state';
 
@@ -193,14 +193,14 @@ export default forwardRef<PlayerPlaylistType, {}>((props, ref) => {
 
   const onArtistDetail = (info: SelectInfo) => {
     requestAnimationFrame(() => {
-      handleShowArtistDetail(commonState.componentIds[commonState.componentIds.length - 1]?.id!, info.musicInfo);
+      void handleShowArtistDetail(commonState.componentIds[commonState.componentIds.length - 1]?.id!, info.musicInfo);
       panelRef.current?.setVisible(false);
     });
   };
 
   const onAlbumDetail = (info: SelectInfo) => {
     requestAnimationFrame(() => {
-      handleShowAlbumDetail(commonState.componentIds[commonState.componentIds.length - 1]?.id!, info.musicInfo);
+      void handleShowAlbumDetail(commonState.componentIds[commonState.componentIds.length - 1]?.id!, info.musicInfo);
       panelRef.current?.setVisible(false);
     });
   };
@@ -211,10 +211,18 @@ export default forwardRef<PlayerPlaylistType, {}>((props, ref) => {
     }
   };
 
+  const onDislikeMusic = (info: SelectInfo) => {
+    void handleDislikeMusic(info.musicInfo)
+  }
+
+  const onCopyName = (info: SelectInfo) => {
+    handleMylistShare(info.musicInfo)
+  }
+
   const onMusicSourceDetail = (info: SelectInfo) => {
     panelRef.current?.setVisible(false);
     requestAnimationFrame(() => {
-      handleShowMusicSourceDetail(info.musicInfo);
+      void handleOnlineMusicSourceDetail(info.musicInfo);
     });
   };
 
@@ -257,12 +265,14 @@ export default forwardRef<PlayerPlaylistType, {}>((props, ref) => {
         onPlayLater={onPlayLater}
         onAdd={onAdd}
         onDownload={onDownload}
-        onCopyName={handleShare}
+        onCopyName={onCopyName}
         onMusicSourceDetail={onMusicSourceDetail}
-        onDislikeMusic={handleDislikeMusic}
+        onDislikeMusic={onDislikeMusic}
         onArtistDetail={onArtistDetail}
         onAlbumDetail={onAlbumDetail}
         onLike={onLike}
+        onPlayMv={() => {}}
+        listId={listState.activeListId}
       />
       <MusicAddModal ref={musicAddModalRef} />
       {settingState.setting['download.enable'] && <MusicDownloadModal ref={musicDownloadModalRef} onDownloadInfo={() => {}} />}

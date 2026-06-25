@@ -88,7 +88,7 @@ export default forwardRef<WebLoginModalType, {}>((props, ref) => {
 
       // 验证成功
       loggedInRef.current = true;
-      global.app_event.emit('wy-cookie-set', cookie);
+      ;(global.app_event as any).emit('wy-cookie-set', cookie);
       toast('登录成功，已自动获取Cookie！');
       handleClose();
     } catch (error) {

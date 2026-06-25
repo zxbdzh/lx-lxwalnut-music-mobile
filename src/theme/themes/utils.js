@@ -30,7 +30,15 @@ exports.createThemeColors = (rgbaColor, fontRgbaColor, isDark) => {
 
   colors['c-theme'] = isDark ? colors['c-primary-light-900'] : rgbaColor
 
-  return { ...colors, ...createFontColors(fontRgbaColor, isDark) }
+  const result = { ...colors, ...createFontColors(fontRgbaColor, isDark) }
+  result['c-background'] = result['c-000']
+  result['c-font-secondary'] = result['c-500']
+  result['c-border'] = result['c-primary-alpha-900']
+  result['c-error'] = '#e74c3c'
+  result['c-warning'] = '#e7aa36'
+  result['c-success'] = '#4baed5'
+  result['c-danger'] = '#e74c3c'
+  return result
 }
 
 const createFontColors = (rgbaColor, isDark) => {

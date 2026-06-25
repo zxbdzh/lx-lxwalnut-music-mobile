@@ -77,12 +77,12 @@ export default async (setting: LX.AppSetting) => {
     if (cookie) {
       console.log('正在刷新网易云数据...');
       wyUserApi.getUid(cookie)
-        .then(uid => Promise.all([
+        .then((uid: string) => Promise.all([
           wyUserApi.getLikedSongList(uid, cookie),
           wyUserApi.getAllSublist(),
           wyUserApi.getAllSubAlbumList(),
         ]))
-        .then(([likedIds, followedArtists, subscribedAlbums]) => {
+        .then(([likedIds, followedArtists, subscribedAlbums]: [string[], any[], any[]]) => {
           setWyLikedSongs(likedIds);
           setWyFollowedArtists(followedArtists);
           setWySubscribedAlbums(subscribedAlbums);

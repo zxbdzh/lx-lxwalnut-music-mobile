@@ -93,8 +93,8 @@ export default memo(({ componentId }: { componentId: string }) => {
   const imageStyle = useMemo(() => ({
     width: '100%',
     height: '100%',
-    borderRadius: imageContainerStyle.borderRadius,
-  }), [imageContainerStyle.borderRadius]);
+    borderRadius: imageContainerStyle.borderRadius as any,
+  } as any), [imageContainerStyle.borderRadius]);
 
   let contentHeight = (winHeight - statusBarHeight - HEADER_HEIGHT) * 0.66;
   contentHeight -= contentHeight * (global.lx.fontSize - 1) * 0.2;

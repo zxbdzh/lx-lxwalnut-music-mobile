@@ -324,7 +324,7 @@ export async function applyListOperation(
 ): Promise<LX.List.ListDataFull> {
   const data = JSON.parse(JSON.stringify(currentData));
 
-  const userListMap = new Map(data.userList.map(l => [l.id, l]));
+  const userListMap = new Map(data.userList.map((l: any) => [l.id, l]));
   const getTargetList = (listId: string): LX.Music.MusicInfo[] | undefined => {
     return listId === LIST_IDS.DEFAULT ? data.defaultList :
       listId === LIST_IDS.LOVE ? data.loveList :

@@ -368,6 +368,7 @@
   "setting_download_history_opened_folder": "Opened folder: {{path}}",
   "setting_download_path_change": "Change Path",
   "setting_download_select_folder": "Please select a folder",
+  "clear_music_cache": "Clear Cache",
   "setting_download_select_file": "Please select a file",
   "setting_download_path_none": "Not Set",
   "setting_download_file_filter_audio": "Audio Files",

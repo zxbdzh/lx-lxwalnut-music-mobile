@@ -276,6 +276,14 @@ const state: InitState = {
     'c-content-background': theme['c-primary-light-1000'],
     'c-border-background': theme['c-primary-light-100-alpha-700'],
 
+    'c-font-secondary': theme['c-500'],
+    'c-border': theme['c-primary-alpha-900'],
+    'c-success': '#4baed5',
+    'c-error': '#e74c3c',
+    'c-warning': '#e7aa36',
+    'c-danger': '#e74c3c',
+    'c-background': theme['c-000'],
+
     'bg-image-position': 'center',
     'bg-image-size': 'cover',
   },

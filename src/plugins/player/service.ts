@@ -74,7 +74,7 @@ const registerPlaybackService = async () => {
 
   // Widget button handlers
   onWidgetPlayPause(() => {
-    void TrackPlayer.getState().then(state => {
+    void TrackPlayer.getState().then((state: State) => {
       if (state === TPState.Playing) {
         void pause()
       } else {
@@ -108,11 +108,11 @@ const registerPlaybackService = async () => {
     global.app_event.playerError()
   })
 
-  TrackPlayer.addEventListener(TPEvent.RemoteSeek, async ({ position }) => {
+  TrackPlayer.addEventListener(TPEvent.RemoteSeek, async ({ position }: { position: number }) => {
     global.app_event.setProgress(position as number)
   })
 
-  TrackPlayer.addEventListener(TPEvent.PlaybackState, async (info) => {
+  TrackPlayer.addEventListener(TPEvent.PlaybackState, async (info: { state: TPState }) => {
     if (global.lx.gettingUrlId || isTempId()) return
     // let currentIsPlaying = false
 
@@ -146,7 +146,7 @@ const registerPlaybackService = async () => {
     // console.log('currentIsPlaying', currentIsPlaying, global.lx.playInfo.isPlaying)
     // void updateMetaData(global.lx.store_playMusicInfo.musicInfo, currentIsPlaying)
   })
-  TrackPlayer.addEventListener(TPEvent.PlaybackTrackChanged, async (info) => {
+  TrackPlayer.addEventListener(TPEvent.PlaybackTrackChanged, async (info: any) => {
     // console.log('PlaybackTrackChanged====>', info)
     global.lx.playerTrackId = await getCurrentTrackId()
     if (info.track == null) return

@@ -272,7 +272,7 @@ export default memo(() => {
       const logArr = log.split(/^----lx source test log----\n|\n----lx source test log----\n|\n----lx source test log----$/)
       logArr.reverse()
       const formattedLog = logArr
-        .filter(line => line.trim())
+        .filter((line: string) => line.trim())
         .join('\n\n')
         .replace(/^\n+|\n+$/, '')
       setLogText(formattedLog)

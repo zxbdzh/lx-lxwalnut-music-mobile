@@ -39,6 +39,7 @@ const openStoragePathPrefix = storageDataPrefix.openStoragePath
 const selectedManagedFolderPrefix = storageDataPrefix.selectedManagedFolder
 const lastSelectQualityKey = storageDataPrefix.lastSelectQuality
 const wyUidCachePrefix = storageDataPrefix.wyUidCache
+const playHistoryKey = storageDataPrefix.playHistory
 
 // const defaultListKey = listPrefix + 'default'
 // const loveListKey = listPrefix + 'love'
@@ -652,10 +653,20 @@ export const clearDailyRecCache = async () => {
   await removeData(similarSongsCacheKey);
 };
 
+export const getPlayHistory = async (): Promise<LX.Player.PlayHistoryItem[]> => {
+  return (await getData<LX.Player.PlayHistoryItem[]>(playHistoryKey)) ?? []
+}
+export const savePlayHistory = async (history: LX.Player.PlayHistoryItem[]) => {
+  await saveData(playHistoryKey, history)
+}
+export const clearPlayHistory = async () => {
+  await removeData(playHistoryKey)
+}
+
 const playlistTypeKey = storageDataPrefix.playlistType
 let playlistType: 'local' | 'online'
 
-export const getPlaylistType = async (): Promise<string> => {
+export const getPlaylistType = async (): Promise<'local' | 'online'> => {
   playlistType ??= await getData<'local' | 'online'>(playlistTypeKey) ?? 'local'
   return playlistType
 }

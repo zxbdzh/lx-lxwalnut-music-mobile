@@ -22,7 +22,7 @@ if (__DEV__) {
    * @param {'log' | 'warn' | 'error'} type
    * @param {any[]} args
    */
-  const remoteLog = (type, ...args) => {
+  const remoteLog = (type: 'log' | 'warn' | 'error', ...args: any[]) => {
     try {
       // 创建一个包含所有参数的结构化对象
       const payload = {

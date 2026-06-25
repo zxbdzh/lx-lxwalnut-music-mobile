@@ -34,7 +34,7 @@ export default memo(() => {
   selectedPlaylistRef.current = selectedPlaylist
 
   useEffect(() => {
-    const handleJumpPosition = () => {
+    const handleJumpPosition = async () => {
       let listId = playerState.playMusicInfo.listId
       if (listId === LIST_IDS.TEMP) listId = listState.tempListMeta.id
       if (!listId?.startsWith('wy__')) return
@@ -80,10 +80,10 @@ export default memo(() => {
     }
     setLoading(true)
     wyApi.getUserPlaylists(uid, cookie)
-      .then(playlists => {
+      .then((playlists: any[]) => {
         setWySubscribedPlaylists(playlists)
       })
-      .catch(err => {
+      .catch((err: any) => {
         toast(`获取歌单失败: ${err.message}`)
       })
       .finally(() => {
@@ -99,10 +99,10 @@ export default memo(() => {
     }
     setLoading(true)
     wyApi.getUserPlaylists(uid, cookie)
-      .then(playlists => {
+      .then((playlists: any[]) => {
         setWySubscribedPlaylists(playlists)
       })
-      .catch(err => {
+      .catch((err: any) => {
         toast(`刷新歌单失败: ${err.message}`)
       })
       .finally(() => {

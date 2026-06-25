@@ -102,7 +102,7 @@ const QQWebLoginModal = forwardRef<QQWebLoginModalType, object>((props, ref) => 
         return;
       }
 
-      global.app_event.emit('tx-cookie-set', cookieString);
+      ;(global.app_event as any).emit('tx-cookie-set', cookieString);
       toast('Cookie获取成功！');
       handleClose();
     } catch (err) {
@@ -115,7 +115,7 @@ const QQWebLoginModal = forwardRef<QQWebLoginModalType, object>((props, ref) => 
     console.log('QQ登录: 用户点击退出登录');
     try {
       await CookieManager.clearAll();
-      global.app_event.emit('tx-cookie-set', '');
+      ;(global.app_event as any).emit('tx-cookie-set', '');
       toast('已退出登录');
       if (webViewRef.current) {
         webViewRef.current.reload();

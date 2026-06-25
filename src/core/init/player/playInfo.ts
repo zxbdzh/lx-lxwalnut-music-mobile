@@ -10,8 +10,8 @@ export default async (setting: LX.AppSetting) => {
   if (!info?.listId || info.index < 0) return
 
   // 如果恢复的是临时列表，并且有元数据，则恢复元数据
-  if (info.listId === LIST_IDS.TEMP && info.tempMeta) {
-    listAction.setTempListMeta(info.tempMeta)
+  if (info.listId === LIST_IDS.TEMP && info.tempMeta?.id) {
+    listAction.setTempListMeta({ id: info.tempMeta.id })
   }
   const list = await getListMusics(info.listId)
   if (!list[info.index]) return

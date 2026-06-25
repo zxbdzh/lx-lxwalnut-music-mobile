@@ -271,7 +271,7 @@ const KgWebLoginModal = forwardRef<KgWebLoginModalType, object>((props, ref) => 
       if (result.success && result.data) {
         console.log('[KgLogin] 登录成功: userid=', result.data.userid);
         const cookieString = buildCookieString(result.data);
-        global.app_event.emit('kg-cookie-set', cookieString);
+        ;(global.app_event as any).emit('kg-cookie-set', cookieString);
         toast('登录成功！');
         handleClose();
       } else {

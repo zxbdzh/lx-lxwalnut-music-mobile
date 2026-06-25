@@ -144,7 +144,7 @@ export const handleShowArtistDetail = async (componentId: string, musicInfo: LX.
     return
   }
 
-  const onSelect = (artist: { id: string | number, mid?: string, name: string }) => {
+  const onSelect = (artist: { id: string | number, mid?: string, name: string, picUrl?: string }) => {
     log.info('[handleShowArtistDetail] 选中歌手，跳转歌手详情页', {
       artistId: artist.id,
       artistMid: artist.mid,

@@ -98,7 +98,7 @@ export default ({
     <ScrollView style={{ flexGrow: 0 }}>
       <View style={{ ...styles.list }} onStartShouldSetResponder={() => true}>
         {allList.map((info) => (
-          <ListItem key={info.id} listInfo={info} onPress={onPress} width={itemWidth} />
+          <ListItem key={info.id} listInfo={info as LX.List.MyListInfo} onPress={onPress} width={itemWidth} />
         ))}
         <EditListItem itemWidth={itemWidth} playlistType={playlistType} />
       </View>

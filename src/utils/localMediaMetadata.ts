@@ -16,12 +16,12 @@ const picCachePath = privateStorageDirectoryPath + '/local-media-covers';
 export const scanAudioFiles = async (dirPath: string) => {
   const files = await readDir(dirPath)
   return files
-    .filter((file) => {
+    .filter((file: any) => {
       if (file.mimeType?.startsWith('audio/')) return true
       if (extname(file?.name ?? '') === 'ogg') return true
       return false
     })
-    .map((file) => file)
+    .map((file: any) => file)
 }
 
 const clearPicCache = async () => {

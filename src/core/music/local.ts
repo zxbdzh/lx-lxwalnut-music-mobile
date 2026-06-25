@@ -26,7 +26,7 @@ const getOtherSourceByLocal = async <T>(
       return await handler(result)
     } catch {}
   if (musicInfo.name.includes('-')) {
-    const [name, singer] = musicInfo.name.split('-').map((val) => val.trim())
+    const [name, singer] = musicInfo.name.split('-').map((val: string) => val.trim())
     result = await getOtherSource(
       {
         ...musicInfo,

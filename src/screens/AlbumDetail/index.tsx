@@ -21,7 +21,7 @@ export default memo(({ componentId, albumInfo }: { componentId: string; albumInf
   const playerMusicInfo = usePlayerMusicInfo()
 
   useEffect(() => {
-    const handleJumpPosition = () => {
+    const handleJumpPosition = async () => {
       let listId = playerState.playMusicInfo.listId
       if (listId === LIST_IDS.TEMP) listId = listState.tempListMeta.id
       if (listId !== `album_${albumInfo.id}`) return
@@ -40,7 +40,7 @@ export default memo(({ componentId, albumInfo }: { componentId: string; albumInf
   useEffect(() => {
     setComponentId(COMPONENT_IDS.ALBUM_DETAIL_SCREEN, componentId);
     listRef.current?.setStatus('loading');
-    wyApi.getAlbum(albumInfo.id).then(data => {
+    wyApi.getAlbum(albumInfo.id).then((data: any) => {
       setAlbumDetail(data);
       listRef.current?.setList(data.list);
       listRef.current?.setStatus('idle');
@@ -52,7 +52,7 @@ export default memo(({ componentId, albumInfo }: { componentId: string; albumInf
 
   const onRefresh = useCallback(() => {
     listRef.current?.setStatus('refreshing');
-    wyApi.getAlbum(albumInfo.id).then(data => {
+    wyApi.getAlbum(albumInfo.id).then((data: any) => {
       setAlbumDetail(data);
       listRef.current?.setList(data.list);
       listRef.current?.setStatus('idle');

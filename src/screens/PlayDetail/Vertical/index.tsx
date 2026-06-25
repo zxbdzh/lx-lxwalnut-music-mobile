@@ -205,7 +205,7 @@ export default memo(({ componentId }: { componentId: string }) => {
                 <SongInfo />
                 <MiniLyric
                   onPress={handleSwitchToLyricPage}
-                  style={[styles.miniLyricContainerNew, styles[`miniLyricAlign${miniLyricAlign.charAt(0).toUpperCase() + miniLyricAlign.slice(1)}`]]}
+                  style={[styles.miniLyricContainerNew, styles[`miniLyricAlign${miniLyricAlign.charAt(0).toUpperCase() + miniLyricAlign.slice(1)}` as keyof typeof styles]]}
                 />
               </Animated.View>
             ) : (
@@ -213,7 +213,7 @@ export default memo(({ componentId }: { componentId: string }) => {
                 <Pic componentId={componentId} />
                 <MiniLyric
                   onPress={handleSwitchToLyricPage}
-                  style={[styles.miniLyricContainer, styles[`miniLyricAlign${miniLyricAlign.charAt(0).toUpperCase() + miniLyricAlign.slice(1)}`]]}
+                  style={[styles.miniLyricContainer, styles[`miniLyricAlign${miniLyricAlign.charAt(0).toUpperCase() + miniLyricAlign.slice(1)}` as keyof typeof styles]]}
                 />
               </Animated.View>
             )}

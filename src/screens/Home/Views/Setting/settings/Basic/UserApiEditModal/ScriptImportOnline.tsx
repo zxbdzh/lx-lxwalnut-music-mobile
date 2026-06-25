@@ -90,7 +90,7 @@ export default forwardRef<ScriptImportOnlineType, {}>((props, ref) => {
     setBtn({ disabled: true, text: t('user_api_btn_import_online_input_loading') })
     let script: string
     try {
-      script = (await httpFetch(url).promise.then((resp) => resp.body)) as string
+      script = (await httpFetch(url).promise.then((resp: any) => resp.body)) as string
     } catch (err: any) {
       toast(t('user_api_import_failed_tip', { message: err.message }), 'long')
       return

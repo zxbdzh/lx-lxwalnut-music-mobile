@@ -7,6 +7,7 @@ import { createUserList } from '@/core/list'
 import listState from '@/store/list/state'
 import wyApi from '@/utils/musicSdk/wy/user'
 import { addWySubscribedPlaylist } from '@/store/user/action'
+import type { SubscribedPlaylistInfo } from '@/store/user/state'
 import { useWyUid } from '@/store/user/hook'
 
 export default ({ isEdit, onHide, playlistType }: { isEdit: boolean; onHide: () => void, playlistType: 'local' | 'online' }) => {
@@ -34,7 +35,7 @@ export default ({ isEdit, onHide, playlistType }: { isEdit: boolean; onHide: () 
         toast('请先登录网易云音乐')
         return
       }
-      wyApi.createPlaylist(name).then(playlist => {
+      wyApi.createPlaylist(name).then((playlist: any) => {
         toast('创建成功')
         addWySubscribedPlaylist({
           id: playlist.id,
@@ -42,8 +43,8 @@ export default ({ isEdit, onHide, playlistType }: { isEdit: boolean; onHide: () 
           name: playlist.name,
           coverImgUrl: playlist.coverImgUrl,
           trackCount: playlist.trackCount,
-        })
-      }).catch(err => {
+        } as SubscribedPlaylistInfo)
+      }).catch((err: any) => {
         toast(`创建失败: ${err.message}`)
       })
     } else {

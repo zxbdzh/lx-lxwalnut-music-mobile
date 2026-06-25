@@ -18,7 +18,7 @@ export default memo(({ componentId, similarSongs: initialSimilarSongs }: { compo
   const [similarSongs, setSimilarSongs] = useState(initialSimilarSongs)
 
   useEffect(() => {
-    const handleJumpPosition = () => {
+    const handleJumpPosition = async () => {
       let listId = playerState.playMusicInfo.listId;
       if (listId === LIST_IDS.TEMP) listId = listState.tempListMeta.id;
       if (listId !== 'similar_songs_list') return;

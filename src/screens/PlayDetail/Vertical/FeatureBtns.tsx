@@ -151,10 +151,10 @@ export default memo(({ componentId }: { componentId: string }) => {
         return
       }
       console.log('[MV] 网易云: 获取MV URL, mvId:', mvId)
-      getWyMvUrl(mvId).then(data => {
+      getWyMvUrl(mvId).then((data: any) => {
         console.log('[MV] 网易云: 获取MV URL成功:', data)
         global.app_event.showVideoPlayer(data.url)
-      }).catch(err => {
+      }).catch((err: any) => {
         console.error('[MV] 网易云: 获取MV失败:', err)
         toast(err.message || '获取MV失败')
       })
@@ -165,10 +165,10 @@ export default memo(({ componentId }: { componentId: string }) => {
         return
       }
       console.log('[MV] QQ: 获取MV URL, vid:', vid)
-      getTxMvUrl(vid).then(data => {
+      getTxMvUrl(vid).then((data: any) => {
         console.log('[MV] QQ: 获取MV URL成功:', data)
         global.app_event.showVideoPlayer(data.url)
-      }).catch(err => {
+      }).catch((err: any) => {
         console.error('[MV] QQ: 获取MV失败:', err)
         toast(err.message || '获取MV失败')
       })
@@ -182,7 +182,7 @@ export default memo(({ componentId }: { componentId: string }) => {
         return
       }
       console.log('[MV] 酷狗: 开始获取MV, mixSongId:', mixSongId, 'songName:', songName, 'singerName:', singerName)
-      getKgMvUrl(String(mixSongId), songName, singerName).then(data => {
+      getKgMvUrl(String(mixSongId), songName, singerName).then((data: any) => {
         console.log('[MV] 酷狗: 获取MV URL成功:', data)
         if (data && data.url) {
           global.app_event.showVideoPlayer(data.url)
@@ -190,7 +190,7 @@ export default memo(({ componentId }: { componentId: string }) => {
           console.log('[MV] 酷狗: 返回数据无URL:', data)
           toast('获取MV链接失败')
         }
-      }).catch(err => {
+      }).catch((err: any) => {
         console.error('[MV] 酷狗: 获取MV失败:', err)
         toast(err.message || '该歌曲暂无MV')
       })

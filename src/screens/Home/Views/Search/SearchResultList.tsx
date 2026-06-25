@@ -17,7 +17,7 @@ export default forwardRef(({ searchType }, ref) => {
     searchInfoRef.current.hasMore = true
   }, [searchType])
 
-  const handleLoad = useCallback((text, page, isRefresh = false) => {
+  const handleLoad = useCallback((text: string, page: number, isRefresh = false) => {
     if (loading || (!isRefresh && !searchInfoRef.current.hasMore)) return
     setLoading(true)
 
@@ -31,7 +31,7 @@ export default forwardRef(({ searchType }, ref) => {
       return
     }
 
-    searchPromise.then(result => {
+    searchPromise.then((result: any) => {
       setList(isRefresh ? result.list : [...list, ...result.list])
       searchInfoRef.current.page = page + 1
       searchInfoRef.current.hasMore = result.list.length > 0 && result.total > (page * 30)
@@ -41,13 +41,13 @@ export default forwardRef(({ searchType }, ref) => {
   }, [loading, list, searchType])
 
   useImperativeHandle(ref, () => ({
-    loadList(text) {
+    loadList(text: string) {
       searchInfoRef.current = { text, page: 1, hasMore: true }
       handleLoad(text, 1, true)
     },
   }))
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item }: { item: any }) => {
     if (searchType === 'singer') {
       return <SingerListItem artist={item} showFollowButton={true}  />
     }

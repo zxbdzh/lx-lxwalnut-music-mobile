@@ -34,6 +34,6 @@ export const getList = async (source: Source): Promise<string[]> => {
         console.log(err)
         return { source, list: [] }
       })
-      .then((data) => hotSearchActions.setList(source, data.list))
+      .then((data: any) => hotSearchActions.setList(source, data.list))
   }
 }

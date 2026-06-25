@@ -62,7 +62,7 @@ export const buildActiveThemeColors = (theme: LX.Theme): LX.ActiveTheme => {
   for (const [k, v] of Object.entries(theme.config.extInfo) as Array<
     [ExtInfoKey, LX.Theme['config']['extInfo'][ExtInfoKey]]
   >) {
-    if (!v.startsWith('var(')) continue
+    if (!v || !v.startsWith('var(')) continue
     theme.config.extInfo[k] = theme.config.themeColors[v.replace(varColorRxp, '$1') as ColorsKey]
   }
 
@@ -74,6 +74,13 @@ export const buildActiveThemeColors = (theme: LX.Theme): LX.ActiveTheme => {
     ...theme.config.extInfo,
     'c-font': theme.config.themeColors['c-850'],
     'c-font-label': theme.config.themeColors['c-450'],
+    'c-font-secondary': theme.config.themeColors['c-500'],
+    'c-border': theme.config.themeColors['c-primary-alpha-900'],
+    'c-success': '#4baed5',
+    'c-error': '#e74c3c',
+    'c-warning': '#e7aa36',
+    'c-danger': '#e74c3c',
+    'c-background': theme.config.themeColors['c-000'],
     'c-primary-font': theme.config.themeColors['c-primary'],
     'c-primary-font-hover': theme.config.themeColors['c-primary-alpha-300'],
     'c-primary-font-active': theme.config.themeColors['c-primary-dark-100-alpha-200'],
@@ -99,7 +106,7 @@ export const buildActiveThemeColors = (theme: LX.Theme): LX.ActiveTheme => {
     activeTheme['c-primary-font-active'] = activeTheme['c-000']; // 使用纯白色 (rgb(255,255,255))
   }
 
-  return activeTheme as const;
+  return activeTheme
 }
 
 // const copyTheme = (theme: LX.Theme): LX.Theme => {

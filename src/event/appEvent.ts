@@ -318,6 +318,38 @@ export class AppEvent extends Event {
   switchToLyricPage() {
     this.emit('switchToLyricPage')
   }
+
+  showTxWebLogin() {
+    this.emit('showTxWebLogin')
+  }
+
+  showKgWebLogin() {
+    this.emit('showKgWebLogin')
+  }
+
+  setKgCookie(cookie: string) {
+    this.emit('kg-cookie-set', cookie)
+  }
+
+  setWyCookie(cookie: string) {
+    this.emit('wy-cookie-set', cookie)
+  }
+
+  setTxCookie(cookie: string) {
+    this.emit('tx-cookie-set', cookie)
+  }
+
+  setYtCookie(cookie: string) {
+    this.emit('yt-cookie-set', cookie)
+  }
+
+  webdavPicUpdated(picUrl: string | null) {
+    this.emit('webdavPicUpdated', picUrl)
+  }
+
+  onedrivePicUpdated(picUrl: string | null) {
+    this.emit('onedrivePicUpdated', picUrl)
+  }
 }
 
 type EventMethods = Omit<EventType, keyof Event>

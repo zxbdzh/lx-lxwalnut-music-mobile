@@ -63,7 +63,7 @@ const ListHeader = ({ detailInfo, info, onBack }: { detailInfo: DetailInfo, info
       } else {
         removeWySubscribedPlaylist(info.id)
       }
-    }).catch(err => {
+    }).catch((err: any) => {
       toast(`操作失败: ${err.message}`)
     })
   }, [isSubscribed, info, detailInfo])
@@ -98,7 +98,7 @@ const ListHeader = ({ detailInfo, info, onBack }: { detailInfo: DetailInfo, info
             toast('删除成功')
             removeWySubscribedPlaylist(info.id)
             onBack()
-          }).catch(err => {
+          }).catch((err: any) => {
             toast(`删除失败: ${err.message}`)
           })
         })
@@ -181,7 +181,7 @@ export default ({ info, onBack, initialScrollToInfo }: { info: ListInfoItem, onB
   }, [info.source, info.id])
 
   useEffect(() => {
-    const handleJumpPosition = () => {
+    const handleJumpPosition = async () => {
       let listId = playerState.playMusicInfo.listId
       if (listId === LIST_IDS.TEMP) listId = listState.tempListMeta.id
       if (listId !== `${info.source}__${info.id}`) return

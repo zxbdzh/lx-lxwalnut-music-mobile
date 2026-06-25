@@ -15,7 +15,7 @@ import { addWySubscribedAlbum, removeWySubscribedAlbum } from '@/store/user/acti
 import { type SubscribedAlbumInfo } from '@/store/user/state';
 
 
-export default memo(({ albumInfo, componentId }) => {
+export default memo(({ albumInfo, componentId }: { albumInfo: any, componentId: string }) => {
   const theme = useTheme();
   const statusBarHeight = useStatusbarHeight();
   const isSubscribed = useIsWyAlbumSubscribed(albumInfo.id);
@@ -45,13 +45,13 @@ export default memo(({ albumInfo, componentId }) => {
       } else {
         removeWySubscribedAlbum(albumInfo.id);
       }
-    }).catch(err => {
+    }).catch((err: any) => {
       toast(`操作失败: ${err.message}`);
     });
   };
 
 
-  const artists = albumInfo.artists?.map((artist, index) => (
+  const artists = albumInfo.artists?.map((artist: any, index: number) => (
     <TouchableOpacity key={artist.id} onPress={() => handleArtistPress(artist)}>
       <Text style={styles.artistName} size={14} color="rgba(255,255,255,0.9)">
         {artist.name}{index < albumInfo.artists.length - 1 ? ' / ' : ''}

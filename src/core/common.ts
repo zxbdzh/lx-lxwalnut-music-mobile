@@ -102,7 +102,7 @@ export const showPactModal = () => {
 export const checkStoragePermissions = async () => {
   const selectedManagedFolder = await getSelectedManagedFolder()
   if (selectedManagedFolder)
-    return (await getPersistedUriList()).some((uri) => selectedManagedFolder.startsWith(uri))
+    return (await getPersistedUriList()).some((uri: string) => selectedManagedFolder.startsWith(uri))
   return false
 }
 

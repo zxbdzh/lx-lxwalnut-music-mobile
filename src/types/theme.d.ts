@@ -27,6 +27,14 @@ declare global {
 
       'c-theme': string
 
+      'c-background': string
+      'c-error': string
+      'c-warning': string
+      'c-success': string
+      'c-danger': string
+      'c-font-secondary': string
+      'c-border': string
+
       'c-primary': string
       'c-primary-alpha-100': string
       'c-primary-alpha-200': string
@@ -265,6 +273,9 @@ declare global {
         'c-font': string
         'c-font-label': string
         'c-font-secondary': string
+        'c-border': string
+        'c-success': string
+        'c-danger': string
         'c-primary-font': string
         'c-primary-font-hover': string
         'c-primary-font-active': string
@@ -281,8 +292,7 @@ declare global {
         'c-list-header-border-bottom': string
         'c-content-background': string
         'c-border-background': string
-        'c-liked': string;
-        'c-danger': string;
+        'c-liked': string
         'bg-image'?: ImageSourcePropType
       }
 

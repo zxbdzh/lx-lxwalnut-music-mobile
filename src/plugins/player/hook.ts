@@ -13,7 +13,7 @@ export const usePlaybackState = () => {
 
     void setPlayerState()
 
-    const sub = TrackPlayer.addEventListener(Event.PlaybackState, (data) => {
+    const sub = TrackPlayer.addEventListener(Event.PlaybackState, (data: { state: State }) => {
       setState(data.state as State)
     })
 
@@ -143,7 +143,7 @@ export function useBufferProgress() {
       setProgress(duration ? buffered / duration : 0)
     }
 
-    const sub = TrackPlayer.addEventListener(Event.PlaybackState, (data) => {
+    const sub = TrackPlayer.addEventListener(Event.PlaybackState, (data: { state: State }) => {
       switch (data.state) {
         case State.None:
           // console.log('state', 'None')
@@ -178,7 +178,7 @@ export function useBufferProgress() {
     })
 
     void updateBuffer()
-    void TrackPlayer.getState().then((state) => {
+    void TrackPlayer.getState().then((state: State) => {
       if (state == State.Buffering) interval = setInterval(updateBuffer, 1000)
     })
     return () => {

@@ -31,6 +31,14 @@ export default class Event {
     })
   }
 
+  _emit(eventName: string, ...args: any[]) {
+    let targetListeners = this.listeners.get(eventName)
+    if (!targetListeners) return
+    for (const listener of targetListeners) {
+      listener(...args)
+    }
+  }
+
   offAll(eventName: string) {
     let targetListeners = this.listeners.get(eventName)
     if (!targetListeners) return

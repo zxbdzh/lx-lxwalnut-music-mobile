@@ -19,9 +19,9 @@ export default () => {
     };
 
     // [+] 监听 showYouTubeLogin 事件
-    global.app_event.on('showYouTubeLogin', handleShow);
+    ;(global.app_event as any).on('showYouTubeLogin', handleShow);
     return () => {
-      global.app_event.off('showYouTubeLogin', handleShow);
+      ;(global.app_event as any).off('showYouTubeLogin', handleShow);
     };
   }, [visible]);
 

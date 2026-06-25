@@ -214,7 +214,7 @@ export const destroy = async () => {
 type PlayStatus = 'None' | 'Ready' | 'Playing' | 'Paused' | 'Stopped' | 'Buffering' | 'Connecting'
 
 export const onStateChange = async (listener: (state: PlayStatus) => void) => {
-  const sub = TrackPlayer.addEventListener(Event.PlaybackState, (state) => {
+  const sub = TrackPlayer.addEventListener(Event.PlaybackState, (state: any) => {
     let _state: PlayStatus
     switch (state) {
       case State.Ready:

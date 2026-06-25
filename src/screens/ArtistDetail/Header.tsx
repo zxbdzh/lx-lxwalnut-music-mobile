@@ -12,7 +12,7 @@ import { useIsWyArtistFollowed } from '@/store/user/hook'
 import { addWyFollowedArtist, removeWyFollowedArtist } from '@/store/user/action'
 import { type FollowedArtistInfo } from '@/store/user/state'
 
-export default memo(({ artist, onFollow, componentId }) => {
+export default memo(({ artist, onFollow, componentId }: { artist: any, onFollow?: () => void, componentId: string }) => {
   const theme = useTheme()
   const statusBarHeight = useStatusbarHeight()
   const [isDescExpanded, setDescExpanded] = useState(false)
@@ -43,7 +43,7 @@ export default memo(({ artist, onFollow, componentId }) => {
       } else {
         removeWyFollowedArtist(artist.id)
       }
-    }).catch(err => {
+    }).catch((err: any) => {
       toast(`操作失败: ${err.message}`)
     })
   }

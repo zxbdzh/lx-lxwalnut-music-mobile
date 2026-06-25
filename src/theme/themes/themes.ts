@@ -239,7 +239,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(77, 175, 124, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -492,7 +499,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(52, 152, 219, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -745,7 +759,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(77, 131, 175, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-600)",
@@ -998,7 +1019,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(245, 171, 53, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -1251,7 +1279,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(188, 128, 68, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -1504,7 +1539,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(214, 69, 65, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -1757,7 +1799,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(241, 130, 141, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -2010,7 +2059,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(155, 89, 182, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -2263,7 +2319,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(108, 122, 137, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -2516,7 +2579,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(51, 110, 123, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -2769,7 +2839,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(79, 98, 208, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "var(c-primary-light-600-alpha-700)",
@@ -3022,7 +3099,14 @@ export default [
         "c-150": "rgb(107,107,107)",
         "c-100": "rgb(102,102,102)",
         "c-050": "rgb(97,97,97)",
-        "c-000": "rgb(92,92,92)"
+        "c-000": "rgb(92,92,92)",
+        "c-background": "rgb(92,92,92)",
+        "c-font-secondary": "rgb(154,154,154)",
+        "c-border": "rgba(190, 190, 190, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "rgba(0, 0, 0, 0)",
@@ -3275,7 +3359,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(74, 55, 82, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "rgba(255, 255, 255, 0)",
@@ -3528,7 +3619,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(87, 144, 167, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "rgba(255, 255, 255, 0.15)",
@@ -3781,7 +3879,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(47, 47, 47, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "rgba(255, 255, 255, 0)",
@@ -4034,7 +4139,14 @@ export default [
         "c-150": "rgb(222,222,222)",
         "c-100": "rgb(233,233,233)",
         "c-050": "rgb(244,244,244)",
-        "c-000": "rgb(255,255,255)"
+        "c-000": "rgb(255,255,255)",
+        "c-background": "rgb(255,255,255)",
+        "c-font-secondary": "rgb(144,144,144)",
+        "c-border": "rgba(192, 57, 43, 0.10)",
+        "c-error": "#e74c3c",
+        "c-warning": "#e7aa36",
+        "c-success": "#4baed5",
+        "c-danger": "#e74c3c"
       },
       "extInfo": {
         "c-app-background": "rgba(255, 255, 255, 0.15)",

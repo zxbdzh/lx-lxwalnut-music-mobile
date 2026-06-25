@@ -40,6 +40,7 @@ export default forwardRef<YouTubeLoginModalType, {}>((props, ref) => {
   const webViewRef = useRef<WebView>(null);
   const loggedInRef = useRef(false);
 
+  const theme = useTheme();
   useImperativeHandle(ref, () => ({
     show() {
       loggedInRef.current = false;
@@ -69,7 +70,7 @@ export default forwardRef<YouTubeLoginModalType, {}>((props, ref) => {
 
     loggedInRef.current = true;
     // [+] 触发 yt-cookie-set 事件
-    global.app_event.emit('yt-cookie-set', cookie);
+    ;(global.app_event as any).emit('yt-cookie-set', cookie);
     toast('登录成功，已自动获取Cookie！');
     handleClose();
   };

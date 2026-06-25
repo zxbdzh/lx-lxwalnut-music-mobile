@@ -228,9 +228,9 @@
 
 - [x] 阶段 0:地基(依赖 + 原生 sha1 + txLog)— 已完成:CryptoModule.java 加 sha1、crypto.ts 加 hashSHA1、拷入 txLog/searchLog/playerLog、装 crypto-js/node-forge/@types
 - [x] 阶段 1:音源 SDK(tx/kg/bilibili)— 已完成:加密工具+13功能模块+bilibili;共享文件逐字段合并(musicInfo/leaderboard/album/quality_detail/songList/musicSearch);三源注册+api-source.js;request.js 同步 params 支持与 QQ cookie 注入
-- [ ] 阶段 2:配置 / 类型 / 国际化
-- [ ] 阶段 3:登录 UI
-- [ ] 阶段 4:云盘(OneDrive / WebDAV)
-- [ ] 阶段 5:听歌识曲(原生)
-- [ ] 阶段 6:播放详情新UI + 滑动切歌
-- [ ] 阶段 7:杂项(播放历史 / 设置开关 / 测速 / 多源UI)
+- [x] 阶段 2:配置 / 类型 / 国际化— 已完成:constant.ts / globalData.ts / common.ts 新增配置项与枚举;多语言 zh-cn/zh-tw/en-us 补全各音源/新UI/云盘/识曲文案;类型声明 app_setting.d.ts / app.d.ts 补全
+- [x] 阶段 3:登录 UI(QQ/酷狗/YouTube/Web)— 已完成:QQ/Kg/YouTube 三端 WebLoginModal + Manager;WebLoginModal/Manager 重构支持多平台;Setting Basic 页面增加 Cookie/登录入口;ArtistSelectorManager 适配多源
+- [x] 阶段 4:云盘(OneDrive / WebDAV)— 已完成:OnlineList 路由挂载 OneDrive/WebDAV;listAction.ts 多源列表操作;挂载点文件(Main.tsx 等)增加 navActiveId 视图切换;DrawerNav 菜单项驱动
+- [x] 阶段 5:听歌识曲(原生)— 已完成:MusicRecognitionModule.java(1440行)/Package.java(22行)放入recognition目录并改包名为com.lxnetease;MainApplication.java注册Package;AndroidManifest.xml加RECORD_AUDIO/FOREGROUND_SERVICE/FOREGROUND_SERVICE_MICROPHONE权限;src/core/musicRecognition.ts(153行)业务逻辑;src/utils/nativeModules/musicRecognition.ts(91行)RN桥接;DrawerNav.tsx底部加识曲按钮;ic_music_recognition.xml图标;**需重编译APK**
+- [x] 阶段 6:播放详情新UI + 滑动切歌— 已完成:PlayDetail Vertical 多层 isNewUI 三元切换 + PanResponder 滑动切歌;Header 页码圆点/多源跳转;Player 新UI 渲染 FeatureBtns;PlayDetailMenu 增加相似歌曲/MV/高潮/txkg like;VideoPlayerModal 新增;SettingPopup 增加新UI/封面/歌词对齐设置;PlayerBar/PlayerPlaylist 适配
+- [x] 阶段 7:杂项(播放历史 / 设置开关 / 测速 / 多源UI)— 已完成:MusicAddModal/MusicMultiAddModal 多源适配;AlbumDetail/ArtistDetail 多源合并;DailyRec 推荐歌曲;MyPlaylist 编辑;SearchResultList 多源;SourceTest 音源测速;Home Views 各页面多源挂载;event/stateEvent 新增多源事件

@@ -103,9 +103,9 @@ export default () => {
   const handlePlayMv = useCallback((info: SelectInfo) => {
     const mvId = info.musicInfo.meta.mv;
     if (!mvId) return;
-    getMvUrl(mvId).then(data => {
+    getMvUrl(mvId).then((data: any) => {
       global.app_event.showVideoPlayer(data.url);
-    }).catch(err => {
+    }).catch((err: any) => {
       toast(err.message || '获取MV失败');
     });
   }, []);
@@ -187,7 +187,7 @@ export default () => {
     selectedInfoRef.current = info
     metadataEditTypeRef.current?.show(info.musicInfo.meta.filePath)
   }, [])
-  const handleUpdateMetadata = useCallback<MetadataEditProps['onUpdate']>((info) => {
+  const handleUpdateMetadata = useCallback<MetadataEditProps['onUpdate']>((info: any) => {
     if (!selectedInfoRef.current || selectedInfoRef.current.musicInfo.source != 'local') return
     handleUpdateMusicInfo(selectedInfoRef.current.listId, selectedInfoRef.current.musicInfo, info)
   }, [])

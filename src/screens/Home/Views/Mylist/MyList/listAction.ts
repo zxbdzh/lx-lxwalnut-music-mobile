@@ -257,7 +257,7 @@ export const handleImportMediaFile = async (listInfo: LX.List.MyListInfo, path: 
     )
     toast(global.i18n.t('list_select_local_file_temp_add_tip', { total: files.length }), 'long')
     await handleUpdateMusics(
-      files.map((f) => f.path),
+      files.map((f: { path: string }) => f.path),
       throttleUpdateMusics
     )
   } else toast(global.i18n.t('list_select_local_file_empty_tip'), 'long')

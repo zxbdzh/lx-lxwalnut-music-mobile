@@ -15,6 +15,14 @@ export interface TextProps extends _TextProps {
    * 字体颜色
    */
   color?: ColorValue
+  /**
+   * 字体粗细
+   */
+  weight?: string | number
+  /**
+   * 是否加粗
+   */
+  bold?: boolean
 }
 
 // const warpText = <P extends TextProps>(Component: ComponentType<TextProps>) => {
@@ -29,21 +37,22 @@ export interface TextProps extends _TextProps {
 //   }
 // }
 
-export default memo(({ style, size = 15, color, children, ...props }: TextProps) => {
+export default memo(({ style, size = 15, color, weight, bold, children, ...props }: TextProps) => {
   const theme = useTheme()
   const textShadow = useTextShadow()
-  style = StyleSheet.compose(textShadow ? {
+  const fontWeight = bold ? 'bold' : weight
+  const textStyle: TextStyle = {
     // fontFamily: 'System',
+    fontSize: setSpText(size),
+    color: color ?? theme['c-font'],
+    ...(fontWeight ? { fontWeight: fontWeight as TextStyle['fontWeight'] } : {}),
+  }
+  style = StyleSheet.compose(textShadow ? {
+    ...textStyle,
     textShadowColor: theme['c-primary-dark-300-alpha-800'],
     textShadowOffset: { width: 0.2, height: 0.2 },
     textShadowRadius: 2,
-    fontSize: setSpText(size),
-    color: color ?? theme['c-font'],
-  } : {
-    // fontFamily: 'System',
-    fontSize: setSpText(size),
-    color: color ?? theme['c-font'],
-  }, style)
+  } : textStyle, style)
 
   return (
     <Text

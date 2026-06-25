@@ -33,6 +33,12 @@ interface GlobalData {
   isPlayedStop: boolean
   isEnableSyncLog: boolean
   isEnableUserApiLog: boolean
+  isEnableSearchLog: boolean
+  isEnablePlayerLog: boolean
+  isEnableLog: boolean
+  isEnableSearchLog: boolean
+  isEnablePlayerLog: boolean
+  isEnableLog: boolean
   playerTrackId: string
 
   qualityList: LX.QualityList
@@ -40,6 +46,8 @@ interface GlobalData {
   apiInitPromise: [Promise<boolean>, boolean, (success: boolean) => void]
 
   jumpMyListPosition: boolean
+  isEnableLog: boolean
+  isEnablePlayerLog: boolean
 
   settingActiveId: SettingScreenIds
 
@@ -74,6 +82,7 @@ declare global {
     triggerSearch: (text: string) => void;
     'wy-cookie-set': (cookie: string) => void
     'tx-cookie-set': (cookie: string) => void
+    'kg-cookie-set': (cookie: string) => void
     'yt-cookie-set': (cookie: string) => void
     showWebLogin: () => void
     showTxWebLogin: () => void
@@ -82,10 +91,17 @@ declare global {
     showVideoPlayer: (url: string) => void
     showPlaylist: () => void
     switchToLyricPage: () => void
-  }
-  var list_event: ListEventTypes
-  var dislike_event: DislikeEventTypes
-  var state_event: StateEventTypes
+  } & Record<string, (...args: any[]) => any>
+  var list_event: ListEventTypes & Record<string, (...args: any[]) => any>
+  var dislike_event: DislikeEventTypes & Record<string, (...args: any[]) => any>
+  var state_event: StateEventTypes & {
+    txLikedListChanged: () => void
+    kgLikedListChanged: () => void
+    wyFollowedListChanged: () => void
+    wySubscribedAlbumsChanged: () => void
+    wySubscribedPlaylistsChanged: () => void
+    wyLikedListChanged: () => void
+  } & Record<string, (...args: any[]) => any>
 
   var Buffer: typeof _Buffer
 
