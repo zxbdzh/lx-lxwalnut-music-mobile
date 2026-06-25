@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useCallback, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Dimensions, Alert, Modal as RNModal, FlatList } from 'react-native';
 import Modal, { type ModalType } from '@/components/common/Modal';
 import WebView from 'react-native-webview';
 import { useTheme } from '@/store/theme/hook';
@@ -93,6 +93,9 @@ const KgWebLoginModal = forwardRef<KgWebLoginModalType, object>((props, ref) => 
   const [isLogging, setIsLogging] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
   const [verifyHtml, setVerifyHtml] = useState('');
+  const [showAccountSelect, setShowAccountSelect] = useState(false);
+  const [pendingLoginData, setPendingLoginData] = useState<{ mobile: string; captchaCode: string } | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState('');
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const cooldownRef = useRef<NodeJS.Timeout | null>(null);
   const handleSendCodeRef = useRef<() => void>(() => {});
@@ -149,6 +152,9 @@ const KgWebLoginModal = forwardRef<KgWebLoginModalType, object>((props, ref) => 
       setCooldown(0);
       setIsLogging(false);
       setShowVerify(false);
+      setShowAccountSelect(false);
+      setPendingLoginData(null);
+      setSelectedUserId('');
       modalRef.current?.setVisible(true);
     },
   }));
@@ -163,6 +169,9 @@ const KgWebLoginModal = forwardRef<KgWebLoginModalType, object>((props, ref) => 
       cooldownRef.current = null;
     }
     setShowVerify(false);
+    setShowAccountSelect(false);
+    setPendingLoginData(null);
+    setSelectedUserId('');
     modalRef.current?.setVisible(false);
   }, []);
 
@@ -240,6 +249,41 @@ const KgWebLoginModal = forwardRef<KgWebLoginModalType, object>((props, ref) => 
 
   handleSendCodeRef.current = handleSendCode;
 
+  const handleMultiAccountLogin = useCallback(async (userId: string) => {
+    if (!pendingLoginData) return;
+    
+    setShowAccountSelect(false);
+    setIsLogging(true);
+    
+    console.log('[KgLogin] 使用指定账号登录: userid=', userId);
+    
+    try {
+      const result = await loginByPhone(
+        pendingLoginData.mobile,
+        pendingLoginData.captchaCode,
+        (msg) => console.log('[KgLogin]', msg),
+        userId
+      );
+
+      if (result.success && result.data) {
+        console.log('[KgLogin] 登录成功: userid=', result.data.userid);
+        const cookieString = buildCookieString(result.data);
+        global.app_event.emit('kg-cookie-set', cookieString);
+        toast('登录成功！');
+        handleClose();
+      } else {
+        console.log('[KgLogin] 登录失败: ' + result.message);
+        toast(result.message || '登录失败');
+      }
+    } catch (err: any) {
+      console.log('[KgLogin] 请求异常: ' + (err.message || err));
+      toast('登录失败');
+    } finally {
+      setIsLogging(false);
+      setPendingLoginData(null);
+    }
+  }, [pendingLoginData, handleClose]);
+
   const handleLogin = useCallback(async () => {
     if (!phone || phone.length < 11) {
       toast('请输入正确的手机号');
@@ -264,7 +308,14 @@ const KgWebLoginModal = forwardRef<KgWebLoginModalType, object>((props, ref) => 
         handleClose();
       } else {
         console.log('[KgLogin] 登录失败: ' + result.message);
-        toast(result.message || '登录失败');
+        
+        if (result.message && (result.message.includes('34175') || result.message.includes('error_code'))) {
+          setPendingLoginData({ mobile: phone, captchaCode: code });
+          setShowAccountSelect(true);
+          console.log('[KgLogin] 检测到多账号，等待用户选择');
+        } else {
+          toast(result.message || '登录失败');
+        }
       }
     } catch (err: any) {
       console.log('[KgLogin] 请求异常: ' + (err.message || err));
@@ -363,6 +414,57 @@ const KgWebLoginModal = forwardRef<KgWebLoginModalType, object>((props, ref) => 
             </View>
           </View>
         ) : null}
+
+        {/* Multi-account selection dialog */}
+        <RNModal
+          visible={showAccountSelect}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowAccountSelect(false)}
+        >
+          <View style={styles.accountSelectOverlay}>
+            <View style={styles.accountSelectModal}>
+              <Text size={19} weight="600" style={[styles.accountSelectTitle, { color: theme['c-font'] }]}>
+                该手机号绑定了多个账号
+              </Text>
+              
+              <View style={[styles.userIdInput, { borderColor: theme['c-border'], backgroundColor: theme['c-content-background'] }]}>
+                <TextInput
+                  style={[styles.userIdInputText, { color: theme['c-font'] }]}
+                  placeholder="请输入您要登录的酷狗ID"
+                  placeholderTextColor={theme['c-font-label']}
+                  value={selectedUserId}
+                  onChangeText={setSelectedUserId}
+                  keyboardType="number-pad"
+                  autoFocus
+                  textAlignVertical="center"
+                />
+              </View>
+
+              <View style={styles.accountSelectButtons}>
+                <TouchableOpacity
+                  style={[styles.accountSelectBtn, { backgroundColor: theme['c-border'] }]}
+                  onPress={() => {
+                    setShowAccountSelect(false);
+                    setPendingLoginData(null);
+                    setSelectedUserId('');
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text size={16} weight="500" style={{ color: '#fff' }}>取消</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.accountSelectBtn, styles.accountSelectBtnPrimary, { backgroundColor: '#1677ff' }]}
+                  onPress={() => handleMultiAccountLogin(selectedUserId)}
+                  disabled={!selectedUserId.trim()}
+                  activeOpacity={0.8}
+                >
+                  <Text size={16} weight="500" style={{ color: '#fff' }}>确定登录</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </RNModal>
       </View>
     </Modal>
   );
@@ -452,5 +554,55 @@ const styles = StyleSheet.create({
   verifyWebView: {
     flex: 1,
     width: SCREEN_WIDTH * 0.95,
+  },
+
+  // Multi-account selection styles
+  accountSelectOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  accountSelectModal: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 28,
+    gap: 12,
+  },
+  accountSelectTitle: {
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  accountSelectSubtitle: {
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  userIdInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 48,
+    marginTop: 8,
+    justifyContent: 'center',
+  },
+  userIdInputText: {
+    fontSize: 16,
+    padding: 0,
+  },
+  accountSelectButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  accountSelectBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  accountSelectBtnPrimary: {
+    backgroundColor: '#1677ff',
   },
 });

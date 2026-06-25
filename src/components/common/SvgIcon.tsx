@@ -11,10 +11,7 @@ interface SvgIconProps {
   style?: StyleProp<ViewStyle>
 }
 
-/**
- * 日历图标 - 用于每日推荐
- * 参考网易云音乐每日推荐的日历样式
- */
+
 const CalendarIcon = ({ size, color }: { size: number; color: string }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     {/* 日历主体 */}
@@ -35,10 +32,6 @@ const CalendarIcon = ({ size, color }: { size: number; color: string }) => (
   </Svg>
 )
 
-/**
- * 用户图标 - 用于关注的歌手
- * 简洁的用户轮廓图标
- */
 const ArtistIcon = ({ size, color }: { size: number; color: string }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     {/* 头部 */}
@@ -54,10 +47,7 @@ const ArtistIcon = ({ size, color }: { size: number; color: string }) => (
   </Svg>
 )
 
-/**
- * 专辑/唱片图标 - 用于收藏的专辑
- * 参考网易云音乐收藏专辑的黑胶唱片样式
- */
+
 const AlbumDiscIcon = ({ size, color }: { size: number; color: string }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     {/* 外圈 */}
@@ -155,9 +145,7 @@ const FolderIcon = ({ size, color }: { size: number; color: string }) => (
   </Svg>
 )
 
-/**
- * 展开图标 - 向下箭头
- */
+
 const ExpandIcon = ({ size, color }: { size: number; color: string }) => (
   <Svg width={size} height={size} viewBox="0 0 1048 1024" fill="none">
     <Path
@@ -167,9 +155,7 @@ const ExpandIcon = ({ size, color }: { size: number; color: string }) => (
   </Svg>
 )
 
-/**
- * 折叠图标 - 向上箭头
- */
+
 const CollapseIcon = ({ size, color }: { size: number; color: string }) => (
   <Svg width={size} height={size} viewBox="0 0 1048 1024" fill="none">
     <Path
@@ -179,14 +165,20 @@ const CollapseIcon = ({ size, color }: { size: number; color: string }) => (
   </Svg>
 )
 
-/**
- * 歌词图标 - 用于桌面歌词开关
- * 基于 SVG 歌词图标
- */
+
 const LyricIcon = ({ size, color }: { size: number; color: string }) => (
   <Svg width={size} height={size} viewBox="0 0 1024 1024" fill="none">
     <Path
       d="M471.26 634.21h122.21v-122.21h-122.21v122.21z M450.89 471.26h162.94a20.37 20.37 0 0 1 20.37 20.37v162.94a20.37 20.37 0 0 1-20.37 20.37h-162.94a20.37 20.37 0 0 1-20.37-20.37v-162.94a20.37 20.37 0 0 1 20.37-20.37zM297.32 299.74a20.37 20.37 0 1 1 30.76-26.7l48.64 56.01a20.37 20.37 0 0 1-30.76 26.72L297.32 299.75zM330 430.83H273.69a20.37 20.37 0 1 1 0-40.74h76.58a20.37 20.37 0 0 1 20.37 20.37v267.76l6.54-8.64a20.37 20.37 0 0 1 32.49 24.59l-43.14 57.03c-11.79 15.56-36.6 7.23-36.6-12.3V430.83zM717.52 308.58H430.53a20.37 20.37 0 0 1 0-40.73h307a20.37 20.37 0 0 1 20.37 20.37v427.46h-90.74a20.37 20.37 0 1 1 0-40.74h70.37V308.58zM450.89 412.05h163.84a20.37 20.37 0 1 1 0 40.74H450.89a20.37 20.37 0 0 1 0-40.74z"
+      fill={color}
+    />
+  </Svg>
+)
+
+const FuzzySearchIcon = ({ size, color }: { size: number; color: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 1024 1024" fill="none">
+    <Path
+      d="M476.014 73.143c159.525-0.219 304.128 91.941 368.567 234.789a387.291 387.291 0 0 1-71.314 424.741l168.448 164.864a30.866 30.866 0 0 1 0 43.886 32.402 32.402 0 0 1-45.495 0L727.113 776.046a409.966 409.966 0 0 1-478.135 17.262C102.985 695.735 38.985 516.535 91.063 351.232 143.214 185.929 299.301 73.143 476.014 73.143z m0 62.683c-187.173 0-338.871 148.48-338.871 331.63 0 183.223 151.698 331.703 338.871 331.703a342.601 342.601 0 0 0 239.616-97.134A328.119 328.119 0 0 0 814.811 467.383c0-183.15-151.698-331.63-338.871-331.63zM475.429 256a219.429 219.429 0 0 1 219.429 219.429 36.571 36.571 0 0 1-73.143 0 146.286 146.286 0 0 0-146.286-146.286 36.571 36.571 0 0 1 0-73.143z"
       fill={color}
     />
   </Svg>
@@ -232,6 +224,8 @@ export const SvgIcon = memo(({ name, size = 15, rawSize, color = '#000', style }
         return <LyricIcon size={finalSize} color={color} />
       case 'music-recognition':
         return <MusicRecognitionIcon size={finalSize} color={color} />
+      case 'fuzzy-search':
+        return <FuzzySearchIcon size={finalSize} color={color} />
       default:
         return null
     }

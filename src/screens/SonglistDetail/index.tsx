@@ -117,13 +117,13 @@ const ListHeader = ({ detailInfo, info, onBack, showSearchBar, searchText, isFuz
               value={searchText}
               onChangeText={onSearchTextChanged}
               autoFocus
-              style={styles.searchInput}
+              style={{ ...styles.searchInput, backgroundColor: theme['c-primary-input-background'] }}
             />
             <TouchableOpacity style={styles.searchModeButton} onPress={onToggleSearchMode}>
               {isFuzzySearch ? (
-                <SvgIcon name="fuzzy-search" size={18} color={theme['c-font-label']} />
+                <Icon name="search-2" size={20} color={theme['c-font-label']} />
               ) : (
-                <Icon name="search-2" size={18} color={theme['c-font-label']} />
+                <SvgIcon name="fuzzy-search" size={24} color={theme['c-font-label']} />
               )}
             </TouchableOpacity>
           </View>
@@ -327,11 +327,12 @@ const styles = createStyle({
     alignItems: 'center',
     paddingHorizontal: 5,
     paddingVertical: 5,
+    paddingLeft: 10,
   },
   searchInput: {
     flex: 1,
-    height: 38,
-    borderWidth: 1,
+    height: 32,
+    borderWidth: 0,
     borderRadius: 4,
     paddingHorizontal: 10,
     fontSize: 14,

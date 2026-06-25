@@ -1,15 +1,9 @@
-/**
- * KuGou Music API utility module
- * Implements KuGou API calls directly within the app, no external server required
- */
-
 import axios from 'axios';
 import { stringMd5 } from 'react-native-quick-md5';
 import { Buffer } from '@craftzdog/react-native-buffer';
 import { generateSidEdt, cryptoAesEncrypt, cryptoRSAEncrypt, cryptoAesDecrypt, rsaEncrypt2, playlistAesEncrypt, playlistAesDecrypt } from './crypto';
 import { formatPlayTime } from '@/utils/common';
 
-// KuGou API configuration
 const KG_CONFIG = {
   appid: '1005',
   clientver: '20489',
@@ -17,7 +11,6 @@ const KG_CONFIG = {
   liteClientver: '11440',
 };
 
-// API base URL
 const KG_API_BASE = 'https://gateway.kugou.com';
 const KG_LOGIN_BASE = 'http://login.user.kugou.com';
 const KUGOU_API_SERVER = 'http://10.0.2.2:3000';
@@ -28,16 +21,10 @@ const ANDROID_SIGN_SALT = 'OIlwieks28dk2k092lksi2UIkp';
 
 export type LogCallback = (message: string) => void;
 
-/**
- * MD5 encryption
- */
 function md5(str: string): string {
   return stringMd5(str);
 }
 
-/**
- * Generate random string
- */
 function randomString(length: number = 16): string {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let result = '';
@@ -47,25 +34,15 @@ function randomString(length: number = 16): string {
   return result;
 }
 
-/**
- * Generate device identifier
- */
 function generateDeviceId(): string {
   return randomString(24);
 }
 
-/**
- * Generate MID
- */
 function generateMid(): string {
   const guid = randomString(32);
   return md5(guid);
 }
 
-/**
- * Android signature
- * Signature algorithm: MD5(salt + sorted params + data + salt)
- */
 export function signAndroidParams(params: Record<string, any>, data?: string, onLog?: LogCallback): string {
   const sortedKeys = Object.keys(params).sort();
   const paramsString = sortedKeys
@@ -89,9 +66,6 @@ export function signAndroidParams(params: Record<string, any>, data?: string, on
   return signature;
 }
 
-/**
- * Generate request headers and default parameters
- */
 export function generateHeadersAndParams(): { headers: Record<string, string>; defaultParams: Record<string, any> } {
   const dfid = generateDeviceId();
   const mid = generateMid();
@@ -121,9 +95,6 @@ export function generateHeadersAndParams(): { headers: Record<string, string>; d
   return { headers, defaultParams };
 }
 
-/**
- * Send verification code
- */
 export async function sendCaptcha(
   mobile: string,
   onLog?: LogCallback
@@ -206,13 +177,11 @@ export async function sendCaptcha(
   }
 }
 
-/**
- * Phone number login
- */
 export async function loginByPhone(
   mobile: string,
   code: string,
-  onLog?: LogCallback
+  onLog?: LogCallback,
+  userid?: string
 ): Promise<{ success: boolean; data?: any; message: string }> {
   const log = (msg: string) => {
     if (global.lx.isEnableLog) console.log(`[KuGou] ${msg}`);
@@ -224,13 +193,16 @@ export async function loginByPhone(
     const { headers, defaultParams } = cachedDevice || generateHeadersAndParams();
 
     log(`设备信息: dfid=${defaultParams.dfid}, mid=${defaultParams.mid}, cached=${!!cachedDevice}`);
+    if (userid) {
+      log(`指定登录 userid: ${userid}`);
+    }
 
     const encrypt = cryptoAesEncrypt({ mobile: mobile, code: code });
     const pk = cryptoRSAEncrypt({ clienttime_ms: dateTime, key: encrypt.key }).toUpperCase();
     const params = encrypt.str;
     log(`加密完成: pk长度=${pk.length}, params长度=${params.length}`);
 
-    const dataMap = {
+    const dataMap: Record<string, any> = {
       plat: 1,
       support_multi: 1,
       t1: 0,
@@ -242,6 +214,10 @@ export async function loginByPhone(
       pk: pk,
       params: params,
     };
+
+    if (userid) {
+      dataMap.userid = userid;
+    }
 
     const dataStr = JSON.stringify(dataMap);
     const signature = signAndroidParams(defaultParams, dataStr, log);
@@ -320,9 +296,6 @@ export async function loginByPhone(
   }
 }
 
-/**
- * Refresh login state using token
- */
 export async function refreshToken(
   token: string,
   userid: string,
@@ -407,9 +380,6 @@ export async function refreshToken(
   }
 }
 
-/**
- * Get verification info
- */
 export async function getVerifyInfo(
   eventid: string,
   onLog?: LogCallback
@@ -471,9 +441,6 @@ export async function getVerifyInfo(
   }
 }
 
-/**
- * Submit verification result
- */
 export async function verifyUserInfo(
   eventid: string,
   vType: number,
@@ -585,9 +552,6 @@ export async function verifyUserInfo(
   }
 }
 
-/**
- * Build cookie string
- */
 export function buildCookieString(data: {
   userid?: string;
   token?: string;
@@ -610,9 +574,6 @@ export function buildCookieString(data: {
   return parts.join('; ');
 }
 
-/**
- * Parse cookie string to object
- */
 function cookieToJson(cookie: string): Record<string, string> {
   const result: Record<string, string> = {}
   if (!cookie) return result
@@ -623,9 +584,6 @@ function cookieToJson(cookie: string): Record<string, string> {
   return result
 }
 
-/**
- * Get KuGou user playlist list
- */
 export async function getUserPlaylists(
   cookie: string,
   onLog?: LogCallback
@@ -744,18 +702,12 @@ export async function getUserPlaylists(
   }
 }
 
-/**
- * Parameter key signing (matches KuGouMusicApi signParamsKey)
- */
 function signParamsKey(data: string): string {
   const result = stringMd5(`${KG_CONFIG.appid}${ANDROID_SIGN_SALT}${KG_CONFIG.clientver}${data}`)
   if (global.lx.isEnableLog) console.log(`[KuGou] signParamsKey: md5('${KG_CONFIG.appid}${ANDROID_SIGN_SALT}${KG_CONFIG.clientver}${data}') = ${result}`)
   return result
 }
 
-/**
- * Subscribe playlist / Create playlist
- */
 export async function subscribePlaylist(
   cookie: string,
   playlistInfo: {
@@ -849,9 +801,6 @@ export async function subscribePlaylist(
   }
 }
 
-/**
- * Unsubscribe playlist / Delete playlist
- */
 export async function unsubscribePlaylist(
   cookie: string,
   listid: number,
@@ -916,7 +865,7 @@ export async function unsubscribePlaylist(
     log(`请求URL: ${fullUrl}`)
     log(`请求头: ${JSON.stringify(fullHeaders)}`)
     log(`查询参数: ${JSON.stringify({ ...paramsMap, signature })}`)
-    log(`请求体(加密): ${aesEncrypt.str.substring(0, 100)}...`)
+    log(`请求体(加密): ${aesEncrypt.str.substring(0, 100)}...`);
 
     const queryString = Object.entries({ ...paramsMap, signature })
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
@@ -964,11 +913,6 @@ export async function unsubscribePlaylist(
   }
 }
 
-/**
- * Remove songs from playlist
- * Endpoint: /v4/delete_songs
- * fileids: array of fileid of songs in the playlist
- */
 export async function removeSongsFromPlaylist(
   cookie: string,
   listid: number,
@@ -1048,10 +992,6 @@ export async function removeSongsFromPlaylist(
   }
 }
 
-/**
- * Add song to KuGou playlist
- * Endpoint: /cloudlist.service/v6/add_song
- */
 export async function addSongToPlaylist(
   cookie: string,
   listid: number,
@@ -1155,10 +1095,6 @@ export async function addSongToPlaylist(
   }
 }
 
-/**
- * Get KuGou playlist details (song list)
- * Uses global_collection_id format
- */
 export async function getPlaylistSongs(
   cookie: string,
   globalCollectionId: string,

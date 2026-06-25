@@ -17,21 +17,32 @@ const TX_MUSIC_U_FCG = 'https://u.y.qq.com/cgi-bin/musics.fcg'
 export default {
   /**
    * Extract uin from Cookie
+   * Supports QQ login (uin=xxx) and WeChat login (wxUin=xxx or wxuin=xxx)
    */
   extractUin(cookie: string): string | null {
     if (!cookie) return null;
     
+    // QQ login: uin=xxx
     const uinMatch = cookie.match(/(?:^|;)\s*uin=(\d+|o[A-Za-z0-9_-]+)/);
     if (uinMatch) {
       return uinMatch[1];
     }
 
+    // WeChat login: wxUin=xxx or wxuin=xxx
+    const wxUinMatch = cookie.match(/(?:^|;)\s*(?:wxUin|wxuin)=(\d+|[A-Za-z0-9_-]+)/i);
+    if (wxUinMatch) {
+      return wxUinMatch[1];
+    }
+
+    // euin fallback
     const fakeUinMatch = cookie.match(/euin=([A-Za-z0-9_*]+)/);
     if (fakeUinMatch) {
       const realUinMatch = cookie.match(/(?:^|;)\s*uin=(\d+)/);
       if (realUinMatch) {
         return realUinMatch[1];
       }
+      // WeChat euin might be usable directly
+      return fakeUinMatch[1];
     }
 
     txLog.warn('无法从Cookie中提取uin');
