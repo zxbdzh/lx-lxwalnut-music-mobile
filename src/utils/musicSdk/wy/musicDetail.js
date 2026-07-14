@@ -8,8 +8,19 @@ import {allMusicList} from "@/utils/listManage";
 
 const fetchingDetails = new Set()
 
+const getAlias = item => {
+  const aliases = Array.isArray(item.alia)
+    ? item.alia
+    : Array.isArray(item.alias)
+      ? item.alias
+      : item.alias
+        ? [item.alias]
+        : []
+  return aliases.length ? aliases[0] : ''
+}
+
 /**
- * 按需获取单首歌曲的详细音质信息，并补充到现有信息中
+ * Fetch detailed quality info for a single song on demand and merge it into existing info
  */
 export const fetchAndApplyDetailedQuality = async(musicInfo, retryNum = 0) => {
   let latestMusicInfo = null
@@ -65,11 +76,10 @@ export const fetchAndApplyDetailedQuality = async(musicInfo, retryNum = 0) => {
         ...musicInfo.meta,
         qualitys: newTypes,
         _qualitys: new_Types,
-        _full: true, // 标记为已获取完整信息
+        _full: true,
       },
     }
 
-    // 找到这首歌存在的所有列表ID
     const listIdsToUpdate = [];
     for (const [listId, list] of allMusicList.entries()) {
       if (list.some(item => item.id === musicInfo.id)) {
@@ -77,7 +87,6 @@ export const fetchAndApplyDetailedQuality = async(musicInfo, retryNum = 0) => {
       }
     }
 
-    // 在所有包含这首歌的列表中更新它的信息
     if (listIdsToUpdate.length) {
       console.log('updateListMusics');
       void updateListMusics(listIdsToUpdate.map(id => ({ id, musicInfo: updatedMusicInfo })));
@@ -86,7 +95,6 @@ export const fetchAndApplyDetailedQuality = async(musicInfo, retryNum = 0) => {
       global.app_event.musicInfoUpdate(updatedMusicInfo);
     }
 
-    // 如果当前播放的就是这首歌，也需要更新播放器内的状态
     if (playerState.playMusicInfo.musicInfo?.id === musicInfo.id) {
       console.log('updatePlayMusicInfo');
       playerState.playMusicInfo.musicInfo.meta = updatedMusicInfo.meta;
@@ -120,15 +128,25 @@ export default {
   },
   async filterList({ songs, privileges }) {
     if (songs.length && songs[0].album && songs[0].duration != null) {
-      // 将其转换为后续流程期望的格式 (ar, al, dt)
       songs = songs.map(item => ({
         id: item.id,
         name: item.name,
-        ar: item.artists, // 将 artists 映射到 ar
-        al: item.album,   // 将 album 映射到 al
-        dt: item.duration, // 将 duration (毫秒) 映射到 dt
+        alia: Array.isArray(item.alia)
+          ? item.alia
+          : Array.isArray(item.alias)
+            ? item.alias
+            : item.alias
+              ? [item.alias]
+              : [],
+        ar: item.artists,
+        al: item.album,
+        dt: item.duration,
         publishTime: item.album?.publishTime,
-        pc: item.pc, // 保留可能存在的 pc 字段
+        pc: item.pc,
+        fee: item.fee,
+        originCoverType: item.originCoverType,
+        noCopyrightRcmd: item.noCopyrightRcmd,
+        mv: item.mv,
         l: item.lMusic,
         m: item.mMusic,
         h: item.hMusic,
@@ -141,10 +159,7 @@ export default {
     let qualityInfoMap = {}
 
 
-    // --- 新增的逻辑判断 ---
-    // 检查传入的歌曲对象是否已经自带了音质信息（h, m, l, sq等）
     if (songs.length && (songs[0].h || songs[0].m || songs[0].l || songs[0].sq)) {
-      // 如果有，则直接从现有数据构建 qualityInfoMap，不再发起网络请求
       songs.forEach(item => {
         const types = []
         const _types = {}
@@ -172,7 +187,7 @@ export default {
         }
         if (item.l) {
           size = sizeFormate(item.l.size)
-          if (!_types['128k']) { // 有些歌曲可能只有l音质
+          if (!_types['128k']) {
             types.push({ type: '128k', size })
             _types['128k'] = { size }
           }
@@ -181,8 +196,6 @@ export default {
         qualityInfoMap[item.id] = { types, _types }
       })
     } else {
-      // --- 保留原有逻辑 ---
-      // 如果没有自带音质信息，才去批量请求
       const idList = songs.map((item) => item.id)
       qualityInfoMap = await getBatchMusicQualityInfo(idList)
     }
@@ -194,6 +207,7 @@ export default {
         list.push({
           id: 'wy_' + item.id,
           name: item.pc.sn ?? '',
+          alias: getAlias(item),
           singer: item.pc.ar ?? '',
           source: 'wy',
           interval: formatPlayTime(item.dt / 1000),
@@ -205,6 +219,7 @@ export default {
             picUrl: item.al?.picUrl,
             qualitys: types,
             _qualitys: _types,
+            noCopyrightRcmd: item.noCopyrightRcmd,
           },
           releaseDate: item.publishTime ? dateFormat(item.publishTime, 'Y-M-D') : null,
           songmid: item.id,
@@ -219,7 +234,7 @@ export default {
         list.push({
           id: 'wy_' + item.id,
           name: item.name ?? '',
-          alias: item.alia && item.alia.length ? item.alia[0] : '',
+          alias: getAlias(item),
           singer: this.getSinger(item.ar),
           artists: item.ar,
           albumName: item.al?.name,
@@ -235,6 +250,7 @@ export default {
             qualitys: types,
             _qualitys: _types,
             originCoverType: item.originCoverType,
+            noCopyrightRcmd: item.noCopyrightRcmd,
             mv: item.mv,
           },
           releaseDate: item.publishTime ? dateFormat(item.publishTime, 'Y-M-D') : null,

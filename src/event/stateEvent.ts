@@ -21,6 +21,12 @@ export class StateEvent extends Event {
   wyLikedListChanged() {
     this.emit('wyLikedListChanged')
   }
+  txLikedListChanged() {
+    this.emit('txLikedListChanged')
+  }
+  kgLikedListChanged() {
+    this.emit('kgLikedListChanged')
+  }
   wyFollowedListChanged() {
     this.emit('wyFollowedListChanged')
   }
@@ -29,6 +35,12 @@ export class StateEvent extends Event {
   }
   wySubscribedPlaylistsChanged() {
     this.emit('wySubscribedPlaylistsChanged');
+  }
+  txSubscribedPlaylistsChanged() {
+    this.emit('txSubscribedPlaylistsChanged');
+  }
+  kgSubscribedPlaylistsChanged() {
+    this.emit('kgSubscribedPlaylistsChanged');
   }
 
   txLikedListChanged() {

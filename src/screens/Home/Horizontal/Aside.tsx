@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react'
 import { ScrollView, TouchableOpacity, View } from 'react-native'
-import { useNavActiveId, useStatusbarHeight } from '@/store/common/hook'
+import { useNavActiveId, useStatusbarHeight, useBgPic } from '@/store/common/hook'
 import { useTheme } from '@/store/theme/hook'
 import { Icon } from '@/components/common/Icon'
 import { SvgIcon } from '@/components/common/SvgIcon'
@@ -11,6 +11,8 @@ import type { InitState } from '@/store/common/state'
 import { exitApp, setNavActiveId } from '@/core/common'
 import { BorderWidths } from '@/theme'
 import { useSettingValue } from '@/store/setting/hook'
+import ImageBackground from '@/components/common/ImageBackground'
+import { defaultHeaders } from '@/components/common/Image'
 
 const NAV_WIDTH = 68
 
@@ -67,12 +69,16 @@ const styles = createStyle({
 const Header = () => {
   const theme = useTheme()
   const statusBarHeight = useStatusbarHeight()
+
+  const handleLogoPress = () => {
+    setNavActiveId('nav_love')
+  }
+
   return (
     <View style={{ paddingTop: statusBarHeight }}>
-      <View style={styles.header}>
+      <TouchableOpacity style={styles.header} onPress={handleLogoPress}>
         <Icon name="logo" color={theme['c-primary-dark-100-alpha-300']} size={22} />
-        {/* <Text style={styles.headerText} size={16} color={theme['c-primary-dark-100-alpha-300']}>LX-N Music</Text> */}
-      </View>
+      </TouchableOpacity>
     </View>
   )
 }
@@ -127,6 +133,16 @@ export default memo(() => {
   const showBackBtn = useSettingValue('common.showBackBtn')
   const showExitBtn = useSettingValue('common.showExitBtn')
   const navStatus = useSettingValue('common.navStatus');
+  const navOrder = useSettingValue('common.navOrder');
+  const isDynamicBg = useSettingValue('theme.dynamicBg');
+  const isSidebarDynamicBg = useSettingValue('theme.sidebarDynamicBg');
+  const dynamicPic = useBgPic();
+  const customBgPicPath = useSettingValue('theme.customBgPicPath');
+  const pic = customBgPicPath || dynamicPic;
+  const blur = useSettingValue('theme.blur');
+  const picOpacity = useSettingValue('theme.picOpacity');
+
+  const showSidebarBg = isDynamicBg && isSidebarDynamicBg && pic;
 
   const handlePress = (id: IdType) => {
     switch (id) {
@@ -149,16 +165,43 @@ export default memo(() => {
   }
 
   const filteredNavMenus = useMemo(() => {
-    return NAV_MENUS.filter(
-      menu => menu.id === 'nav_search' || menu.id === 'nav_setting' || (navStatus[menu.id] ?? true)
+    if (!navOrder) return NAV_MENUS.filter(
+      menu => menu.id !== 'nav_play_history' && (menu.id === 'nav_setting' || (navStatus[menu.id] ?? true))
     );
-  }, [navStatus]);
+
+    return navOrder
+      .filter(id => id !== 'nav_play_history')
+      .map(id => NAV_MENUS.find(menu => menu.id === id))
+      .filter((menu): menu is typeof NAV_MENUS[number] => menu !== undefined && (menu.id === 'nav_setting' || (navStatus[menu.id] ?? true)));
+  }, [navStatus, navOrder]);
   return (
-    <View style={{ ...styles.container, borderRightColor: theme['c-border-background'] }}>
+    <View style={{ ...styles.container, borderRightColor: theme['c-border-background'], backgroundColor: showSidebarBg ? 'transparent' : undefined }}>
+      {showSidebarBg ? (
+        <ImageBackground
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            right: 0,
+          }}
+          source={{ uri: pic, headers: defaultHeaders }}
+          resizeMode="cover"
+          blurRadius={blur}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: theme['c-content-background'],
+              opacity: picOpacity / 100,
+            }}
+          />
+        </ImageBackground>
+      ) : null}
       <Header />
       <ScrollView style={styles.menus}>
         <View style={styles.list}>
-          {filteredNavMenus.map((menu) => ( // 使用过滤后的菜单
+          {filteredNavMenus.map((menu) => (
             <MenuItem key={menu.id} id={menu.id} icon={menu.icon} onPress={handlePress} />
           ))}
         </View>

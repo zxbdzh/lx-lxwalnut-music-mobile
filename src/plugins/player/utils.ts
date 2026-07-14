@@ -39,7 +39,6 @@ export const isTempId = (trackId = global.lx.playerTrackId) => !trackId || tempI
 //   }
 // }
 
-// 解决快速切歌导致的通知栏歌曲信息与当前播放歌曲对不上的问题
 // const debouncePlayMusicTools = {
 //   prevPlayMusicPromise: Promise.resolve(),
 //   trackInfo: {},
@@ -266,6 +265,8 @@ export const updateOptions = async (
   // Position 4: SkipToNext     → Next track (standard)
   // Stop is not shown in notification, but handles swipe-to-dismiss → exit app
   return TrackPlayer.updateOptions({
+    stopWithApp: true,
+
     capabilities: [
       Capability.Play,
       Capability.Pause,

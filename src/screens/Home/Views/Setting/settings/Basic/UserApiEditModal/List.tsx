@@ -10,6 +10,7 @@ import { removeUserApi, setUserApiAllowShowUpdateAlert } from '@/core/userApi'
 import { BorderRadius } from '@/theme'
 import CheckBox from '@/components/common/CheckBox'
 import { Icon } from '@/components/common/Icon'
+import { SvgIcon } from '@/components/common/SvgIcon'
 import settingState from '@/store/setting/state'
 import apiSourceInfo from '@/utils/musicSdk/api-source-info'
 import { setApiSource } from '@/core/apiSource'
@@ -22,11 +23,13 @@ const ListItem = ({
   activeId,
   onRemove,
   onChangeAllowShowUpdateAlert,
+  onExport,
 }: {
   item: LX.UserApi.UserApiInfo
   activeId: string
   onRemove: (id: string, name: string) => void
   onChangeAllowShowUpdateAlert: (id: string, enabled: boolean) => void
+  onExport: (id: string) => void
 }) => {
   const theme = useTheme()
   const t = useI18n()
@@ -35,6 +38,9 @@ const ListItem = ({
   }
   const handleRemove = () => {
     onRemove(item.id, item.name)
+  }
+  const handleExport = () => {
+    onExport(item.id)
   }
 
   return (
@@ -71,6 +77,9 @@ const ListItem = ({
         />
       </View>
       <View style={styles.listItemRight}>
+        <TouchableOpacity style={styles.btn} onPress={handleExport}>
+          <SvgIcon name="export" color={theme['c-button-font']} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.btn} onPress={handleRemove}>
           <Icon name="close" color={theme['c-button-font']} />
         </TouchableOpacity>
@@ -81,13 +90,10 @@ const ListItem = ({
 
 export interface UserApiEditModalProps {
   onSave: (rules: string) => void
-  // onSourceChange: SourceSelectorProps['onSourceChange']
-}
-export interface UserApiEditModalType {
-  show: (rules: string) => void
+  onExport: (id: string) => void
 }
 
-export default () => {
+export default ({ onExport }: UserApiEditModalProps) => {
   const userApiList = useUserApiList()
   const apiSource = useSettingValue('common.apiSource')
   const theme = useTheme()
@@ -125,6 +131,7 @@ export default () => {
                 activeId={apiSource}
                 onRemove={handleRemove}
                 onChangeAllowShowUpdateAlert={handleChangeAllowShowUpdateAlert}
+                onExport={onExport}
               />
             )
           })
@@ -161,14 +168,9 @@ const styles = createStyle({
   },
   listItemRight: {
     flex: 0,
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
-  // btns: {
-  //   padding: 5,
-  // },
   btn: {
     padding: 10,
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   tipText: {
     textAlign: 'center',

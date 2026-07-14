@@ -15,12 +15,13 @@ import { useUnmounted } from '@/utils/hooks'
 import MetadataForm, { defaultData, type Metadata, type MetadataFormType } from './MetadataForm'
 import { log } from '@/utils/log'
 import { formatPlayTime2 } from '@/utils'
-import { unlink } from '@/utils/fs'
+import { unlink, rename } from '@/utils/fs'
+import { saveEditedLyric } from '@/utils/data'
 
 export type { Metadata }
 
 export interface MetadataEditType {
-  show: (filePath: string) => void
+  show: (filePath: string, musicInfo?: LX.Music.MusicInfo) => void
 }
 export interface MetadataEditProps {
   onUpdate: (info: Metadata) => void
@@ -34,8 +35,10 @@ export default forwardRef<MetadataEditType, MetadataEditProps>((props, ref) => {
   const [visible, setVisible] = useState(false)
   const [processing, setProcessing] = useState(false)
   const isUnmounted = useUnmounted()
+  const musicInfoRef = useRef<LX.Music.MusicInfo | null>(null)
 
-  const handleShow = (filePath: string) => {
+  const handleShow = (filePath: string, musicInfo?: LX.Music.MusicInfo) => {
+    musicInfoRef.current = musicInfo || null
     alertRef.current?.setVisible(true)
     void Promise.all([
       readMetadata(filePath),
@@ -58,13 +61,13 @@ export default forwardRef<MetadataEditType, MetadataEditProps>((props, ref) => {
     })
   }
   useImperativeHandle(ref, () => ({
-    show(path) {
+    show(path, musicInfo) {
       filePath.current = path
-      if (visible) handleShow(path)
+      if (visible) handleShow(path, musicInfo)
       else {
         setVisible(true)
         requestAnimationFrame(() => {
-          handleShow(path)
+          handleShow(path, musicInfo)
         })
       }
     },
@@ -72,7 +75,7 @@ export default forwardRef<MetadataEditType, MetadataEditProps>((props, ref) => {
 
   const handleUpdate = async () => {
     if (!metadataFormRef.current) return
-    let _metadata = metadataFormRef.current.getForm()
+    let _metadata = metadataFormRef.current.getForm() as Metadata & { fileName?: string; originalFileName?: string }
     if (!_metadata.name) {
       toast(global.i18n.t('metadata_edit_modal_tip'), 'long')
       return
@@ -80,6 +83,14 @@ export default forwardRef<MetadataEditType, MetadataEditProps>((props, ref) => {
     setProcessing(true)
     let isUpdated = false
     try {
+      if (_metadata.fileName && _metadata.originalFileName && _metadata.fileName !== _metadata.originalFileName) {
+        const lastSlashIndex = filePath.current.lastIndexOf('/')
+        const newFilePath = filePath.current.substring(0, lastSlashIndex + 1) + _metadata.fileName
+        await rename(filePath.current, newFilePath)
+        filePath.current = newFilePath
+        isUpdated ||= true
+      }
+
       if (
         _metadata.name != metadata.current.name ||
         _metadata.singer != metadata.current.singer ||
@@ -100,6 +111,13 @@ export default forwardRef<MetadataEditType, MetadataEditProps>((props, ref) => {
       if (_metadata.lyric != metadata.current.lyric) {
         isUpdated ||= true
         await writeLyric(filePath.current, _metadata.lyric)
+        const lyricMusicInfo: any = musicInfoRef.current || {
+          id: filePath.current,
+          name: _metadata.name,
+          singer: _metadata.singer,
+          source: 'local',
+        }
+        void saveEditedLyric(lyricMusicInfo, { lyric: _metadata.lyric, tlyric: '', rlyric: '', lxlyric: '' })
       }
     } catch (err: any) {
       log.error(`save (${filePath.current}) metadata failed: \n${err.message}`)

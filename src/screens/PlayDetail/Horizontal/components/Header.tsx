@@ -12,6 +12,8 @@ import CommentBtn from './CommentBtn'
 import Btn from './Btn'
 import SettingPopup, { type SettingPopupType } from '../../components/SettingPopup'
 import DesktopLyricBtn from './DesktopLyricBtn'
+import { isOneDriveMusicInfo } from '@/core/oneDrive/utils'
+import { handleShowArtistDetail } from '@/components/OnlineList/listAction'
 
 export const HEADER_HEIGHT = scaleSizeH(_HEADER_HEIGHT)
 
@@ -20,30 +22,41 @@ const Title = () => {
   const playMusicInfo = usePlayMusicInfo()
   const musicInfo = playMusicInfo.musicInfo ? ('progress' in playMusicInfo.musicInfo ? playMusicInfo.musicInfo.metadata.musicInfo : playMusicInfo.musicInfo) : null
 
-  const handleArtistPress = useCallback((artist: { id: string | number, name: string }) => {
-    if (!musicInfo || musicInfo.source !== 'wy' || !artist.id) return
-    navigations.pushArtistDetailScreen(commonState.componentIds[commonState.componentIds.length - 1]?.id!, { id: String(artist.id), name: artist.name })
+  const handleArtistPress = useCallback((artist: { id: string | number, mid?: string, name: string }) => {
+    if (!musicInfo || (musicInfo.source !== 'wy' && musicInfo.source !== 'tx' && musicInfo.source !== 'kg') || !artist.id) return
+    navigations.pushArtistDetailScreen(commonState.componentIds[commonState.componentIds.length - 1]?.id!, { id: String(artist.id), mid: artist.mid, name: artist.name, source: musicInfo.source })
   }, [musicInfo])
 
   const handleAlbumPress = useCallback(() => {
-    if (!musicInfo || musicInfo.source !== 'wy' || !(musicInfo.meta as any).albumId) return
-    navigations.pushAlbumDetailScreen(commonState.componentIds[commonState.componentIds.length - 1]?.id!, { id: String((musicInfo.meta as any).albumId), name: musicInfo.meta.albumName, source: musicInfo.source })
+    if (!musicInfo) return
+    if (musicInfo.source !== 'wy' && musicInfo.source !== 'tx' && musicInfo.source !== 'kg') return
+    const albumId = (musicInfo.meta as any)?.albumId || musicInfo.albumId
+    const albumName = musicInfo.meta?.albumName || musicInfo.albumName
+    const albumMid = (musicInfo.meta as any)?.albumMid || musicInfo.albumMid || albumId
+    if (!albumId || !albumName) return
+    if (musicInfo.source === 'tx') {
+      navigations.pushAlbumDetailScreen(commonState.componentIds[commonState.componentIds.length - 1]?.id!, { id: String(albumId), mid: albumMid, name: albumName, source: 'tx' })
+    } else {
+      navigations.pushAlbumDetailScreen(commonState.componentIds[commonState.componentIds.length - 1]?.id!, { id: String(albumId), name: albumName, source: musicInfo.source })
+    }
   }, [musicInfo])
 
 
   const singerRender = useMemo(() => {
     if (!musicInfo) return null
-    const albumName = musicInfo.meta?.albumName
-    const albumId = (musicInfo.meta as any)?.albumId
+    const albumName = musicInfo.meta?.albumName || musicInfo.albumName
+    const albumId = (musicInfo.meta as any)?.albumId || musicInfo.albumId
 
     if (!musicInfo.artists?.length || musicInfo.source == 'local') {
       return (
         <View style={styles.singerContainer}>
-          <Text numberOfLines={1} size={12} color={theme['c-font-label']}>
-            {musicInfo.singer}
-          </Text>
+          <TouchableOpacity onPress={() => handleShowArtistDetail(commonState.componentIds[commonState.componentIds.length - 1]?.id!, musicInfo)}>
+            <Text numberOfLines={1} size={12} color={theme['c-font-label']}>
+              {musicInfo.singer}
+            </Text>
+          </TouchableOpacity>
           {albumName ? (
-            <TouchableOpacity style={{ flexShrink: 1 }} onPress={handleAlbumPress} disabled={musicInfo.source !== 'wy' || !albumId}>
+            <TouchableOpacity style={{ flexShrink: 1 }} onPress={handleAlbumPress} disabled={(musicInfo.source !== 'wy' && musicInfo.source !== 'tx' && musicInfo.source !== 'kg') || !albumId}>
               <Text numberOfLines={1} size={12} color={theme['c-font-label']}>
                 {` · ${albumName}`}
               </Text>
@@ -64,7 +77,7 @@ const Title = () => {
           </TouchableOpacity>
         ))}
         {albumName ? (
-          <TouchableOpacity style={{ flexShrink: 1 }} onPress={handleAlbumPress} disabled={musicInfo.source !== 'wy' || !albumId}>
+          <TouchableOpacity style={{ flexShrink: 1 }} onPress={handleAlbumPress} disabled={(musicInfo.source !== 'wy' && musicInfo.source !== 'tx' && musicInfo.source !== 'kg') || !albumId}>
             <Text numberOfLines={1} size={12} color={theme['c-font-label']}>
               {` · ${albumName}`}
             </Text>
@@ -91,6 +104,8 @@ const Title = () => {
 
 export default memo(() => {
   const popupRef = useRef<SettingPopupType>(null)
+  const playMusicInfo = usePlayMusicInfo()
+  const isOneDrive = isOneDriveMusicInfo(playMusicInfo.musicInfo)
   const back = () => {
     void pop(commonState.componentIds[commonState.componentIds.length - 1]?.id!)
   }
@@ -105,7 +120,7 @@ export default memo(() => {
         </TouchableOpacity>
         <Title />
         <DesktopLyricBtn />
-        <CommentBtn />
+        {isOneDrive ? null : <CommentBtn />}
         <Btn icon="slider" onPress={showSetting} />
       </View>
       <SettingPopup ref={popupRef} position="left" direction="horizontal" />

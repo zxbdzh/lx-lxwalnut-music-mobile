@@ -1,4 +1,4 @@
-import {memo, useCallback, useMemo, useRef} from 'react'
+import {memo, useCallback, useEffect, useMemo, useRef} from 'react'
 import { PanResponder, View, TouchableOpacity } from 'react-native'
 import { useKeyboard } from '@/utils/hooks'
 import Pic from './components/Pic'
@@ -24,6 +24,8 @@ export default memo(({ componentId, isHome = false }: { componentId?: string, is
   const longPressedRef = useRef(false)
   const playlistRef = useRef<PlayerPlaylistType>(null)
   const drawerLayoutPosition = useSettingValue('common.drawerLayoutPosition')
+  const picOpacity = useSettingValue('theme.picOpacity')
+  const isSwipeToShowPlaylist = useSettingValue('player.isSwipeToShowPlaylist')
 
   const handleLongPress = useCallback(() => {
     longPressedRef.current = true
@@ -46,12 +48,19 @@ export default memo(({ componentId, isHome = false }: { componentId?: string, is
     playlistRef.current?.show()
   }
 
+  useEffect(() => {
+    global.app_event.on('showPlaylist', handleShowPlaylist)
+    return () => {
+      global.app_event.off('showPlaylist', handleShowPlaylist)
+    }
+  }, [])
+
   const gestureAction = useRef<'drawer' | 'playlist' | null>(null)
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
         const { dx, dy } = gestureState
-        if (Math.abs(dx) > Math.abs(dy) * 1.5) { // 水平滑动为主
+        if (Math.abs(dx) > Math.abs(dy) * 1.5) {
           if (drawerLayoutPosition === 'left' && dx > 10) {
             gestureAction.current = 'drawer'
             return true
@@ -60,7 +69,7 @@ export default memo(({ componentId, isHome = false }: { componentId?: string, is
             gestureAction.current = 'drawer'
             return true
           }
-        } else if (Math.abs(dy) > Math.abs(dx) * 1.5) { // 垂直滑动为主
+        } else if (isSwipeToShowPlaylist && Math.abs(dy) > Math.abs(dx) * 1.5) {
           if (dy < -10) {
             gestureAction.current = 'playlist'
             return true
@@ -88,26 +97,32 @@ export default memo(({ componentId, isHome = false }: { componentId?: string, is
   ).current
 
   const playerComponent = useMemo(
-    () => (
-      <View style={{ ...styles.container, backgroundColor: theme['c-content-background'] }}
-            {...panResponder.panHandlers}>
-        <MiniProgressBar />
+    () => {
+      const containerStyle = {
+        ...styles.container,
+        backgroundColor: 'transparent',
+      }
 
-        <TouchableOpacity style={styles.left} onPress={handleNavigate} onLongPress={handleLongPress} activeOpacity={0.8}>
-          <Pic isHome={isHome} />
-          <View style={styles.center}>
-            <Title isHome={isHome} />
-            <PlayInfo isHome={isHome} />
-          </View>
-        </TouchableOpacity>
-        <View style={styles.right}>
-          <ControlBtn />
-          <TouchableOpacity style={styles.menuBtn} onPress={handleShowPlaylist}>
-            <Icon name="menu" color={theme['c-button-font']} size={22} />
+      return (
+        <View style={containerStyle} {...panResponder.panHandlers}>
+          <MiniProgressBar />
+
+          <TouchableOpacity style={styles.left} onPress={handleNavigate} onLongPress={handleLongPress} activeOpacity={0.8}>
+            <Pic isHome={isHome} />
+            <View style={styles.center}>
+              <Title isHome={isHome} />
+              <PlayInfo isHome={isHome} />
+            </View>
           </TouchableOpacity>
+          <View style={styles.right}>
+            <ControlBtn />
+            <TouchableOpacity style={styles.menuBtn} onPress={handleShowPlaylist}>
+              <Icon name="menu" color={theme['c-button-font']} size={22} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    ),
+      )
+    },
     [theme, isHome, handleShowPlaylist, panResponder.panHandlers, drawerLayoutPosition],
   )
 
@@ -135,7 +150,6 @@ const styles = createStyle({
     borderTopRightRadius: 6,
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 10,
   },
   left: {
     flexGrow: 1,

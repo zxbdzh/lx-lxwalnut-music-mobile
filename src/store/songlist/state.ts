@@ -37,6 +37,7 @@ export declare interface ListInfoItem {
   source: LX.OnlineSource
   total?: string | number
   userId?: string | number
+  isFavorites?: boolean
 }
 export declare interface ListInfo {
   list: ListInfoItem[]
@@ -116,6 +117,7 @@ const state: InitState = {
 for (const source of music.sources) {
   const songList = music[source.id as Source]?.songList
   if (!songList) continue
+  if (source.id === 'bilibili') continue
   state.sources.push(source.id as Source)
   state.sortList[source.id as Source] = songList.sortList as SortInfo[]
 }

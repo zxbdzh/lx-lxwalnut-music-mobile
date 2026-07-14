@@ -4,6 +4,7 @@ import {
   getUserApiScript,
   removeUserApi as removeUserApiFromStore,
   setUserApiAllowShowUpdateAlert as setUserApiAllowShowUpdateAlertFromStore,
+  setUserApiList as setUserApiListFromStore,
 } from '@/utils/data'
 import { destroy, loadScript } from '@/utils/nativeModules/userApi'
 import { log as writeLog } from '@/utils/log'
@@ -47,27 +48,29 @@ export const setUserApiAllowShowUpdateAlert = async (id: string, enable: boolean
   action.setUserApiAllowShowUpdateAlert(id, enable)
 }
 
+export const reorderUserApi = async (list: LX.UserApi.UserApiInfo[]) => {
+  const persisted = await setUserApiListFromStore(list)
+  action.setUserApiList(persisted)
+}
+
 export const overwriteUserApis = async (data: { list: LX.UserApi.UserApiInfo[], scripts: Record<string, string> }) => {
   try {
-    // 1. 清理不再存在的旧脚本
     const allKeys = await getAllKeys();
     const oldScriptKeys = allKeys.filter(key => key.startsWith(storageDataPrefix.userApi) && key !== storageDataPrefix.userApi);
-    const newScriptIds = new Set(Object.keys(data.scripts));
+    const newScriptIds = new Set(Object.keys(data.scripts ?? {}));
     const keysToRemove = oldScriptKeys.filter(key => {
       const scriptId = key.substring(storageDataPrefix.userApi.length);
       return !newScriptIds.has(scriptId);
     });
     if (keysToRemove.length) await removeDataMultiple(keysToRemove);
 
-    // 2. 批量保存新的元数据和所有脚本内容
     const saveTasks: Array<[string, any]> = [];
     saveTasks.push([storageDataPrefix.userApi, data.list]);
-    for (const [id, script] of Object.entries(data.scripts)) {
+    for (const [id, script] of Object.entries(data.scripts ?? {})) {
       saveTasks.push([`${storageDataPrefix.userApi}${id}`, script]);
     }
     await saveDataMultiple(saveTasks);
 
-    // 3. 更新内存中的状态
     action.setUserApiList(data.list);
   } catch (error: any) {
     log.error('Overwrite user apis failed:', error.message);
@@ -77,24 +80,35 @@ export const overwriteUserApis = async (data: { list: LX.UserApi.UserApiInfo[], 
 
 export const log = {
   r_info(...params: any[]) {
+    if (!global.lx.isEnableLog) return
     writeLog.info(...params)
   },
   r_warn(...params: any[]) {
+    if (!global.lx.isEnableLog) return
     writeLog.warn(...params)
   },
   r_error(...params: any[]) {
+    if (!global.lx.isEnableLog) return
     writeLog.error(...params)
   },
   log(...params: any[]) {
-    if (global.lx.isEnableUserApiLog) writeLog.info(...params)
+    if (!global.lx.isEnableLog) return
+    if (!global.lx.isEnableUserApiLog) return
+    writeLog.info(...params)
   },
   info(...params: any[]) {
-    if (global.lx.isEnableUserApiLog) writeLog.info(...params)
+    if (!global.lx.isEnableLog) return
+    if (!global.lx.isEnableUserApiLog) return
+    writeLog.info(...params)
   },
   warn(...params: any[]) {
-    if (global.lx.isEnableUserApiLog) writeLog.warn(...params)
+    if (!global.lx.isEnableLog) return
+    if (!global.lx.isEnableUserApiLog) return
+    writeLog.warn(...params)
   },
   error(...params: any[]) {
-    if (global.lx.isEnableUserApiLog) writeLog.error(...params)
+    if (!global.lx.isEnableLog) return
+    if (!global.lx.isEnableUserApiLog) return
+    writeLog.error(...params)
   },
 }

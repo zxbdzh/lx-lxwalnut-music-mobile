@@ -3,8 +3,8 @@ import kg from './kg'
 import tx from './tx'
 import wy from './wy'
 import mg from './mg'
-import git from './git'
 import bilibili from './bilibili'
+import git from './git'
 // import yt from './yt'
 import { supportQuality } from './api-source'
 
@@ -31,12 +31,12 @@ const sources = {
       id: 'mg',
     },
     {
-      name: 'Gitcode',
-      id: 'git',
-    },
-    {
       name: '哔哩哔哩',
       id: 'bilibili',
+    },
+    {
+      name: 'Gitcode',
+      id: 'git',
     },
     // {
     //   name: 'YouTube',
@@ -48,14 +48,17 @@ const sources = {
   tx,
   wy,
   mg,
-  git,
   bilibili,
+  git,
   // yt,
 }
-export default {
+
+const musicSdk = {
   ...sources,
   supportQuality,
 }
+
+export default musicSdk
 
 export const init = () => {
   const tasks = []
@@ -149,7 +152,7 @@ export const findMusic = async (musicInfo) => {
         item.fMusicName = filterStr(String(item.name ?? '').toLowerCase())
         item.fAlbumName = filterStr(String(item.albumName ?? '').toLowerCase())
         item.fInterval = getIntv(item.interval)
-        // console.log(fMusicName, item.fMusicName, item.source)
+        // log.info(fMusicName, item.fMusicName, item.source)
         if (!isEqualsInterval(item.fInterval)) {
           item.name = null
           continue
@@ -209,6 +212,6 @@ export const findMusic = async (musicInfo) => {
     }
     newResult.push(...result)
   }
-  // console.log(newResult)
+  // log.info(newResult)
   return newResult
 }

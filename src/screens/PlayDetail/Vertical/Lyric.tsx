@@ -19,6 +19,7 @@ import { setSpText } from '@/utils/pixelRatio'
 import settingState from '@/store/setting/state'
 import playerState from '@/store/player/state'
 import { scrollTo } from '@/utils/scroll'
+import { useWindowSize } from '@/utils/hooks'
 // import { screenkeepAwake } from '@/utils/nativeModules/utils'
 // import { log } from '@/utils/log'
 // import { toast } from '@/utils/tools'
@@ -69,9 +70,10 @@ interface LineProps {
   activeLine: number
   onLayout: (lineNum: number, height: number, width: number) => void
   onPress: (index: number) => void;
+  isSmallWindow?: boolean;
 }
 const LrcLine = memo(
-  ({ line, lineNum, activeLine, onLayout, onPress }: LineProps) => {
+  ({ line, lineNum, activeLine, onLayout, onPress, isSmallWindow }: LineProps) => {
     const theme = useTheme()
     const lrcFontSize = useSettingValue('playDetail.vertical.style.lrcFontSize')
     const textAlign = useSettingValue('playDetail.style.align')
@@ -93,11 +95,10 @@ const LrcLine = memo(
       onPress(lineNum);
     }, [onPress, lineNum]);
 
-    // textBreakStrategy="simple" 用于解决某些设备上字体被截断的问题
     // https://stackoverflow.com/a/72822360
     return (
       <TouchableOpacity activeOpacity={0.7} onPress={handlePress}>
-        <View style={styles.line} onLayout={handleLayout}>
+        <View style={[styles.line, isSmallWindow && { paddingTop: 6, paddingBottom: 6 }]} onLayout={handleLayout}>
           <AnimatedColorText
             style={{
               ...styles.lineText,
@@ -118,6 +119,7 @@ const LrcLine = memo(
                   ...styles.lineTranslationText,
                   textAlign,
                   lineHeight: lineHeight * 0.8,
+                  ...(isSmallWindow && { paddingTop: 2 }),
                 }}
                 textBreakStrategy="simple"
                 key={index}
@@ -147,6 +149,8 @@ const wait = async () => new Promise((resolve) => setTimeout(resolve, 100))
 export default () => {
   const lyricLines = useLrcSet()
   const { line } = useLrcPlay()
+  const { height: winHeight } = useWindowSize()
+  const isSmallWindow = winHeight < 700
   const flatListRef = useRef<FlatList>(null)
   const isPauseScrollRef = useRef(true)
   const scrollTimoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -371,7 +375,6 @@ export default () => {
 
   const handleLinePress = useCallback((index: number) => {
     if (!isShowLyricProgressSetting) return;
-    // 清除可能存在的滚动暂停定时器
     if (scrollTimoutRef.current) {
       clearTimeout(scrollTimoutRef.current);
       scrollTimoutRef.current = null;
@@ -380,34 +383,32 @@ export default () => {
       scrollCancelRef.current();
       scrollCancelRef.current = null;
     }
-    // 允许列表滚动
     isPauseScrollRef.current = false;
-    // 跳转播放
     const line = lyricLines[index];
     if (line) {
       global.app_event.setProgress(line.time / 1000);
     }
-    // 滚动到点击的行
     handleScrollToActive(index);
   }, [isShowLyricProgressSetting, lyricLines]);
 
   const renderItem: FlatListType['renderItem'] = ({ item, index }) => {
-    return <LrcLine line={item} lineNum={index} activeLine={line} onLayout={handleLineLayout} onPress={handleLinePress} />; // 传入 onPress
+    return <LrcLine line={item} lineNum={index} activeLine={line} onLayout={handleLineLayout} onPress={handleLinePress} isSmallWindow={isSmallWindow} />;
   };
   const getkey: FlatListType['keyExtractor'] = (item, index) => `${index}${item.text}`
 
   const spaceComponent = useMemo(
-    () => <View style={styles.space} onLayout={handleSpaceLayout}></View>,
-    [handleSpaceLayout]
+    () => <View style={[styles.space, isSmallWindow && { paddingTop: '30%' }]} onLayout={handleSpaceLayout}></View>,
+    [handleSpaceLayout, isSmallWindow]
   )
 
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
+    <View style={[styles.container, isSmallWindow && { paddingLeft: 12, paddingRight: 12 }]} {...panResponder.panHandlers}>
       <FlatList
         data={lyricLines}
         renderItem={renderItem}
         keyExtractor={getkey}
         style={{ flex: 1 }}
+        contentContainerStyle={isSmallWindow ? { paddingBottom: 160 } : undefined}
         ref={flatListRef}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={spaceComponent}

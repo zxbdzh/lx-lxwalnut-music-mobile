@@ -62,27 +62,35 @@ export default forwardRef<MusicDownloadModalType, MusicDownloadModalProps>(
       [key: string]: MusicOption
     }
 
-    // 新增 useEffect 来处理音质选择逻辑
     useEffect(() => {
       if (!visible || !playQualityList.length) return
 
       const applyLastQuality = async() => {
+          if (selectedInfo.current.source === 'bilibili') {
+          const quality192k = playQualityList.find(q => q.id === '192k')
+          if (quality192k) {
+            setSelectedQuality('192k')
+            return
+          }
+        }
+        
         const lastQuality = await getLastSelectQuality()
         const qualityExists = playQualityList.some(q => q.id === lastQuality)
         if (qualityExists) {
           setSelectedQuality(lastQuality)
         } else {
-          setSelectedQuality(playQualityList[0].id) // 降级到第一个可用音质
+          setSelectedQuality(playQualityList[0].id)
         }
       }
 
       void applyLastQuality()
-    }, [visible, playQualityList]) // 依赖于弹窗可见性和音质列表
+    }, [visible, playQualityList])
 
     const calcQualitys = (musicInfo: LX.Music.MusicInfo) => {
       const map = new Map()
 
       map.set('128k', global.i18n.t('128k'))
+      map.set('192k', '192k')
       map.set('320k', global.i18n.t('320k'))
       map.set('flac', global.i18n.t('flac'))
       map.set('hires', global.i18n.t('hires'))
@@ -110,10 +118,8 @@ export default forwardRef<MusicDownloadModalType, MusicDownloadModalProps>(
       async show(info) {
         selectedInfo.current = info
         titleRef.current?.updateTitle(info)
-        // 先计算并触发音质列表状态更新
         calcQualitys(info)
 
-        // 然后显示弹窗
         if (visible) {
           alertRef.current?.setVisible(true)
         } else {
@@ -132,7 +138,6 @@ export default forwardRef<MusicDownloadModalType, MusicDownloadModalProps>(
       },
     }))
 
-    // 当弹窗组件首次挂载或重新变为可见时，显示内部Dialog
     useEffect(() => {
       if (visible) {
         alertRef.current?.setVisible(true)
@@ -142,11 +147,9 @@ export default forwardRef<MusicDownloadModalType, MusicDownloadModalProps>(
     const handleDownloadMusic = () => {
       void saveLastSelectQuality(selectedQuality)
       alertRef.current?.setVisible(false)
-      // handleDownload(selectedInfo.current, selectedQuality)
       addDownloadTask(selectedInfo.current, selectedQuality);
-      // 下载后重置回默认值，以便下次打开时重新加载
       setTimeout(() => {
-        setSelectedQuality('128k')
+        setSelectedQuality(selectedInfo.current.source === 'bilibili' ? '192k' : '128k');
       }, 300)
     }
 
@@ -180,7 +183,7 @@ export default forwardRef<MusicDownloadModalType, MusicDownloadModalProps>(
       <ConfirmAlert
         ref={alertRef}
         onConfirm={handleDownloadMusic}
-        onHide={() => setVisible(false) } // 隐藏时卸载组件
+        onHide={() => setVisible(false) }
       >
         <View style={styles.content}>
           <Title ref={titleRef} />

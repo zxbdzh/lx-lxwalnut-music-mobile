@@ -102,7 +102,7 @@ export default memo(() => {
   const navStatus = useSettingValue('common.navStatus')
   const visibleNavs = useMemo(() => {
     return NAV_MENUS.filter(
-      menu => menu.id === 'nav_search' || menu.id === 'nav_setting' || (navStatus[menu.id] ?? true)
+      menu => menu.id !== 'nav_play_history' && (menu.id === 'nav_search' || menu.id === 'nav_setting' || (navStatus[menu.id] ?? true))
     )
   }, [navStatus])
   const activeNavId = useNavActiveId()
@@ -154,7 +154,7 @@ export default memo(() => {
           return false
         }
         setSelectedPlaylist(null)
-        return true // 消费事件，防止退出应用
+        return true
       }
       return false
     }
@@ -176,7 +176,7 @@ export default memo(() => {
         <PagerView
           ref={pagerViewRef}
           style={{ flex: 1 }}
-          initialPage={activeTab === 'songs' ? 0 : 1} // <-- 核心修改在这里
+          initialPage={activeTab === 'songs' ? 0 : 1}
           onPageSelected={onPageSelected}
           scrollEnabled={!isHomePageScrollEnabled}
         >
@@ -198,7 +198,7 @@ export default memo(() => {
         />
       </View>
       {selectedPlaylist && (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: theme['c-content-background'] }]}>
+        <View style={[StyleSheet.absoluteFill]}>
           <SonglistDetail info={selectedPlaylist} onBack={handleCloseDetail} initialScrollToInfo={null} />
         </View>
       )}

@@ -24,6 +24,7 @@ const styles = createStyle({
     paddingTop: 15,
     paddingBottom: 15,
     flex: 0,
+    backgroundColor: 'transparent',
   },
 })
 

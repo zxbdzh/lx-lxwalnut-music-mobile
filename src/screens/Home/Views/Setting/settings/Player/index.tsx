@@ -2,6 +2,7 @@ import { memo } from 'react'
 
 import Section from '../../components/Section'
 import IsSavePlayTime from './IsSavePlayTime'
+import IsSwipeToShowPlaylist from './IsSwipeToShowPlaylist'
 import PlayHighQuality from './PlayHighQuality'
 import IsHandleAudioFocus from './IsHandleAudioFocus'
 import IsEnableAudioOffload from './IsEnableAudioOffload'
@@ -18,8 +19,9 @@ export default memo(() => {
   const t = useI18n()
 
   return (
-    <Section title={t('setting_player')}>
+    <Section title={t('setting_player')} sectionId="setting_player">
       <IsSavePlayTime />
+      <IsSwipeToShowPlaylist />
       <IsAutoCleanPlayedList />
       <IsHandleAudioFocus />
       <IsEnableAudioOffload />

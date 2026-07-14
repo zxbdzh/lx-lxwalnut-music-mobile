@@ -8,8 +8,8 @@ import { useWindowSize } from '@/utils/hooks'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
-import { scaleSizeW } from '@/utils/pixelRatio'
-import { useWySubscribedPlaylists, useWyUid } from '@/store/user/hook'
+import { scaleSizeW, scaleSizeH } from '@/utils/pixelRatio'
+import { useWySubscribedPlaylists, useWyUid, useTxSubscribedPlaylists } from '@/store/user/hook'
 
 const styles = createStyle({
   list: {
@@ -24,7 +24,7 @@ const styles = createStyle({
 const MIN_WIDTH = scaleSizeW(140)
 const PADDING = styles.list.paddingLeft + styles.list.paddingRight
 
-const EditListItem = ({ itemWidth, playlistType }: { itemWidth: number, playlistType: 'local' | 'online' }) => {
+const EditListItem = ({ itemWidth, playlistType }: { itemWidth: number, playlistType: 'local' | 'wy' | 'tx' }) => {
   const [isEdit, setEdit] = useState(false)
   const theme = useTheme()
   const t = useI18n()
@@ -70,22 +70,26 @@ export default ({
                 }: {
   listId: string
   onPress: (listInfo: LX.List.MyListInfo) => void
-  playlistType: 'local' | 'online'
+  playlistType: 'local' | 'wy' | 'tx'
 }) => {
   const windowSize = useWindowSize()
+  
   const localLists = useMyList()
   const onlinePlaylists = useWySubscribedPlaylists()
+  const txPlaylists = useTxSubscribedPlaylists()
   const uid = useWyUid()
 
   const allList = useMemo(() => {
     let sourceList
-    if (playlistType === 'online') {
+    if (playlistType === 'wy') {
       sourceList = onlinePlaylists.filter(p => String(p.userId) === String(uid))
+    } else if (playlistType === 'tx') {
+      sourceList = txPlaylists
     } else {
       sourceList = localLists
     }
     return sourceList.filter((l) => l.id != listId)
-  }, [playlistType, localLists, onlinePlaylists, uid, listId])
+  }, [playlistType, localLists, onlinePlaylists, uid, listId, txPlaylists])
 
   const itemWidth = useMemo(() => {
     let w = Math.floor(windowSize.width * 0.9 - PADDING)
@@ -95,7 +99,7 @@ export default ({
   }, [windowSize])
 
   return (
-    <ScrollView style={{ flexGrow: 0 }}>
+    <ScrollView style={{ flexGrow: 0, minHeight: scaleSizeH(200) }}>
       <View style={{ ...styles.list }} onStartShouldSetResponder={() => true}>
         {allList.map((info) => (
           <ListItem key={info.id} listInfo={info as LX.List.MyListInfo} onPress={onPress} width={itemWidth} />

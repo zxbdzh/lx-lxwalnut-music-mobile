@@ -13,9 +13,9 @@ import { getLyricInfo, getPicUrl } from '@/core/music/local'
 import settingState from '@/store/setting/state'
 
 export interface Metadata {
-  name: string // 歌曲名
-  singer: string // 艺术家名
-  albumName: string // 歌曲专辑名称
+  name: string
+  singer: string
+  albumName: string
   pic: string
   lyric: string
   interval: string
@@ -43,13 +43,14 @@ export default forwardRef<MetadataFormType, {}>((props, ref) => {
   const [data, setData] = useState({ ...defaultData })
   const theme = useTheme()
   const isUnmounted = useUnmounted()
+  const originalFileName = useRef('')
 
   useImperativeHandle(ref, () => ({
     setForm(path, data) {
       filePath.current = path
-      // setPath(path)
       void stat(path).then((info) => {
         if (isUnmounted.current) return
+        originalFileName.current = info.name
         setFileName(info.name)
       })
       setData(data)
@@ -60,6 +61,8 @@ export default forwardRef<MetadataFormType, {}>((props, ref) => {
         name: data.name.trim(),
         singer: data.singer.trim(),
         albumName: data.albumName.trim(),
+        fileName,
+        originalFileName: originalFileName.current,
       }
     },
   }))
@@ -181,6 +184,10 @@ export default forwardRef<MetadataFormType, {}>((props, ref) => {
       return { ...data, lyric }
     })
   }, [])
+  const handleUpdateFileName = useCallback((name: string) => {
+    if (name.length > 255) name = name.substring(0, 255)
+    setFileName(name)
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -190,6 +197,7 @@ export default forwardRef<MetadataFormType, {}>((props, ref) => {
         numberOfLines={2}
         scrollEnabled
         style={{ ...styles.pathText, color: theme['c-primary-font'] }}
+        onChanged={handleUpdateFileName}
       />
 
       <InputItem

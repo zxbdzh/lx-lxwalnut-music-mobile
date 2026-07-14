@@ -1,4 +1,4 @@
-import { useRef, useImperativeHandle, forwardRef, useState } from 'react'
+import { useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react'
 import Text from '@/components/common/Text'
 import { View, TouchableOpacity } from 'react-native'
 import { createStyle, openUrl } from '@/utils/tools'
@@ -8,6 +8,7 @@ import Dialog, { type DialogType } from '@/components/common/Dialog'
 import Button from '@/components/common/Button'
 import List from './List'
 import ImportBtn from './ImportBtn'
+import ScriptImportExport, { type ScriptImportExportType } from './ScriptImportExport'
 
 // interface UrlInputType {
 //   setText: (text: string) => void
@@ -62,21 +63,13 @@ export interface UserApiEditModalType {
 
 export default forwardRef<UserApiEditModalType, {}>((props, ref) => {
   const dialogRef = useRef<DialogType>(null)
-  // const sourceSelectorRef = useRef<SourceSelectorType>(null)
-  // const inputRef = useRef<UrlInputType>(null)
+  const scriptImportExportRef = useRef<ScriptImportExportType>(null)
   const [visible, setVisible] = useState(false)
   const theme = useTheme()
   const t = useI18n()
 
   const handleShow = () => {
     dialogRef.current?.setVisible(true)
-    // requestAnimationFrame(() => {
-    // inputRef.current?.setText('')
-    // sourceSelectorRef.current?.setSource(source)
-    // setTimeout(() => {
-    //   inputRef.current?.focus()
-    // }, 300)
-    // })
   }
   useImperativeHandle(ref, () => ({
     show() {
@@ -98,14 +91,17 @@ export default forwardRef<UserApiEditModalType, {}>((props, ref) => {
     void openUrl('https://lyswhut.github.io/lx-music-doc/mobile/custom-source')
   }
 
+  const handleExport = useCallback((apiId: string) => {
+    scriptImportExportRef.current?.export(apiId)
+  }, [])
+
   return visible ? (
     <Dialog ref={dialogRef} bgHide={false}>
       <View style={styles.content}>
-        {/* <UrlInput ref={inputRef} /> */}
         <Text size={16} style={styles.title}>
           {t('user_api_title')}
         </Text>
-        <List />
+        <List onExport={handleExport} />
         <View style={styles.tips}>
           <Text style={styles.tipsText} size={12}>
             {t('user_api_readme')}
@@ -136,6 +132,7 @@ export default forwardRef<UserApiEditModalType, {}>((props, ref) => {
           </Text>
         </Button>
         <ImportBtn btnStyle={{ ...styles.btn, backgroundColor: theme['c-button-background'] }} />
+        <ScriptImportExport ref={scriptImportExportRef} />
       </View>
     </Dialog>
   ) : null

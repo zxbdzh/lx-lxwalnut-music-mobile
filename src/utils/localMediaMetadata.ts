@@ -11,14 +11,20 @@ export {
 } from 'react-native-local-media-metadata'
 
 let cleared = false
-const picCachePath = privateStorageDirectoryPath + '/local-media-covers';
+export const picCachePath = privateStorageDirectoryPath + '/local-media-covers';
+
+export const getPicCachePath = () => picCachePath;
 
 export const scanAudioFiles = async (dirPath: string) => {
   const files = await readDir(dirPath)
+  const supportedAudioExts = [
+    '.mp3', '.m4a', '.flac', '.wav', '.ogg', '.aac', '.wma', '.m4b', '.mp4', '.opus'
+  ]
   return files
     .filter((file: any) => {
       if (file.mimeType?.startsWith('audio/')) return true
-      if (extname(file?.name ?? '') === 'ogg') return true
+      const fileExt = extname(file?.name ?? '').toLowerCase()
+      if (supportedAudioExts.includes(fileExt)) return true
       return false
     })
     .map((file: any) => file)

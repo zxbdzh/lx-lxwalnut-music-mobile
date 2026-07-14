@@ -6,10 +6,16 @@ import {
   overwriteListFull,
   overwriteListMusics,
 } from '@/core/list'
+import { updateSetting } from '@/core/common'
+import { filterSensitiveSettingsForSync, getAllDataForSync } from '@/core/sync/syncHelpers'
+import { overwriteUserApis } from '@/core/userApi'
 import { filterMusicList, fixNewMusicInfoQuality, toNewMusicInfo } from '@/utils'
+import { savePlayHistory } from '@/utils/data'
+import { normalizeRemoteSyncedDownloadTasks, saveDownloadTasks } from '@/utils/data/download'
 import { log } from '@/utils/log'
 import { confirmDialog, handleReadFile, handleSaveFile, showImportTip, toast } from '@/utils/tools'
 import listState from '@/store/list/state'
+import downloadState from '@/store/download/state'
 
 const getAllLists = async () => {
   const lists = []
@@ -98,7 +104,7 @@ const importNewListData = async (
 }
 
 /**
- * 导入单个列表
+ * Import a single list
  * @param listData
  * @param position
  * @returns
@@ -159,6 +165,30 @@ const showConfirm = async () => {
   })
 }
 
+const importBackupData = async (data: LX.ConfigFile.AllDataV3['data']) => {
+  if (!(await showConfirm())) return true
+
+  if (data.lists) await overwriteListFull(data.lists)
+
+  if (Array.isArray(data.playHistory)) {
+    await savePlayHistory(data.playHistory)
+    global.app_event.playHistoryUpdated()
+  }
+
+  if (Array.isArray(data.downloadTasks)) {
+    const tasks = normalizeRemoteSyncedDownloadTasks(data.downloadTasks)
+    downloadState.tasks = tasks
+    await saveDownloadTasks(tasks)
+    global.app_event.download_list_changed()
+  }
+
+  if (data.settings) updateSetting(filterSensitiveSettingsForSync(data.settings))
+
+  if (data.userApis) await overwriteUserApis(data.userApis)
+  
+  toast('部分设置需要重启后生效')
+}
+
 const importPlayList = async (path: string) => {
   let configData: any
   try {
@@ -169,7 +199,7 @@ const importPlayList = async (path: string) => {
   }
 
   switch (configData.type) {
-    case 'defautlList': // 兼容0.6.2及以前版本的列表数据
+    case 'defautlList':
       if (!(await showConfirm())) return true
       await overwriteListMusics(
         LIST_IDS.DEFAULT,
@@ -187,7 +217,6 @@ const importPlayList = async (path: string) => {
       await importNewListData(configData.data)
       break
     case 'allData':
-      // 兼容0.6.2及以前版本的列表数据
       if (!(await showConfirm())) return true
       if (configData.defaultList)
         await overwriteListMusics(
@@ -204,6 +233,8 @@ const importPlayList = async (path: string) => {
       if (!(await showConfirm())) return true
       await importNewListData(configData.playList)
       break
+    case 'allData_v3':
+      return importBackupData(configData.data as LX.ConfigFile.AllDataV3['data'])
     case 'playListPart':
       configData.data.list = filterMusicList(
         (configData.data as LX.ConfigFile.MyListInfoPart['data']).list.map((m) => toNewMusicInfo(m))
@@ -239,17 +270,18 @@ export const handleImportList = (path: string) => {
 }
 
 const exportAllList = async (path: string) => {
-  const data = JSON.parse(
+  const data: LX.ConfigFile.AllDataV3 = JSON.parse(
     JSON.stringify({
-      type: 'playList_v2',
-      data: await getAllLists(),
+      type: 'allData_v3',
+      data: await getAllDataForSync(),
     })
   )
 
   try {
-    await handleSaveFile(path + '/lx_list.lxmc', data)
+    await handleSaveFile(path + '/lx_backup.lxmc', data)
   } catch (error: any) {
     log.error(error.stack)
+    throw error
   }
 }
 export const handleExportList = (path: string) => {

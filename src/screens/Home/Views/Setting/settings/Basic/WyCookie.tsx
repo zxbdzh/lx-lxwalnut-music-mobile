@@ -5,7 +5,6 @@ import { useI18n } from '@/lang';
 import { useSettingValue } from '@/store/setting/hook';
 import { updateSetting } from '@/core/common';
 import { createStyle, toast } from '@/utils/tools';
-import Button from '../../components/Button';
 import CookieManager from '@react-native-cookies/cookies';
 
 
@@ -13,12 +12,9 @@ import CookieManager from '@react-native-cookies/cookies';
 const syncCookieToNative = async (cookie: string) => {
   const domain = 'https://music.163.com';
   try {
-    // 1. 关键步骤：清除该域名的所有原生Cookie，`true` 表示使用共享存储
     await CookieManager.clearAll(true);
 
     if (cookie) {
-      // 2. 将新的Cookie字符串拆分并逐个设置回原生Cookie Jar
-      // 这样可以确保原生层也使用最新的Cookie
       const cookiePairs = cookie.split(';').map(pair => pair.trim());
       for (const pair of cookiePairs) {
         const [name, ...valueParts] = pair.split('=');
@@ -44,9 +40,7 @@ export default memo(() => {
   const cookie = useSettingValue('common.wy_cookie');
 
   const setCookie = (val: string) => {
-    // 先同步到原生层
     void syncCookieToNative(val).then(() => {
-      // 再更新应用状态
       updateSetting({ 'common.wy_cookie': val });
     });
   };
@@ -54,11 +48,6 @@ export default memo(() => {
   const handleChanged: InputItemProps['onChanged'] = (text, callback) => {
     callback(text);
     setCookie(text);
-  };
-
-  const handleShowLoginModal = () => {
-    // 触发全局事件
-    global.app_event.emit('showWebLogin');
   };
 
   useEffect(() => {
@@ -80,9 +69,6 @@ export default memo(() => {
         onChanged={handleChanged}
         placeholder={t('setting_basic_wy_cookie_placeholder')}
       />
-      <View style={styles.btnContainer}>
-        <Button onPress={handleShowLoginModal}>网页登录</Button>
-      </View>
     </View>
   );
 });
@@ -90,10 +76,5 @@ export default memo(() => {
 const styles = createStyle({
   content: {
     // marginTop: 10,
-  },
-  btnContainer: {
-    marginBottom: 5,
-    paddingLeft: 20,
-    flexDirection: 'row',
   },
 });

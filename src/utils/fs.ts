@@ -20,6 +20,14 @@ export const temporaryDirectoryPath = Dirs.CacheDir
 export const externalStorageDirectoryPath = Dirs.SDCardDir
 export const privateStorageDirectoryPath = Dirs.DocumentDir
 
+export const getWebDAVPrivateDirectory = () => {
+  const docDir = privateStorageDirectoryPath
+  if (!docDir || typeof docDir !== 'string') {
+    return '/storage/emulated/0/Music/LX-X Music/WebDAV'
+  }
+  return `${docDir}/WebDAV`
+}
+
 export const getExternalStoragePaths = async (is_removable?: boolean) =>
   _getExternalStoragePaths(is_removable)
 
@@ -58,7 +66,11 @@ export const gzipString = async (data: string, encoding?: Encoding) =>
 export const unGzipString = async (data: string, encoding?: Encoding) =>
   FileSystem.unGzipString(data, encoding)
 
-export const existsFile = async (path: string) => FileSystem.exists(path)
+export const existsFile = async (path: string) => {
+  const result = await RNFS.exists(path)
+  console.log('existsFile', { path, result })
+  return result
+}
 
 export const rename = async (path: string, name: string) => FileSystem.rename(path, name)
 

@@ -10,16 +10,6 @@ if (process.versions == null) {
   }
 } else process.versions.app = version
 
-// global.i18n = null
-
-// let screenW = Dimensions.get('window').width
-// let screenH = Dimensions.get('window').height
-// if (screenW > screenH) {
-//   const temp = screenW
-//   screenW = screenH
-//   screenH = temp
-// }
-
 global.lx = {
   fontSize: 0.9,
   playerStatus: {
@@ -31,20 +21,12 @@ global.lx = {
 
   playerError: false,
   restorePlayInfo: null,
-  // allList: null,
-  // globalObj: null,
-  // listScrollPosition: {},
-  // listSort: {},
 
   isScreenKeepAwake: false,
 
-  // 是否播放完后退出应用
   isPlayedStop: false,
 
-  // prevListPlayIndex: -1,
-
-  // syncKeyInfo: {},
-
+  isEnableLog: true,
   isEnableSyncLog: false,
   isEnableUserApiLog: false,
 
@@ -64,17 +46,6 @@ global.lx = {
   settingActiveId: 'basic',
 
   homePagerIdle: true,
-
-  // syncKeyInfo: initValue as LX.Sync.KeyInfo,
-
-  // windowInfo: {
-  //   screenW,
-  //   screenH,
-  //   fontScale: PixelRatio.getFontScale(),
-  //   pixelRatio: PixelRatio.get(),
-  //   screenPxW: PixelRatio.getPixelSizeForLayoutSize(screenW),
-  //   screenPxH: PixelRatio.getPixelSizeForLayoutSize(screenH),
-  // },
 }
 
 ;(global as any).app_event = createAppEventHub()

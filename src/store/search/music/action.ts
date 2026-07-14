@@ -1,6 +1,7 @@
 import state, { type InitState, type Source } from './state'
 import { sortInsert, similar, arrPush } from '@/utils/common'
 import { deduplicationList, toNewMusicInfo } from '@/utils'
+import { log } from '@/utils/log'
 
 export interface SearchResult {
   list: LX.Music.MusicInfoOnline[]
@@ -11,10 +12,10 @@ export interface SearchResult {
 }
 
 /**
- * 按搜索关键词重新排序列表
- * @param list 歌曲列表
- * @param keyword 搜索关键词
- * @returns 排序后的列表
+ * Re-sort list by search keyword
+ * @param list Song list
+ * @param keyword Search keyword
+ * @returns Sorted list
  */
 const handleSortList = (list: LX.Music.MusicInfoOnline[], keyword: string) => {
   let arr: any[] = []
@@ -27,6 +28,15 @@ const handleSortList = (list: LX.Music.MusicInfoOnline[], keyword: string) => {
   return arr.map((item) => item.data).reverse()
 }
 
+const convertMusicInfo = (item: any): LX.Music.MusicInfoOnline | null => {
+  try {
+    return toNewMusicInfo(item) as LX.Music.MusicInfoOnline
+  } catch (error) {
+    log.warn('[Search Music] 转换音乐信息失败:', error.message)
+    return null
+  }
+}
+
 const setLists = (
   results: SearchResult[],
   page: number,
@@ -36,6 +46,8 @@ const setLists = (
   let totals = []
   let limit = 0
   let list = [] as LX.Music.MusicInfoOnline[]
+  const onlyBilibili = results.length === 1 && results[0].source === 'bilibili'
+  
   for (const source of results) {
     state.maxPages[source.source] = source.allPage
     limit = Math.max(source.limit, limit)
@@ -44,10 +56,15 @@ const setLists = (
     pages.push(source.allPage)
     totals.push(source.total)
   }
-  list = handleSortList(
-    list.map((s) => toNewMusicInfo(s) as LX.Music.MusicInfoOnline),
-    text
-  )
+  
+  let convertedList = list.map(convertMusicInfo).filter((item): item is LX.Music.MusicInfoOnline => item !== null)
+  
+  if (onlyBilibili) {
+    list = convertedList
+  } else {
+    list = handleSortList(convertedList, text)
+  }
+  
   let listInfo = state.listInfos.all
   listInfo.maxPage = Math.max(0, ...pages)
   const total = Math.max(0, ...totals)
@@ -64,7 +81,7 @@ const setLists = (
 const setList = (datas: SearchResult, page: number, text: string): LX.Music.MusicInfoOnline[] => {
   // console.log(datas.source, datas.list)
   let listInfo = state.listInfos[datas.source]!
-  const list = datas.list.map((s) => toNewMusicInfo(s) as LX.Music.MusicInfoOnline)
+  const list = datas.list.map(convertMusicInfo).filter((item): item is LX.Music.MusicInfoOnline => item !== null)
   listInfo.list = deduplicationList(page == 1 ? list : [...listInfo.list, ...list])
   if (page == 1 || (datas.total && datas.list.length)) listInfo.total = datas.total
   else listInfo.total = datas.limit * page

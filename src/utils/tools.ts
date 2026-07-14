@@ -80,8 +80,12 @@ export const TEMP_FILE_PATH = temporaryDirectoryPath + '/tempFile'
 //   // return windowSize
 // }
 
-export const checkStoragePermissions = async () =>
-  PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE)
+export const checkStoragePermissions = async () => {
+  const writeGranted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE)
+  const readGranted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE)
+  console.log('checkStoragePermissions', { writeGranted, readGranted })
+  return writeGranted && readGranted
+}
 
 export const requestStoragePermission = async () => {
   const isGranted = await checkStoragePermissions()
@@ -123,10 +127,10 @@ export const requestStoragePermission = async () => {
 }
 
 /**
- * 显示toast
- * @param message 消息
- * @param duration 时长
- * @param position 位置
+ * Show toast
+ * @param message message
+ * @param duration duration
+ * @param position position
  */
 export const toast = (
   message: string,
@@ -167,7 +171,7 @@ export const openUrl = async (url: string): Promise<void> =>
   Linking.canOpenURL(url).then(async () => Linking.openURL(url))
 
 export const assertApiSupport = (source: LX.Source): boolean => {
-  return source == 'local' || global.lx.qualityList[source] != null
+  return source == 'local' || source == 'bilibili' || global.lx.qualityList[source] != null
 }
 
 // const handleRemoveDataMultiple = async keys => {
@@ -200,7 +204,6 @@ export const handleReadFile = async <T = unknown>(path: string): Promise<T> => {
   }
   data = JSON.parse(data)
 
-  // 修复PC v1.14.0出现的导出数据被序列化两次的问题
   if (typeof data != 'object') {
     try {
       data = JSON.parse(data as string)
@@ -367,6 +370,10 @@ export const resetIgnoringBatteryOptimizationCheck = async () => {
   return removeData(storageDataPrefix.ignoringBatteryOptimizationTipEnable)
 }
 
+export const formatMusicName = (format: string, name: string, singer: string) => {
+  return format.replace('歌手', singer).replace('歌名', name)
+}
+
 export const shareMusic = (
   shareType: LX.ShareType,
   downloadFileName: LX.AppSetting['download.fileName'],
@@ -378,7 +385,7 @@ export const shareMusic = (
     musicInfo.source == 'local'
       ? ''
       : (musicSdk[musicInfo.source]?.getMusicDetailPageUrl(toOldMusicInfo(musicInfo)) ?? '')
-  const musicTitle = downloadFileName.replace('歌名', name).replace('歌手', singer)
+  const musicTitle = formatMusicName(downloadFileName, name, singer)
   switch (shareType) {
     case 'system':
       void shareText(
@@ -458,9 +465,9 @@ export const showImportTip = (type: string) => {
 }
 
 /**
- * 生成节流函数
- * @param fn 回调
- * @param delay 延迟
+ * Generate throttle function
+ * @param fn callback
+ * @param delay delay
  * @returns
  */
 export function throttleBackgroundTimer<Args extends any[]>(
@@ -480,9 +487,9 @@ export function throttleBackgroundTimer<Args extends any[]>(
 }
 
 /**
- * 生成防抖函数
- * @param fn 回调
- * @param delay 延迟
+ * Generate debounce function
+ * @param fn callback
+ * @param delay delay
  * @returns
  */
 export function debounceBackgroundTimer<Args extends any[]>(
@@ -588,6 +595,13 @@ export interface RowInfo {
 export type RowInfoType = 'full' | 'medium' | 'single'
 
 export const getRowInfo = (type: RowInfoType = 'full'): RowInfo => {
+  if (type == 'single') {
+    return {
+      rowNum: undefined,
+      rowWidth: '100%',
+    }
+  }
+
   const win = windowSizeTools.getSize()
   let isMultiRow = isHorizontalMode(win.width, win.height)
   if (type == 'medium' && win.width / win.height < 1.8) isMultiRow = false
@@ -606,7 +620,7 @@ export const cheatTip = async () => {
 
   return tipDialog({
     title: '谨防被骗提示',
-    message: `1. 本项目无微信公众号之类的所谓「官方账号」，也未在小米、华为、vivo 等应用商店发布应用，商店内的「LX-N Music」「洛雪音乐」「LX Music」相关的应用全部属于假冒应用，谨防被骗！\n
+    message: `1. 本项目无微信公众号之类的所谓「官方账号」，也未在小米、华为、vivo 等应用商店发布应用，商店内的「LX-X Music」「洛雪音乐」「LX Music」相关的应用全部属于假冒应用，谨防被骗！\n
 2. 本软件完全无广告且无引流（如需要加群、关注公众号之类才能使用或者升级）的行为，若你使用过程中遇到广告或者引流的信息，则表明你当前运行的软件是第三方修改版。\n
 3. 目前本项目的原始发布地址只有 GitHub，其他渠道均为第三方转载发布，可信度请自行鉴别。`,
     btnText: '我知道了 (Close)',

@@ -1,4 +1,4 @@
-import { memo, useMemo, useCallback, useState, useEffect } from 'react'; // 新增 useState, useEffect
+import { memo, useMemo, useCallback, useState, useEffect } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import Text from '@/components/common/Text';
 import Image from '@/components/common/Image';
@@ -12,6 +12,7 @@ import { resumeTask, retryTask } from '@/core/download';
 export default memo(({ task: initialTask, onRemove }: { task: LX.Download.DownloadTask, onRemove: (id: string) => void }) => {
   const theme = useTheme();
   const [task, setTask] = useState(initialTask);
+  const errorColor = theme['c-600'];
 
   useEffect(() => {
     const handleProgressUpdate = ({ id, progress }: { id: string, progress: LX.Download.DownloadTask['progress'] }) => {
@@ -30,12 +31,10 @@ export default memo(({ task: initialTask, onRemove }: { task: LX.Download.Downlo
         setTask(prevTask => ({ ...prevTask, metadataStatus }));
       }
     }
-    // 我们需要让 downloadActions 在更新 status 时也广播 errorMsg
     global.app_event.on('download_progress_update', handleProgressUpdate);
     global.app_event.on('download_status_update', handleStatusUpdate);
     global.app_event.on('download_metadata_update', handleMetadataUpdate);
 
-    // 当从父组件接收到的 initialTask 发生变化时（例如列表刷新），也更新内部状态
     setTask(initialTask);
 
     return () => {
@@ -43,10 +42,10 @@ export default memo(({ task: initialTask, onRemove }: { task: LX.Download.Downlo
       global.app_event.off('download_status_update', handleStatusUpdate);
       global.app_event.off('download_metadata_update', handleMetadataUpdate);
     };
-  }, [task.id, initialTask]); // 依赖 task.id 和 initialTask
+  }, [task.id, initialTask]);
 
 
-  const hasMetaError = useMemo(() => Object.values(task.metadataStatus).includes('fail'), [task.metadataStatus]);
+  const hasMetaError = useMemo(() => Object.values(task.metadataStatus ?? {}).includes('fail'), [task.metadataStatus]);
 
   const handleRetry = useCallback(() => {
     retryTask(task.id);
@@ -57,6 +56,10 @@ export default memo(({ task: initialTask, onRemove }: { task: LX.Download.Downlo
   }, [task.id]);
 
   const renderStatus = () => {
+    if (task.isRemoteSynced) {
+      return <Text size={12} color={theme['c-font-label']}>由其他设备同步或导入的下载记录</Text>;
+    }
+
     switch(task.status) {
       case 'downloading':
         return (
@@ -75,7 +78,7 @@ export default memo(({ task: initialTask, onRemove }: { task: LX.Download.Downlo
       case 'completed':
         return <Text size={12} color={theme['c-primary']}>已完成</Text>;
       case 'error':
-        return <Text size={12} color={theme['c-error']} numberOfLines={1}>{task.errorMsg || '下载失败'}</Text>;
+        return <Text size={12} color={errorColor} numberOfLines={1}>{task.errorMsg || '下载失败'}</Text>;
       case 'paused':
         return <Text size={12} color={theme['c-font-label']}>已中断，可继续下载</Text>;
       case 'waiting':
@@ -88,15 +91,15 @@ export default memo(({ task: initialTask, onRemove }: { task: LX.Download.Downlo
   const renderMetadataStatus = () => (
     <View style={styles.metadataContainer}>
       <View style={styles.metaItem}>
-        <Icon name={task.metadataStatus.tags === 'success' ? 'checkbox-marked' : (task.metadataStatus.tags === 'fail' ? 'close' : 'checkbox-blank-outline')} color={task.metadataStatus.tags === 'success' ? theme['c-primary'] : (task.metadataStatus.tags === 'fail' ? theme['c-error'] : theme['c-font-label'])} size={12} />
+        <Icon name={task.metadataStatus.tags === 'success' ? 'checkbox-marked' : (task.metadataStatus.tags === 'fail' ? 'close' : 'checkbox-blank-outline')} color={task.metadataStatus.tags === 'success' ? theme['c-primary'] : (task.metadataStatus.tags === 'fail' ? errorColor : theme['c-font-label'])} size={12} />
         <Text size={10} color={theme['c-font-label']}>标签</Text>
       </View>
       <View style={styles.metaItem}>
-        <Icon name={task.metadataStatus.cover === 'success' ? 'checkbox-marked' : (task.metadataStatus.cover === 'fail' ? 'close' : 'checkbox-blank-outline')} color={task.metadataStatus.cover === 'success' ? theme['c-primary'] : (task.metadataStatus.cover === 'fail' ? theme['c-error'] : theme['c-font-label'])} size={12} />
+        <Icon name={task.metadataStatus.cover === 'success' ? 'checkbox-marked' : (task.metadataStatus.cover === 'fail' ? 'close' : 'checkbox-blank-outline')} color={task.metadataStatus.cover === 'success' ? theme['c-primary'] : (task.metadataStatus.cover === 'fail' ? errorColor : theme['c-font-label'])} size={12} />
         <Text size={10} color={theme['c-font-label']}>封面</Text>
       </View>
       <View style={styles.metaItem}>
-        <Icon name={task.metadataStatus.lyric === 'success' ? 'checkbox-marked' : (task.metadataStatus.lyric === 'fail' ? 'close' : 'checkbox-blank-outline')} color={task.metadataStatus.lyric === 'success' ? theme['c-primary'] : (task.metadataStatus.lyric === 'fail' ? theme['c-error'] : theme['c-font-label'])} size={12} />
+        <Icon name={task.metadataStatus.lyric === 'success' ? 'checkbox-marked' : (task.metadataStatus.lyric === 'fail' ? 'close' : 'checkbox-blank-outline')} color={task.metadataStatus.lyric === 'success' ? theme['c-primary'] : (task.metadataStatus.lyric === 'fail' ? errorColor : theme['c-font-label'])} size={12} />
         <Text size={10} color={theme['c-font-label']}>歌词</Text>
       </View>
       {hasMetaError && task.status === 'completed' && (
@@ -126,12 +129,12 @@ export default memo(({ task: initialTask, onRemove }: { task: LX.Download.Downlo
         {task.status === 'completed' && renderMetadataStatus()}
       </View>
       <View style={styles.actionsContainer}>
-        { task.status === 'paused' && (
+        { !task.isRemoteSynced && task.status === 'paused' && (
           <TouchableOpacity onPress={handleResume} style={styles.actionButton}>
             <Icon name="play-outline" size={18} color={theme['c-primary']} />
           </TouchableOpacity>
         ) }
-        { (task.status === 'error' || (task.status === 'completed' && hasMetaError)) && (
+        { !task.isRemoteSynced && (task.status === 'error' || (task.status === 'completed' && hasMetaError)) && (
           <TouchableOpacity onPress={handleRetry} style={styles.actionButton}>
             <Icon name="available_updates" size={18} color={theme['c-primary']} />
           </TouchableOpacity>

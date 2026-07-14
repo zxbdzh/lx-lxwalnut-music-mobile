@@ -23,10 +23,12 @@ export interface ListMenuProps {
   onDislikeMusic: (selectInfo: SelectInfo) => void
   onArtistDetail: (selectInfo: SelectInfo) => void
   onAlbumDetail: (selectInfo: SelectInfo) => void
+  onSimilarSongs: (selectInfo: SelectInfo) => void
   onLike: (selectInfo: SelectInfo) => void
   onPlayMv: (selectInfo: SelectInfo) => void
   onMove?: (selectInfo: SelectInfo) => void
   onRemove?: (selectInfo: SelectInfo) => void
+  onClearCache?: (selectInfo: SelectInfo) => void
   listId?: string
   isCreator?: boolean
 }
@@ -82,8 +84,29 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
       wyMenuItems.push(
         { action: 'artistDetail', label: t('artist_detail') },
         { action: 'albumDetail', label: t('album_detail') },
+        { action: 'similarSongs', label: '相似歌曲' },
       );
       if (selectInfo.musicInfo.meta.mv && menuSetting.playMV) {
+        wyMenuItems.push({ action: 'playMv', label: '播放MV' });
+      }
+    }
+
+    if (selectInfo.musicInfo?.source === 'tx') {
+      wyMenuItems.push(
+        { action: 'artistDetail', label: t('artist_detail') },
+        { action: 'albumDetail', label: t('album_detail') },
+      );
+      if (selectInfo.musicInfo.meta.vid && menuSetting.playMV) {
+        wyMenuItems.push({ action: 'playMv', label: '播放MV' });
+      }
+    }
+
+    if (selectInfo.musicInfo?.source === 'kg') {
+      wyMenuItems.push(
+        { action: 'artistDetail', label: t('artist_detail') },
+        { action: 'albumDetail', label: t('album_detail') },
+      );
+      if (menuSetting.playMV) {
         wyMenuItems.push({ action: 'playMv', label: '播放MV' });
       }
     }
@@ -93,6 +116,7 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
       remainingMenu.push({ action: 'musicSourceDetail', label: t('music_source_detail') })
     if (menuSetting.dislike)
       remainingMenu.push({ action: 'dislike', label: t('dislike'), disabled: isDislikeMusic })
+    remainingMenu.push({ action: 'clearCache', label: t('clear_music_cache') })
 
     if (props.isCreator) {
       remainingMenu.push({ action: 'remove', label: t('delete') });
@@ -127,6 +151,9 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
       case 'albumDetail':
         props.onAlbumDetail(selectInfo)
         break
+      case 'similarSongs':
+        props.onSimilarSongs(selectInfo)
+        break
       case 'musicSourceDetail':
         props.onMusicSourceDetail(selectInfo)
         break
@@ -141,6 +168,9 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
         break;
       case 'remove':
         props.onRemove?.(selectInfo);
+        break;
+      case 'clearCache':
+        props.onClearCache?.(selectInfo);
         break;
       default:
         break

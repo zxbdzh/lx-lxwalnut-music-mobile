@@ -16,6 +16,8 @@ import { checkUpdate } from '@/core/version'
 import { bootLog } from '@/utils/bootLog'
 import { cheatTip } from '@/utils/tools'
 import * as networkLyric from '@/core/networkLyric'
+import { searchLog } from '@/utils/searchLog'
+import { playerLog } from '@/utils/playerLog'
 
 let isFirstPush = true
 const handlePushedHomeScreen = async () => {
@@ -23,7 +25,6 @@ const handlePushedHomeScreen = async () => {
   if (settingState.setting['common.isAgreePact']) {
     if (isFirstPush) {
       isFirstPush = false
-      // void checkUpdate()
       void initDeeplink()
     }
   } else {
@@ -51,9 +52,17 @@ export default async () => {
   bootLog('Font size changed.')
   const setting = await initSetting()
   bootLog('Setting inited.')
-  // console.log(setting)
+  
+  global.lx.isEnableLog = setting['common.isEnableLog'] ?? true
+  global.lx.isEnableSyncLog = setting['common.isEnableSyncLog'] ?? false
+  global.lx.isEnableUserApiLog = setting['common.isEnableUserApiLog'] ?? false
+  bootLog('Log state restored.')
+  
+  searchLog.init()
+  bootLog('Search Log inited.')
+  playerLog.init()
+  bootLog('Player Log inited.')
 
-  // 将没有相互依赖的初始化任务并行化
   await Promise.all([
     initTheme(setting),
     initI18n(setting),

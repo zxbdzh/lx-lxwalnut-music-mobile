@@ -4,10 +4,8 @@ import { deduplicationList, toNewMusicInfo } from '@/utils'
 import musicSdk from '@/utils/musicSdk'
 
 /**
- * 获取排行榜内单页歌曲
- * @param id 排行榜id  {souce}__{bangId}
- * @param isRefresh 是否跳过缓存
- * @returns
+ * Set leaderboard list detail info
+ * @param id Leaderboard id {source}__{bangId}
  */
 export const setListDetailInfo = (id: string) => {
   clearListDetail()
@@ -44,10 +42,10 @@ export const getBoardsList = async (source: LX.OnlineSource) => {
 }
 
 /**
- * 获取排行榜内单页分页歌曲（用于在本地控制每页大小）
- * @param source 源
- * @param bangId 排行榜id
- * @param page 页数
+ * Get paginated songs from leaderboard (for local page size control)
+ * @param source Source
+ * @param bangId Leaderboard id
+ * @param page Page number
  * @returns
  */
 const getListLimit = async (
@@ -72,7 +70,7 @@ const getListLimit = async (
     musicSdk[source]?.leaderboard.getList(bangId, sourcePage + 1).then((result: ListDetailInfo) => {
       if (listCache !== cache.get(listKey)) return
       result.list = deduplicationList(
-        result.list.map((m) => toNewMusicInfo(m)) as LX.Music.MusicInfoOnline[]
+        result.list.map((m) => toNewMusicInfo(m)).filter(Boolean) as LX.Music.MusicInfoOnline[]
       )
       let p = page
       const tempList = listCache.get(tempListKey) as ListDetailInfo['list']
@@ -115,9 +113,9 @@ const getListLimit = async (
 }
 
 /**
- * 获取排行榜内单页歌曲
- * @param id 排行榜id  {souce}__{bangId}
- * @param isRefresh 是否跳过缓存
+ * Get single page songs from leaderboard
+ * @param id Leaderboard id {source}__{bangId}
+ * @param isRefresh Whether to skip cache
  * @returns
  */
 export const getListDetail = async (
@@ -142,9 +140,9 @@ export const getListDetail = async (
 }
 
 /**
- * 获取排行榜内全部歌曲
- * @param id 排行榜id  {souce}__{id}
- * @param isRefresh 是否跳过缓存
+ * Get single page songs from leaderboard
+ * @param id Leaderboard id {source}__{bangId}
+ * @param isRefresh Whether to skip cache
  * @returns
  */
 export const getListDetailAll = async (
@@ -183,9 +181,9 @@ export const getListDetailAll = async (
 }
 
 /**
- * 获取并设置排行榜内单页歌曲
- * @param id 排行榜id  {souce}__{id}
- * @param isRefresh 是否跳过缓存
+ * Get single page songs from leaderboard
+ * @param id Leaderboard id {source}__{bangId}
+ * @param isRefresh Whether to skip cache
  * @returns
  */
 // export const getAndSetListDetail = async(id: string, page: number, isRefresh = false) => {

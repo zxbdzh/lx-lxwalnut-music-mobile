@@ -1,13 +1,21 @@
 import { memo } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import SubTitle from '../../components/SubTitle';
 import CheckBox from '@/components/common/CheckBox';
 import { useI18n } from '@/lang';
 import { useSettingValue } from '@/store/setting/hook';
 import { updateSetting } from '@/core/common';
 import { createStyle } from '@/utils/tools';
+import { useTheme } from '@/store/theme/hook';
 
-const SettingItem = ({ settingKey, label }: { settingKey: keyof LX.AppSetting; label: string }) => {
+type MenuSettingKey =
+  | 'menu.playLater'
+  | 'menu.share'
+  | 'menu.playMV'
+  | 'menu.songDetail'
+  | 'menu.dislike'
+
+const SettingItem = ({ settingKey, label }: { settingKey: MenuSettingKey; label: string }) => {
   const value = useSettingValue(settingKey);
   const handleChange = (newValue: boolean) => {
     updateSetting({ [settingKey]: newValue });
@@ -24,9 +32,20 @@ const SettingItem = ({ settingKey, label }: { settingKey: keyof LX.AppSetting; l
 
 export default memo(() => {
   const t = useI18n();
+  
   return (
     <SubTitle title="菜单设置">
-      <View style={styles.content}>
+      <View 
+        style={[
+          styles.content,
+          { 
+            backgroundColor: 'transparent',
+            borderWidth: StyleSheet.hairlineWidth,
+            borderColor: 'rgba(128, 128, 128, 0.2)',
+            borderRadius: 8,
+          }
+        ]}
+      >
         <SettingItem settingKey="menu.playLater" label={t('play_later')} />
         <SettingItem settingKey="menu.share" label={t('copy_name')} />
         <SettingItem settingKey="menu.playMV" label={'播放MV'} />

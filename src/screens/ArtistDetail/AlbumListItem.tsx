@@ -18,14 +18,19 @@ export default memo(({ componentId, item, width, viewMode }: { componentId: stri
   const isSubscribed = useIsWyAlbumSubscribed(item.id)
 
   const handlePress = () => {
+    const author = item.artist?.name || item.artistName || ''
+    const source = item.source || 'wy'
+    const albumId = source === 'tx' ? (item.mid || item.id) : item.id
+    
     const albumInfo = {
-      id: item.id,
+      id: albumId,
+      mid: item.mid || item.id,
       name: item.name,
-      author: item.artist.name,
+      author,
       img: item.picUrl,
       play_count: '',
       desc: item.briefDesc,
-      source: 'wy',
+      source,
       artists: item.artists,
       picUrl: item.picUrl,
       size: item.size,
@@ -54,11 +59,10 @@ export default memo(({ componentId, item, width, viewMode }: { componentId: stri
         removeWySubscribedAlbum(item.id)
       }
     }).catch(err => {
-      toast(`操作失败: ${err.message}`)
+      toast(`操作失败: ${err.message}，可能是Cookie已失效，请重新登录`)
     })
   }
 
-  // 列表视图模式
   if (viewMode === 'list') {
     return (
       <TouchableOpacity style={[listStyles.container, { width }]} onPress={handlePress}>
@@ -66,17 +70,18 @@ export default memo(({ componentId, item, width, viewMode }: { componentId: stri
         <View style={listStyles.info}>
           <Text style={listStyles.name} numberOfLines={1}>{item.name}</Text>
           <Text style={listStyles.time} size={12} color={theme['c-font-label']}>
-            {dateFormat(item.publishTime, 'Y.M.D')} • {item.size} tracks
+            {item.size} 首
           </Text>
         </View>
-        <TouchableOpacity style={listStyles.likeButton} onPress={toggleSubscribe}>
-          <Icon name={isSubscribed ? 'love-filled' : 'love'} color={isSubscribed ? theme['c-liked'] : theme['c-font-label']} size={18} />
-        </TouchableOpacity>
+        {item.source !== 'kg' && (
+          <TouchableOpacity style={listStyles.likeButton} onPress={toggleSubscribe}>
+            <Icon name={isSubscribed ? 'love-filled' : 'love'} color={isSubscribed ? theme['c-liked'] : theme['c-font-label']} size={18} />
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
     )
   }
 
-  // 默认（网格）视图模式
   return (
     <TouchableOpacity style={{ ...gridStyles.container, width }} onPress={handlePress}>
       <Image url={item.picUrl} style={{ ...gridStyles.artwork, width, height: width }} />
@@ -84,15 +89,14 @@ export default memo(({ componentId, item, width, viewMode }: { componentId: stri
       <View style={gridStyles.metaContainer}>
         <View style={gridStyles.metaTextContainer}>
           <Text style={gridStyles.time} size={10} color={theme['c-font-label']}>
-            {dateFormat(item.publishTime, 'Y.M.D')}
-          </Text>
-          <Text style={gridStyles.trackCount} size={10} color={theme['c-font-label']}>
-            • {item.size} tracks
+            {item.size} 首
           </Text>
         </View>
-        <TouchableOpacity style={gridStyles.likeButton} onPress={toggleSubscribe}>
-          <Icon name={isSubscribed ? 'love-filled' : 'love'} color={isSubscribed ? theme['c-liked'] : theme['c-font-label']} size={18} />
-        </TouchableOpacity>
+        {item.source !== 'kg' && (
+          <TouchableOpacity style={gridStyles.likeButton} onPress={toggleSubscribe}>
+            <Icon name={isSubscribed ? 'love-filled' : 'love'} color={isSubscribed ? theme['c-liked'] : theme['c-font-label']} size={18} />
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableOpacity>
   )

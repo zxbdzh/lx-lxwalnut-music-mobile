@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { View } from 'react-native'
 import Button from '@/components/common/Button'
 
-import { createStyle } from '@/utils/tools'
+import { createStyle, toast } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import Text from '@/components/common/Text'
 import { handleCollect, handlePlay } from './listAction'
@@ -10,19 +10,22 @@ import songlistState from '@/store/songlist/state'
 import { useI18n } from '@/lang'
 import { useListInfo } from './state'
 
-export default memo(({ onBack }: { onBack: () => void }) => { // 确保接收 onBack prop
+export default memo(({ onBack }: { onBack: () => void }) => {
   const theme = useTheme()
   const t = useI18n()
   const info = useListInfo()
 
   const handlePlayAll = () => {
-    if (!songlistState.listDetailInfo.info.name) return
+    if (!songlistState.listDetailInfo.list.length) {
+      toast('歌单加载失败，请返回重试')
+      return
+    }
     void handlePlay(info.id, info.source, songlistState.listDetailInfo.list)
   }
 
   const handleCollection = () => {
-    if (!songlistState.listDetailInfo.info.name) return
-    void handleCollect(info.id, info.source, songlistState.listDetailInfo.info.name || info.name)
+    const name = songlistState.listDetailInfo.info?.name || info.name || '未命名歌单'
+    void handleCollect(info.id, info.source, name)
   }
 
   return (

@@ -60,17 +60,17 @@ export const getBatchMusicQualityInfo = (songList) => {
         types.push({ type: 'hires', size })
         _types.hires = { size }
       }
-      if (file.size_new[1] !== 0) {
+      if (file.size_new?.[1] !== 0) {
         let size = sizeFormate(file.size_new[1])
         types.push({ type: 'atmos', size })
         _types.atmos = { size }
       }
-      if (file.size_new[2] !== 0) {
+      if (file.size_new?.[2] !== 0) {
         let size = sizeFormate(file.size_new[2])
         types.push({ type: 'atmos_plus', size })
         _types.atmos_plus = { size }
       }
-      if (file.size_new[0] !== 0) {
+      if (file.size_new?.[0] !== 0) {
         let size = sizeFormate(file.size_new[0])
         types.push({ type: 'master', size })
         _types.master = { size }

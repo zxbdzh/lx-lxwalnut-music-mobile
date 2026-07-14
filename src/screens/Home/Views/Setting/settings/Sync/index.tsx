@@ -28,11 +28,12 @@ export default memo(() => {
   const t = useI18n();
   const theme = useTheme();
   const isEnableWebdav = useSettingValue('sync.webdav.enable');
-  const isSyncLists = useSettingValue('sync.webdav.syncLists'); // 新增
+  const isSyncLists = useSettingValue('sync.webdav.syncLists');
   const webdavUrl = useSettingValue('sync.webdav.url');
   const webdavUsername = useSettingValue('sync.webdav.username');
   const webdavPassword = useSettingValue('sync.webdav.password');
   const webdavPath = useSettingValue('sync.webdav.path');
+  
   const lastSyncTimeLists = useSettingValue('sync.webdav.lastSyncTimeLists');
 
   const [isTesting, setIsTesting] = useState(false);
@@ -121,8 +122,7 @@ export default memo(() => {
   };
 
   return (
-    <Section title={t('setting_sync')}>
-      {/* WebDAV 设置部分 */}
+    <Section title={t('setting_sync')} sectionId="setting_sync">
       <SubTitle title="WebDAV 同步">
         <CheckBoxItem
           check={isEnableWebdav}
@@ -158,7 +158,6 @@ export default memo(() => {
             value={webdavPassword}
             onChanged={handleWebdavSettingChanged('sync.webdav.password')}
             placeholder="请输入密码"
-            secureTextEntry
             editable={isEnableWebdav}
           />
           <InputItem
@@ -202,7 +201,6 @@ export default memo(() => {
         </View>
       </SubTitle>
 
-      {/* 原有的同步功能 */}
       <IsEnable host={host} setHost={setHost} />
       <History setHost={setHost} />
     </Section>

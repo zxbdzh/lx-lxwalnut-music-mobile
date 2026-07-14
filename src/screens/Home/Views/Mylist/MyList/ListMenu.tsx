@@ -59,8 +59,9 @@ export default forwardRef<ListMenuType, ListMenuProps>(
       show(selectInfo, position) {
         selectInfoRef.current = selectInfo
         handleSetMenu(selectInfo.listInfo)
-        if (visible) menuRef.current?.show(position)
-        else {
+        if (visible) {
+          menuRef.current?.show(position)
+        } else {
           setVisible(true)
           requestAnimationFrame(() => {
             menuRef.current?.show(position)

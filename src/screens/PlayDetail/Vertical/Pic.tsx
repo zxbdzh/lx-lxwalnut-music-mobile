@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useCallback, useState } from 'react';
-import { View, Animated, Easing, TouchableWithoutFeedback } from 'react-native';
+import { View, Animated, Easing, TouchableWithoutFeedback, Platform } from 'react-native';
 import { useIsPlay, usePlayMusicInfo } from '@/store/player/hook';
 import { useWindowSize } from '@/utils/hooks';
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant';
@@ -21,12 +21,17 @@ export default memo(({ componentId }: { componentId: string }) => {
   const statusBarHeight = useStatusbarHeight();
   const isPlay = useIsPlay();
   const isCoverSpin = useSettingValue('playDetail.isCoverSpin');
+  const coverSizeRaw = useSettingValue('playDetail.style.coverSize');
+  const coverSize = typeof coverSizeRaw === 'number' && !isNaN(coverSizeRaw) ? coverSizeRaw : 100;
+  const isNewUI = useSettingValue('playDetail.style.newUI');
   const spinValue = useRef(new Animated.Value(0)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
   const isAnimating = useRef(false);
   const menuRef = useRef<MenuType>(null);
   const coverRef = useRef<View>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const shouldForceLayerComposition = Platform.OS === 'android' && global.lx.isCarMode && isCoverSpin;
+  const isUnmounted = useRef(false);
 
   const createAnimation = useCallback((value: number) => {
     return Animated.timing(spinValue, {
@@ -38,12 +43,13 @@ export default memo(({ componentId }: { componentId: string }) => {
   }, [spinValue]);
 
   const startAnimation = useCallback(() => {
-    if (isAnimating.current || !isCoverSpin) return;
+    if (isAnimating.current || !isCoverSpin || isUnmounted.current) return;
     isAnimating.current = true;
     spinValue.stopAnimation(value => {
+      if (isUnmounted.current) return;
       animationRef.current = createAnimation(value);
       animationRef.current.start(({ finished }) => {
-        if (finished && isAnimating.current) {
+        if (finished && isAnimating.current && !isUnmounted.current) {
           spinValue.setValue(0);
           isAnimating.current = false;
           startAnimation();
@@ -65,15 +71,26 @@ export default memo(({ componentId }: { componentId: string }) => {
       startAnimation();
     } else {
       stopAnimation();
+      if (!isCoverSpin) {
+        spinValue.setValue(0);
+      }
     }
-  }, [isPlay, isCoverSpin, startAnimation, stopAnimation]);
+  }, [isPlay, isCoverSpin, startAnimation, stopAnimation, spinValue]);
 
   useEffect(() => {
     stopAnimation();
+    spinValue.setValue(0);
     if (isPlay && isCoverSpin) {
       startAnimation();
     }
-  }, [musicInfo.musicInfo?.id, isCoverSpin, startAnimation, stopAnimation]);
+  }, [musicInfo.musicInfo?.id, isCoverSpin, startAnimation, stopAnimation, spinValue]);
+
+  useEffect(() => {
+    return () => {
+      isUnmounted.current = true;
+      stopAnimation();
+    };
+  }, [stopAnimation]);
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
@@ -81,21 +98,39 @@ export default memo(({ componentId }: { componentId: string }) => {
   });
 
   const imageContainerStyle = useMemo(() => {
-    const imgWidth = Math.min(winWidth * 0.85, (winHeight - statusBarHeight - HEADER_HEIGHT) * 0.5);
+    const isSmallWindow = winHeight < 700
+    const baseWidth = isNewUI 
+      ? Math.min(winWidth * (isSmallWindow ? 0.5 : 0.75), (winHeight - statusBarHeight - HEADER_HEIGHT) * (isSmallWindow ? 0.3 : 0.45))
+      : Math.min(winWidth * 0.85, (winHeight - statusBarHeight - HEADER_HEIGHT) * 0.5);
+    const imgWidth = baseWidth * (coverSize / 100);
+    const radius = isCoverSpin ? imgWidth / 2 : 4;
     return {
       width: imgWidth,
       height: imgWidth,
-      borderRadius: isCoverSpin ? imgWidth / 2 : 4,
+      borderRadius: radius,
       elevation: 3,
-      opacity: 1, // 直接设置为1，让动画引擎控制可见性
+      opacity: 1,
+      backgroundColor: 'transparent',
+      overflow: 'hidden',
     };
-  }, [statusBarHeight, winHeight, winWidth, isCoverSpin]);
+  }, [statusBarHeight, winHeight, winWidth, isCoverSpin, coverSize, isNewUI]);
 
   const imageStyle = useMemo(() => ({
     width: '100%',
     height: '100%',
     borderRadius: imageContainerStyle.borderRadius,
   } as any), [imageContainerStyle.borderRadius]);
+
+  const animatedCoverStyle = useMemo(() => ({
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backfaceVisibility: 'hidden' as const,
+    transform: [{ rotate: spin }],
+    borderRadius: imageContainerStyle.borderRadius,
+  } as any), [spin, imageContainerStyle.borderRadius]);
 
   const menus = useMemo((): Menus => [
     { action: 'download_song', label: '下载歌曲' },
@@ -163,12 +198,22 @@ export default memo(({ componentId }: { componentId: string }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isNewUI ? styles.containerNew : {}]}>
       <TouchableWithoutFeedback onLongPress={handleLongPress}>
-        <View ref={coverRef} style={[styles.content, imageContainerStyle, { overflow: 'hidden' }]}>
-          <Animated.View style={{ width: '100%', height: '100%', transform: [{ rotate: spin }] }}>
+        <View
+          ref={coverRef}
+          collapsable={false}
+          style={[styles.content, imageContainerStyle, { overflow: 'hidden' }]}
+          renderToHardwareTextureAndroid={shouldForceLayerComposition}
+          needsOffscreenAlphaCompositing={shouldForceLayerComposition}
+        >
+          <Animated.View
+            style={animatedCoverStyle}
+            renderToHardwareTextureAndroid={shouldForceLayerComposition}
+            needsOffscreenAlphaCompositing={shouldForceLayerComposition}
+          >
             <Image
-              url={(musicInfo.musicInfo as LX.Music.MusicInfo)?.meta?.picUrl} // 直接使用 store 中的数据
+              url={(musicInfo.musicInfo as LX.Music.MusicInfo)?.meta?.picUrl}
               nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic}
               style={imageStyle}
             />
@@ -187,6 +232,12 @@ const styles = createStyle({
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: '3%',
+  },
+  containerNew: {
+    flexGrow: 0,
+    flexShrink: 0,
+    marginTop: 30,
+    paddingBottom: 5,
   },
   content: {
     backgroundColor: 'rgba(0,0,0,0)',

@@ -11,21 +11,27 @@ import Badge, { type BadgeType } from '@/components/common/Badge'
 import Image from '@/components/common/Image'
 import PlayingIcon from '@/components/common/PlayingIcon'
 import { useI18n } from '@/lang'
+import { useIsWyLiked, useIsTxLiked, useIsKgLiked } from '@/store/user/hook'
+import { handleLikeMusic, handleTxLikeMusic, handleKgLikeMusic } from '@/components/OnlineList/listAction'
 
 export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT)
 
 const useQualityTag = (musicInfo: LX.Music.MusicInfoOnline) => {
   const t = useI18n()
   let info: { type: BadgeType | null; text: string } = { type: null, text: '' }
-  if (musicInfo.meta._qualitys.hires) {
+  const qualitys = (musicInfo.meta as LX.Music.MusicInfoMeta_online)?._qualitys ?? {}
+  if (qualitys.hires) {
     info.type = 'secondary'
     info.text = t('quality_lossless_24bit')
-  } else if (musicInfo.meta._qualitys.flac) {
+  } else if (qualitys.flac) {
     info.type = 'sq'
     info.text = t('quality_lossless')
-  } else if (musicInfo.meta._qualitys['320k']) {
+  } else if (qualitys['320k']) {
     info.type = 'hq'
     info.text = t('quality_high_quality')
+  } else if (qualitys['192k']) {
+    info.type = 'hq'
+    info.text = '192k'
   }
   return info
 }
@@ -64,6 +70,27 @@ export default memo(
     const isSelected = selectedList.includes(item)
     const isSupported = useAssertApiSupport(item.source)
     const moreButtonRef = useRef<TouchableOpacity>(null)
+
+    const isWyLiked = useIsWyLiked(item.meta.songId)
+    const txSongId = (item.meta as any).id
+    const isNumericId = txSongId && /^\d+$/.test(String(txSongId))
+    const txSongMid = isNumericId 
+      ? String(txSongId) 
+      : (item.meta as any).songmid || (item.meta as any).strMediaMid || (typeof item.id === 'string' && item.id.startsWith('tx_') ? item.id.slice(3) : item.id)
+    const isTxLiked = useIsTxLiked(txSongMid)
+    const isKgLiked = useIsKgLiked((item.meta as any).hash || item.meta.songId)
+    const showLikeButton = item.source === 'wy' || item.source === 'tx' || item.source === 'kg'
+    const isLiked = item.source === 'wy' ? isWyLiked : item.source === 'tx' ? isTxLiked : item.source === 'kg' ? isKgLiked : false
+
+    const handleLike = () => {
+      if (item.source === 'wy') {
+        handleLikeMusic(item as LX.Music.MusicInfoOnline)
+      } else if (item.source === 'tx') {
+        handleTxLikeMusic(item as LX.Music.MusicInfoOnline)
+      } else if (item.source === 'kg') {
+        handleKgLikeMusic(item as LX.Music.MusicInfoOnline)
+      }
+    }
 
     const tagInfo = item.source === 'local' ? { type: null, text: '' } : useQualityTag(item as LX.Music.MusicInfoOnline)
 
@@ -117,12 +144,10 @@ export default memo(
             )}
           </View>
           <View style={styles.itemInfo}>
-            {/* <View style={styles.listItemTitle}> */}
             <Text color={active ? theme['c-primary-font'] : theme['c-font']} numberOfLines={1}>
               {item.name}
               {item.alias ? <Text color={theme['c-font-label']}> ({item.alias})</Text> : null}
             </Text>
-            {/* </View> */}
             <View style={styles.listItemSingle}>
               <Badge>{item.source.toUpperCase()}</Badge>
               {tagInfo.type ? <Badge type={tagInfo.type}>{tagInfo.text}</Badge> : null}
@@ -141,18 +166,21 @@ export default memo(
           {isShowInterval ? (
             <Text
               size={11}
-              color={active ? theme['c-primary-alpha-400'] : theme['c-250']}
+              color={active ? theme['c-primary-alpha-400'] : theme['c-500']}
               numberOfLines={1}
             >
               {item.interval}
             </Text>
           ) : null}
         </TouchableOpacity>
-        {/* <View style={styles.listItemRight}> */}
+        {showLikeButton ? (
+          <TouchableOpacity onPress={handleLike} style={styles.likeButton}>
+            <Icon name={isLiked ? "love-filled" : "love"} size={16} color={isLiked ? theme['c-liked'] : theme['c-350']} />
+          </TouchableOpacity>
+        ) : null}
         <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>
           <Icon name="dots-vertical" style={{ color: theme['c-350'] }} size={12} />
         </TouchableOpacity>
-        {/* </View> */}
       </View>
     )
   },
@@ -251,5 +279,11 @@ const styles = createStyle({
     // paddingBottom: 10,
     // backgroundColor: 'rgba(0,0,0,0.2)',
     justifyContent: 'center',
+  },
+  likeButton: {
+    height: '80%',
+    paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })
