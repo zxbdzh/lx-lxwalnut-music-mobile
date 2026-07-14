@@ -39,7 +39,11 @@ import {updateSetting} from "@/core/common.ts";
 import {getMvUrl} from "@/utils/musicSdk/wy/mv.js";
 import commonState from '@/store/common/state';
 
-export default () => {
+interface MusicListProps {
+  onBack?: () => void
+}
+
+export default ({ onBack }: MusicListProps) => {
   const activeListRef = useRef<ActiveListType>(null)
   const listMusicSearchRef = useRef<ListMusicSearchType>(null)
   const listRef = useRef<ListType>(null)
@@ -201,6 +205,7 @@ export default () => {
           onScrollToTop={hancelScrollToTop}
           showCover={showCover}
           onToggleView={handleToggleView}
+          onBack={onBack}
         />
         <MultipleModeBar
           ref={multipleModeBarRef}
