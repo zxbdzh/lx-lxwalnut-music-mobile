@@ -9,7 +9,22 @@ import settingState from '@/store/setting/state'
 const list: LX.Player.Track[] = []
 
 const defaultUserAgent = 'Mozilla/5.0 (Linux; Android 10; Pixel 3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Mobile Safari/537.36'
+// 与桌面端主进程注入的请求头保持一致。Bilibili CDN 会拒绝带 Origin 的移动端伪装请求，
+// 因此这里只保留桌面端已验证可用的 Referer 和 Chrome UA。
+const bilibiliUserAgent =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36 Edg/89.0.774.63'
 const httpRxp = /^(https?:\/\/.+|\/.+)/
+
+const getTrackHeaders = (musicInfo: LX.Player.PlayMusic) => {
+  const sourceInfo = 'progress' in musicInfo ? musicInfo.metadata.musicInfo : musicInfo
+  if (sourceInfo.source !== 'bilibili') return undefined
+
+  return {
+    'User-Agent': bilibiliUserAgent,
+    Referer: 'https://www.bilibili.com',
+    Accept: '*/*',
+  }
+}
 
 export const state = {
   isPlaying: false,
@@ -37,6 +52,7 @@ const buildTracks = (musicInfo: LX.Player.PlayMusic, url?: LX.Player.Track['url'
   const track = [] as LX.Player.Track[]
   const album = mInfo.album || undefined
   const artwork = mInfo.pic && httpRxp.test(mInfo.pic) ? mInfo.pic : undefined
+  const headers = getTrackHeaders(musicInfo)
   if (url) {
     track.push({
       id: `${mInfo.id}__//${Math.random()}__//${url}`,
@@ -45,7 +61,8 @@ const buildTracks = (musicInfo: LX.Player.PlayMusic, url?: LX.Player.Track['url'
       artist: mInfo.singer || 'Unknow',
       album,
       artwork,
-      userAgent: defaultUserAgent,
+      userAgent: headers?.['User-Agent'] ?? defaultUserAgent,
+      headers,
       musicId: mInfo.id,
       // original: { ...musicInfo },
       duration,

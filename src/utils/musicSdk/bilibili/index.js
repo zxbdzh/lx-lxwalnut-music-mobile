@@ -50,10 +50,10 @@ async function getBilibiliMusicUrl(musicInfo, type) {
     log.info('[Bilibili] musicInfo.interval: ' + JSON.stringify(musicInfo.interval))
   }
 
-  let bilibiliData = musicInfo?._bilibiliData
-  let bvid = musicInfo?.bvid || bilibiliData?.bvid
-  let aid = musicInfo?.aid || bilibiliData?.aid
-  let cid = bilibiliData?.cid
+  let bilibiliData = musicInfo?._bilibiliData || musicInfo?.meta?._bilibiliData
+  let bvid = musicInfo?.bvid || bilibiliData?.bvid || musicInfo?.meta?.bvid
+  let aid = musicInfo?.aid || bilibiliData?.aid || musicInfo?.meta?.aid
+  let cid = musicInfo?.cid || bilibiliData?.cid || musicInfo?.meta?.cid
 
   log.info('[Bilibili] 初步解析 - bvid: ' + bvid + ', aid: ' + aid + ', cid: ' + cid)
   
@@ -62,17 +62,17 @@ async function getBilibiliMusicUrl(musicInfo, type) {
     const songmid = musicInfo?.songmid || musicInfo?.id
     log.info('[Bilibili] songmid/id 值: ' + JSON.stringify(songmid))
     if (songmid) {
-      const match = songmid.match(/^bilibili[_]?(.*)$/)
-      log.info('[Bilibili] 正则匹配结果: ' + JSON.stringify(match))
-      if (match) {
-        const id = match[1]
-        log.info('[Bilibili] 提取到的id: ' + id + ', 是否以BV开头: ' + id.startsWith('BV'))
-        if (id.startsWith('BV')) {
-          bvid = id
-        } else {
-          aid = id
-        }
-        log.info('[Bilibili] 解析后 - bvid: ' + bvid + ', aid: ' + aid)
+      const bvidMatch = String(songmid).match(/BV[0-9A-Za-z]{10}/)
+      const cidMatch = String(songmid).match(/BV[0-9A-Za-z]{10}_(\d+)$/)
+      const aidMatch = String(songmid).match(/^bilibili_(\d+)/)
+      log.info('[Bilibili] BV号匹配结果: ' + JSON.stringify(bvidMatch))
+      if (bvidMatch) {
+        bvid = bvidMatch[0]
+        if (!cid && cidMatch) cid = cidMatch[1]
+        log.info('[Bilibili] 从歌曲ID中提取到bvid: ' + bvid)
+      } else if (aidMatch) {
+        aid = aidMatch[1]
+        log.info('[Bilibili] 从歌曲ID中提取到aid: ' + aid)
       } else {
         log.error('[Bilibili] 正则匹配失败，songmid格式不匹配')
       }
@@ -403,7 +403,7 @@ const bilibili = {
           log.info('[Bilibili] getMusicUrl .then - result.headers 是否存在: ' + (result.headers != null))
         }
         // 同时返回 url 和 headers 信息，方便后续下载使用
-        const finalResult = { url: result?.url, headers: result?.headers, type }
+        const finalResult = { url: result?.url, headers: result?.headers, type: bilibiliType }
         log.info('[Bilibili] getMusicUrl .then - 最终返回: url类型=' + typeof finalResult.url + ', url是否为空=' + (finalResult.url == null) + ', type=' + finalResult.type + ', hasHeaders=' + (finalResult.headers != null))
         return finalResult
       })
@@ -432,11 +432,12 @@ const bilibili = {
 
   getMusicDetailPageUrl(songInfo) {
     log.info('[Bilibili] getMusicDetailPageUrl 被调用 - songInfo.name: ' + (songInfo?.name || '未知'))
-    const bvid = songInfo?.bvid || songInfo?._bilibiliData?.bvid || ''
+    const bilibiliData = songInfo?._bilibiliData || songInfo?.meta?._bilibiliData
+    const bvid = songInfo?.bvid || bilibiliData?.bvid || songInfo?.meta?.bvid || ''
     if (bvid) {
       return `https://www.bilibili.com/video/${bvid}`
     }
-    const aid = songInfo?.aid || songInfo?._bilibiliData?.aid || ''
+    const aid = songInfo?.aid || bilibiliData?.aid || songInfo?.meta?.aid || ''
     if (aid) {
       return `https://www.bilibili.com/video/av${aid}`
     }

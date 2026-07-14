@@ -109,18 +109,24 @@ declare namespace LX {
       meta: MusicInfoMeta_mg
     }
 
-    interface MusicInfoMeta_bilibili extends MusicInfoMeta_online {
+    interface BilibiliData {
       bvid?: string
       aid?: string | number
       cid?: string | number
     }
+    interface MusicInfoMeta_bilibili extends MusicInfoMeta_online {
+      _bilibiliData?: BilibiliData
+      /** @deprecated 兼容旧版移动端数据 */
+      bvid?: string
+      /** @deprecated 兼容旧版移动端数据 */
+      aid?: string | number
+      /** @deprecated 兼容旧版移动端数据 */
+      cid?: string | number
+    }
     interface MusicInfo_bilibili extends MusicInfoBase<'bilibili'> {
       meta: MusicInfoMeta_bilibili
-      _bilibiliData?: {
-        bvid?: string
-        aid?: string | number
-        cid?: string | number
-      }
+      /** @deprecated 兼容旧版移动端数据，标准字段为 meta._bilibiliData */
+      _bilibiliData?: BilibiliData
     }
 
     type MusicInfoOnline = MusicInfo_online_common | MusicInfo_kg | MusicInfo_tx | MusicInfo_mg | MusicInfo_bilibili

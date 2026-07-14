@@ -59,7 +59,7 @@ export const getMusicUrl = async ({
   // }
 
   let currentMusicInfo = musicInfo;
-  const preferredQuality = settingState.setting['player.playQuality'];
+  const preferredQuality = settingState.setting['player.playQuality'] as LX.Quality;
 
   // 检查是否需要获取详细音质
   const isWySource = currentMusicInfo.source === 'wy';
@@ -69,7 +69,9 @@ export const getMusicUrl = async ({
   if (isWySource && !hasFullDetails) {
     const availableQualities = Object.keys(currentMusicInfo.meta._qualitys);
     const preferredQualityIndex = QUALITY_RANK.indexOf(preferredQuality);
-    const maxAvailableQualityIndex = Math.min(...availableQualities.map(q => QUALITY_RANK.indexOf(q)));
+    const maxAvailableQualityIndex = Math.min(
+      ...availableQualities.map(q => QUALITY_RANK.indexOf(q as LX.Quality))
+    );
 
     // 特殊情况：用户想要的音质比当前已知的最好音质还要高，此时需要等待获取
     if (preferredQualityIndex < maxAvailableQualityIndex) {
@@ -85,7 +87,9 @@ export const getMusicUrl = async ({
 
   const targetQuality = quality ?? getPlayQuality(preferredQuality, currentMusicInfo);
 
-  const cachedUrl = await getStoreMusicUrl(musicInfo, targetQuality)
+  // Bilibili 返回的是带时效签名的 CDN 地址，不能持久缓存，否则过期后会持续播放失败。
+  const shouldCacheUrl = musicInfo.source !== 'bilibili'
+  const cachedUrl = shouldCacheUrl ? await getStoreMusicUrl(musicInfo, targetQuality) : ''
   if (cachedUrl && !isRefresh) return cachedUrl
 
   // 定义高音质列表
@@ -111,7 +115,7 @@ export const getMusicUrl = async ({
         allowToggleSource,
       });
       console.log('Custom API request succeeded', result);
-      void saveMusicUrl(musicInfo, result.quality, result.url);
+      if (shouldCacheUrl) void saveMusicUrl(musicInfo, result.quality, result.url);
       return result.url;
     } catch (apiError) {
       console.log('Custom API request failed', apiError);
@@ -139,9 +143,9 @@ export const getMusicUrl = async ({
     isRefresh,
     allowToggleSource,
   }).then(({ url, quality: targetQuality, musicInfo: targetMusicInfo, isFromCache }) => {
-    if (targetMusicInfo.id != musicInfo.id && !isFromCache)
+    if (targetMusicInfo.source !== 'bilibili' && targetMusicInfo.id != musicInfo.id && !isFromCache)
       void saveMusicUrl(targetMusicInfo, targetQuality, url)
-    void saveMusicUrl(musicInfo, targetQuality, url)
+    if (shouldCacheUrl) void saveMusicUrl(musicInfo, targetQuality, url)
     return url
   })
 }

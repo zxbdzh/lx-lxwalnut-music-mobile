@@ -70,7 +70,8 @@ export const searchMusic = async ({ name, singer, source: s, limit = 25 }) => {
   const trimStr = (str) => (typeof str == 'string' ? str.trim() : str)
   const musicName = trimStr(name)
   const tasks = []
-  const excludeSource = ['xm']
+  // Bilibili 是视频源，只允许用户直接选择，避免普通歌曲自动换源到无关视频。
+  const excludeSource = ['xm', 'bilibili']
   for (const source of sources.sources) {
     if (!sources[source.id].musicSearch || source.id == s || excludeSource.includes(source.id))
       continue
