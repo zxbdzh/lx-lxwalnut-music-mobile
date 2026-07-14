@@ -111,6 +111,16 @@ export const toNewMusicInfo = (oldMusicInfo: any): LX.Music.MusicInfo => {
         meta.mrcUrl = oldMusicInfo.mrcUrl
         meta.trcUrl = oldMusicInfo.trcUrl
         break
+      case 'bilibili':
+        meta.bvid = oldMusicInfo.bvid
+        meta.aid = oldMusicInfo.aid
+        meta.cid = oldMusicInfo.cid
+        ;(newInfo as any)._bilibiliData = {
+          bvid: oldMusicInfo.bvid,
+          aid: oldMusicInfo.aid,
+          cid: oldMusicInfo.cid,
+        }
+        break
     }
   }
 
@@ -153,6 +163,12 @@ export const toOldMusicInfo = (minfo: LX.Music.MusicInfo): any => {
         oInfo.lrcUrl = minfo.meta.lrcUrl
         oInfo.mrcUrl = minfo.meta.mrcUrl
         oInfo.trcUrl = minfo.meta.trcUrl
+        break
+      case 'bilibili':
+        oInfo.bvid = minfo.meta.bvid || minfo._bilibiliData?.bvid
+        oInfo.aid = minfo.meta.aid || minfo._bilibiliData?.aid
+        oInfo.cid = minfo.meta.cid || minfo._bilibiliData?.cid
+        oInfo._bilibiliData = minfo._bilibiliData
         break
     }
   }

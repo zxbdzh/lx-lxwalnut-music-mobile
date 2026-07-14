@@ -103,6 +103,8 @@ export const getCurrentTrackId = async () => {
   const currentTrackIndex = await TrackPlayer.getCurrentTrack()
   return list[currentTrackIndex]?.id
 }
+export const getTrackId = (trackIndex: number | null | undefined) =>
+  trackIndex == null ? undefined : list[trackIndex]?.id
 export const getCurrentTrack = async () => {
   const currentTrackIndex = await TrackPlayer.getCurrentTrack()
   return list[currentTrackIndex]

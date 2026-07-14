@@ -4,7 +4,7 @@ import TrackPlayer, { State as TPState, Event as TPEvent } from 'react-native-tr
 import { isTempId, isEmpty } from './utils'
 // import { play as lrcPlay, pause as lrcPause } from '@/core/lyric'
 import { exitApp } from '@/core/common'
-import { getCurrentTrackId } from './playList'
+import { getCurrentTrackId, getTrackId } from './playList'
 import { pause, play, playNext, playPrev } from '@/core/player/player'
 import { showDesktopLyric, hideDesktopLyric } from '@/core/desktopLyric'
 import { updateSetting } from '@/core/common'
@@ -12,6 +12,8 @@ import settingState from '@/store/setting/state'
 import { onWidgetPlayPause, onWidgetPrev, onWidgetNext } from '@/utils/nativeModules/musicWidget'
 
 let isInitialized = false
+let currentTrackId: string | null = null
+let lastEndedTrackId: string | null = null
 
 // let retryTrack: LX.Player.Track | null = null
 // let retryGetUrlId: string | null = null
@@ -24,6 +26,13 @@ let isInitialized = false
 const handleExitApp = async (reason: string) => {
   global.lx.isPlayedStop = false
   exitApp(reason)
+}
+
+const handlePlaybackEnded = (trackId = currentTrackId) => {
+  if (!trackId || lastEndedTrackId == trackId || global.lx.isPlayedStop || global.lx.playerError)
+    return
+  lastEndedTrackId = trackId
+  void playNext(true)
 }
 
 const registerPlaybackService = async () => {
@@ -74,7 +83,7 @@ const registerPlaybackService = async () => {
 
   // Widget button handlers
   onWidgetPlayPause(() => {
-    void TrackPlayer.getState().then((state: State) => {
+    void TrackPlayer.getState().then((state: TPState) => {
       if (state === TPState.Playing) {
         void pause()
       } else {
@@ -148,9 +157,13 @@ const registerPlaybackService = async () => {
   })
   TrackPlayer.addEventListener(TPEvent.PlaybackTrackChanged, async (info: any) => {
     // console.log('PlaybackTrackChanged====>', info)
-    global.lx.playerTrackId = await getCurrentTrackId()
+    const previousTrackId = global.lx.playerTrackId
+    const nextTrackId = getTrackId(info.nextTrack)
+    global.lx.playerTrackId = nextTrackId ?? await getCurrentTrackId()
+    if (!isEmpty()) currentTrackId = global.lx.playerTrackId
     if (info.track == null) return
     if (global.lx.isPlayedStop) return handleExitApp('Timeout Exit')
+    if (info.nextTrack == null) return
 
     // console.log('global.lx.playerTrackId====>', global.lx.playerTrackId)
     if (isEmpty()) {
@@ -160,10 +173,11 @@ const registerPlaybackService = async () => {
       global.app_event.pause()
       if (global.lx.playerError) {
         // 如果是因错误导致的切换，则重置标志位，不触发播放结束事件
+        lastEndedTrackId = currentTrackId
         global.lx.playerError = false
       } else {
         // 否则，认为是正常播放结束
-        global.app_event.playerEnded()
+        handlePlaybackEnded(isEmpty(previousTrackId) ? undefined : previousTrackId)
       }
       global.app_event.playerEmptied()
       // if (retryTrack) {

@@ -1,7 +1,6 @@
 import { playNext, setMusicUrl } from '@/core/player/player'
 import { setStatusText } from '@/core/player/playStatus'
 import { getPosition, isEmpty, setStop } from '@/plugins/player'
-import { isActive } from '@/utils/tools'
 import BackgroundTimer from 'react-native-background-timer'
 import playerState from '@/store/player/state'
 import { setNowPlayTime } from '@/core/player/progress'
@@ -48,8 +47,10 @@ export default () => {
 
   const addDelayNextTimeout = () => {
     clearDelayNextTimeout()
+    const musicInfo = playerState.playMusicInfo.musicInfo
     delayNextTimeout = BackgroundTimer.setTimeout(() => {
-      if (global.lx.isPlayedStop) {
+      delayNextTimeout = null
+      if (global.lx.isPlayedStop || playerState.playMusicInfo.musicInfo !== musicInfo) {
         setStatusText('')
         return
       }
@@ -74,11 +75,11 @@ export default () => {
 
   const handlePlaying = () => {
     setStatusText('')
+    clearDelayNextTimeout()
     clearLoadingTimeout()
   }
 
   const handleEmpied = () => {
-    clearDelayNextTimeout()
     clearLoadingTimeout()
   }
 
@@ -109,8 +110,9 @@ export default () => {
     global.lx.playerError = true
     if (!isEmpty()) void setStop()
 
-    // 设置错误状态文本，但不自动播放下一首
+    // 设置错误状态，并在短暂提示后自动播放下一首。
     setStatusText(global.i18n.t('player__error'))
+    addDelayNextTimeout()
     // if (isActive()) {
     //   setStatusText(global.i18n.t('player__error'))
     //   setTimeout(addDelayNextTimeout)
@@ -129,6 +131,8 @@ export default () => {
   }
 
   const handleStop = () => {
+    clearDelayNextTimeout()
+    clearLoadingTimeout()
   }
 
   global.app_event.on('playerLoadstart', handleLoadstart)

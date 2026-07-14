@@ -41,9 +41,10 @@ const createDelayNextTimeout = (delay: number) => {
 
   const addDelayNextTimeout = () => {
     clearDelayNextTimeout()
+    const musicInfo = playerState.playMusicInfo.musicInfo
     timeout = BackgroundTimer.setTimeout(() => {
       timeout = null
-      if (global.lx.isPlayedStop) return
+      if (global.lx.isPlayedStop || playerState.playMusicInfo.musicInfo !== musicInfo) return
       console.log('delay next timeout timeout', delay)
       void playNext(true)
     }, delay)
@@ -164,6 +165,7 @@ export const setMusicUrl = (
 ) => {
   // addLoadTimeout()
   if (!diffCurrentMusicInfo(musicInfo)) return
+  clearDelayNextTimeout()
   if (cancelDelayRetry) cancelDelayRetry()
   global.lx.gettingUrlId = createGettingUrlId(musicInfo)
   void getMusicPlayUrl(musicInfo, isRefresh)
@@ -175,7 +177,7 @@ export const setMusicUrl = (
       console.log(err)
       setStatusText(err.message as string)
       global.app_event.error()
-      // addDelayNextTimeout()
+      addDelayNextTimeout()
     })
     .finally(() => {
       if (musicInfo === playerState.playMusicInfo.musicInfo) {
